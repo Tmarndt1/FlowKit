@@ -1,6 +1,7 @@
 import * as React from "react";
 
 export type EdgeArrow = "both" | "none" | "source" | "target";
+export type EdgePathType = "bezier" | "smooth-step" | "step";
 
 export interface IEdge<T> {
     key: string;
@@ -12,5 +13,6 @@ export interface IEdge<T> {
         target?: boolean;
     };
     data?: T;
+    pathType?: EdgePathType;
     style?: React.CSSProperties;
 }

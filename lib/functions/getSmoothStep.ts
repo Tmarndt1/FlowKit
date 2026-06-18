@@ -1,0 +1,227 @@
+import { Position } from "../enums/Position";
+import { IConnectionPoint } from "../interfaces/IConnectionPoint";
+import { IOffset } from "../interfaces/IOffset";
+import { getOffset } from "./getBezier";
+
+function move(point: IOffset, position: Position, amount: number): IOffset {
+    switch (position) {
+        case Position.Top:
+            return { x: point.x, y: point.y - amount };
+        case Position.Right:
+            return { x: point.x + amount, y: point.y };
+        case Position.Bottom:
+            return { x: point.x, y: point.y + amount };
+        case Position.Left:
+            return { x: point.x - amount, y: point.y };
+    }
+}
+
+function isHorizontal(position: Position): boolean {
+    return position === Position.Left || position === Position.Right;
+}
+
+function getStepPoints(
+    source: IOffset,
+    target: IOffset,
+    sourcePosition: Position,
+    targetPosition: Position
+): IOffset[] {
+    const sourceHorizontal = isHorizontal(sourcePosition);
+    const targetHorizontal = isHorizontal(targetPosition);
+
+    if (sourceHorizontal && targetHorizontal) {
+        const midX = source.x + (target.x - source.x) / 2;
+
+        return [
+            { x: midX, y: source.y },
+            { x: midX, y: target.y }
+        ];
+    }
+
+    if (!sourceHorizontal && !targetHorizontal) {
+        const midY = source.y + (target.y - source.y) / 2;
+
+        return [
+            { x: source.x, y: midY },
+            { x: target.x, y: midY }
+        ];
+    }
+
+    return sourceHorizontal
+        ? [{ x: target.x, y: source.y }]
+        : [{ x: source.x, y: target.y }];
+}
+
+function removeDuplicates(points: IOffset[]): IOffset[] {
+    return points.filter((point, index) => {
+        if (index === 0) return true;
+
+        const previous = points[index - 1];
+
+        return previous.x !== point.x || previous.y !== point.y;
+    });
+}
+
+function removeCollinear(points: IOffset[]): IOffset[] {
+    return points.filter((point, index) => {
+        const previous = points[index - 1];
+        const next = points[index + 1];
+
+        if (previous == null || next == null) return true;
+
+        return !(
+            (previous.x === point.x && point.x === next.x) ||
+            (previous.y === point.y && point.y === next.y)
+        );
+    });
+}
+
+function getRoutePoints(
+    sourcePoint: IOffset,
+    targetPoint: IOffset,
+    sourcePosition: Position,
+    targetPosition: Position,
+    offset: number
+): IOffset[] {
+    const sourceHorizontal = isHorizontal(sourcePosition);
+    const targetHorizontal = isHorizontal(targetPosition);
+    const sourceStub = move(sourcePoint, sourcePosition, offset);
+    const targetStub = move(targetPoint, targetPosition, offset);
+
+    if (sourceHorizontal && targetHorizontal) {
+        const sourceDirection = sourcePosition === Position.Right ? 1 : -1;
+        const targetAheadOfSource = (targetStub.x - sourceStub.x) * sourceDirection >= 0;
+
+        if (targetAheadOfSource) {
+            const midX = sourceStub.x + (targetStub.x - sourceStub.x) / 2;
+
+            return [
+                sourcePoint,
+                sourceStub,
+                { x: midX, y: sourceStub.y },
+                { x: midX, y: targetStub.y },
+                targetStub,
+                targetPoint
+            ];
+        }
+
+        const midY = sourceStub.y + (targetStub.y - sourceStub.y) / 2;
+
+        return [
+            sourcePoint,
+            sourceStub,
+            { x: sourceStub.x, y: midY },
+            { x: targetStub.x, y: midY },
+            targetStub,
+            targetPoint
+        ];
+    }
+
+    if (!sourceHorizontal && !targetHorizontal) {
+        const sourceDirection = sourcePosition === Position.Bottom ? 1 : -1;
+        const targetAheadOfSource = (targetStub.y - sourceStub.y) * sourceDirection >= 0;
+
+        if (targetAheadOfSource) {
+            const midY = sourceStub.y + (targetStub.y - sourceStub.y) / 2;
+
+            return [
+                sourcePoint,
+                sourceStub,
+                { x: sourceStub.x, y: midY },
+                { x: targetStub.x, y: midY },
+                targetStub,
+                targetPoint
+            ];
+        }
+
+        const midX = sourceStub.x + (targetStub.x - sourceStub.x) / 2;
+
+        return [
+            sourcePoint,
+            sourceStub,
+            { x: midX, y: sourceStub.y },
+            { x: midX, y: targetStub.y },
+            targetStub,
+            targetPoint
+        ];
+    }
+
+    return [
+        sourcePoint,
+        sourceStub,
+        ...getStepPoints(sourceStub, targetStub, sourcePosition, targetPosition),
+        targetStub,
+        targetPoint
+    ];
+}
+
+function shortenCorner(from: IOffset, corner: IOffset, radius: number): IOffset {
+    const dx = corner.x - from.x;
+    const dy = corner.y - from.y;
+    const length = Math.sqrt(dx * dx + dy * dy);
+    const amount = Math.min(radius, length / 2);
+
+    if (length === 0) return corner;
+
+    return {
+        x: corner.x - (dx / length) * amount,
+        y: corner.y - (dy / length) * amount
+    };
+}
+
+function extendCorner(corner: IOffset, to: IOffset, radius: number): IOffset {
+    const dx = to.x - corner.x;
+    const dy = to.y - corner.y;
+    const length = Math.sqrt(dx * dx + dy * dy);
+    const amount = Math.min(radius, length / 2);
+
+    if (length === 0) return corner;
+
+    return {
+        x: corner.x + (dx / length) * amount,
+        y: corner.y + (dy / length) * amount
+    };
+}
+
+function toRoundedPath(points: IOffset[], radius: number): string {
+    const [start, ...rest] = points;
+    const commands = [`M ${start.x},${start.y}`];
+
+    rest.forEach((point, index) => {
+        const previous = points[index];
+        const next = points[index + 2];
+
+        if (next == null) {
+            commands.push(`L ${point.x},${point.y}`);
+            return;
+        }
+
+        const before = shortenCorner(previous, point, radius);
+        const after = extendCorner(point, next, radius);
+
+        commands.push(`L ${before.x},${before.y}`);
+        commands.push(`Q ${point.x},${point.y} ${after.x},${after.y}`);
+    });
+
+    return commands.join(" ");
+}
+
+export function getSmoothStep(
+    containerOffset: IOffset,
+    source: IConnectionPoint,
+    target: IConnectionPoint,
+    scale: number,
+    offset = 32,
+    radius = 14
+): string | null {
+    const sourcePoint = getOffset(containerOffset, source.offset, scale, source.buffer ?? 0);
+    const targetPoint = getOffset(containerOffset, target.offset, scale, target.buffer ?? 0);
+
+    if (sourcePoint == null || targetPoint == null) return null;
+
+    const points = removeCollinear(removeDuplicates(
+        getRoutePoints(sourcePoint, targetPoint, source.position, target.position, offset)
+    ));
+
+    return toRoundedPath(points, radius);
+}

@@ -1,6 +1,6 @@
 import * as React from "react";
 import { Position } from "../../lib/enums/Position";
-import { IConnection, IEdge, INode, NodeTypes } from "../../lib/index";
+import { EdgePathType, IConnection, IEdge, INode, NodeTypes } from "../../lib/index";
 import { NodeInspector } from "./components/NodeInspector";
 import { NodePalette } from "./components/NodePalette";
 import { TopBar } from "./components/TopBar";
@@ -59,6 +59,7 @@ export function App() {
   const [selectedKey, setSelectedKey] = React.useState<string | null>("runtime-multiplier");
   const [executionStatus, setExecutionStatus] = React.useState<"idle" | "success">("idle");
   const [lastRunLabel, setLastRunLabel] = React.useState("Idle");
+  const [edgePathType, setEdgePathType] = React.useState<EdgePathType>("smooth-step");
 
   const selectedNode = React.useMemo(
     () => nodes.find((node) => node.key === selectedKey) ?? nodes.find((node) => node.key === "runtime-multiplier") ?? null,
@@ -294,8 +295,10 @@ export function App() {
     <main className="demo-shell">
       <TopBar
         edgeCount={edges.length}
+        edgePathType={edgePathType}
         lastRunLabel={lastRunLabel}
         nodeCount={nodes.length}
+        onEdgePathTypeChange={setEdgePathType}
         onRun={runWorkflow}
         status={executionStatus}
       />
@@ -304,6 +307,7 @@ export function App() {
         <div className="workspace-column">
           <WorkflowCanvas
             containers={containers}
+            edgePathType={edgePathType}
             edges={edges}
             nodes={nodes}
             nodeTypes={nodeTypes}

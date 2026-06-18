@@ -19,7 +19,7 @@ export {
 } from "./components/shapes";
 
 export type { IConnection } from "./interfaces/IConnection";
-export type { EdgeArrow } from "./interfaces/IEdge";
+export type { EdgeArrow, EdgePathType } from "./interfaces/IEdge";
 export type { IEdge } from "./interfaces/IEdge";
 export type { IEndpoint } from "./interfaces/IEndpoint";
 export type { INode } from "./interfaces/INode";

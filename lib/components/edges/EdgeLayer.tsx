@@ -1,6 +1,8 @@
 import * as React from "react";
 import { EdgeTypes } from "../../types/EdgeTypes";
 import { getBezier } from "../../functions/getBezier";
+import { getOrthogonal } from "../../functions/getOrthogonal";
+import { getSmoothStep } from "../../functions/getSmoothStep";
 import { getEndpointPosition, getOppositePosition } from "../../functions/getEndpointPosition";
 import { IEdge } from "../../interfaces/IEdge";
 import { IEndpoint } from "../../interfaces/IEndpoint";
@@ -87,7 +89,7 @@ function getEndpointElementAtPoint(
 }
 
 export const EdgeLayer = React.forwardRef<EdgeLayerHandle, IProps>((props, ref) => {
-    const { canConnect } = useFlowKitConfig();
+    const { canConnect, edgePathType } = useFlowKitConfig();
     const containerRect = useNodeFlowViewportStore((state) => state.containerRect);
     const scale = useNodeFlowViewportStore((state) => state.scale);
     const sourceEndpoint = useNodeFlowInteractionStore((state) => state.sourceEndpoint);
@@ -209,7 +211,7 @@ export const EdgeLayer = React.forwardRef<EdgeLayerHandle, IProps>((props, ref) 
 
         setProximityTarget(targetEndpoint);
 
-        const path = getBezier(
+        const pathArgs = [
             {
                 x: currentContainerRect.left,
                 y: currentContainerRect.top
@@ -231,13 +233,19 @@ export const EdgeLayer = React.forwardRef<EdgeLayerHandle, IProps>((props, ref) 
                 buffer: 0
             },
             scaleRef.current
-        );
+        ] as const;
+        const path =
+            edgePathType === "smooth-step"
+                ? getSmoothStep(...pathArgs)
+                : edgePathType === "step"
+                    ? getOrthogonal(...pathArgs)
+                    : getBezier(...pathArgs);
 
         if (path == null) return;
 
         setDrawnEdgeVisible(true);
         drawnEdgeRef.current.setAttribute("d", path);
-    }, [getConnectionTarget, setDrawnEdgeVisible, setProximityTarget]);
+    }, [edgePathType, getConnectionTarget, setDrawnEdgeVisible, setProximityTarget]);
 
     const handlePointerRelease = React.useCallback((x: number, y: number): void => {
         const currentSourceEndpoint = sourceEndpointRef.current;

@@ -1,5 +1,5 @@
 import * as React from "react";
-import { IEdge } from "../interfaces/IEdge";
+import { EdgePathType, IEdge } from "../interfaces/IEdge";
 import { INode } from "../interfaces/INode";
 import { INodeContainer } from "../interfaces/INodeContainer";
 import { IOffset } from "../interfaces/IOffset";
@@ -32,6 +32,7 @@ export type CanConnect = (args: ICanConnectArgs) => boolean;
 
 interface FlowKitConfigContextValue {
     canConnect?: CanConnect;
+    edgePathType?: EdgePathType;
 }
 
 const FlowKitConfigContext =
@@ -116,6 +117,7 @@ interface IProps {
     children?: React.ReactNode;
     customNodeProps?: NodeComponentProps;
     canConnect?: CanConnect
+    edgePathType?: EdgePathType;
 }
 
 export const FlowKit: React.FC<IProps> = (props) => {
@@ -153,9 +155,10 @@ export const FlowKit: React.FC<IProps> = (props) => {
 
     const config = React.useMemo(
         () => ({
-            canConnect: props.canConnect
+            canConnect: props.canConnect,
+            edgePathType: props.edgePathType
         }),
-        [props.canConnect]
+        [props.canConnect, props.edgePathType]
     );
 
     const updateCanvasTransform = React.useCallback((x: number, y: number, scale: number): void => {

@@ -1,5 +1,7 @@
 import * as React from "react";
 import { getBezier } from "../../functions/getBezier";
+import { getOrthogonal } from "../../functions/getOrthogonal";
+import { getSmoothStep } from "../../functions/getSmoothStep";
 import { IEdge } from "../../interfaces/IEdge";
 import {
     useNodeFlowRenderStore,
@@ -7,6 +9,7 @@ import {
     useNodeFlowViewportStore
 } from "../NodeFlowContext";
 import { getEndpointPosition } from "../../functions/getEndpointPosition";
+import { useFlowKitConfig } from "../FlowKit";
 
 interface IProps {
     edge: IEdge<any>;
@@ -31,6 +34,7 @@ function hasTargetArrow(edge: IEdge<any>): boolean {
 
 const EdgeComponent: React.FC<IProps> = (props) =>
 {
+    const { edgePathType } = useFlowKitConfig();
     const containerRect = useNodeFlowViewportStore((state) => state.containerRect);
     const scale = useNodeFlowViewportStore((state) => state.scale);
     const selected = useNodeFlowSelectionStore((state) => state.selectedEdge?.key === props.edge.key);
@@ -77,7 +81,8 @@ const EdgeComponent: React.FC<IProps> = (props) =>
         const sourceRect = sourceElement.getBoundingClientRect();
         const targetRect = targetElement.getBoundingClientRect();
 
-        const nextPath = getBezier(
+        const pathType = currentProps.edge.pathType ?? edgePathType ?? "bezier";
+        const pathArgs = [
             {
                 x: currentContainerRect.left,
                 y: currentContainerRect.top
@@ -99,13 +104,19 @@ const EdgeComponent: React.FC<IProps> = (props) =>
                 buffer: targetRect.width
             },
             scaleRef.current
-        );
+        ] as const;
+        const nextPath =
+            pathType === "smooth-step"
+                ? getSmoothStep(...pathArgs)
+                : pathType === "step"
+                    ? getOrthogonal(...pathArgs)
+                    : getBezier(...pathArgs);
 
         if (nextPath != null)
         {
             setPath(nextPath);
         }
-    }, []);
+    }, [edgePathType]);
 
     const stopEdgeDrag = React.useCallback((e: React.MouseEvent<SVGGElement, MouseEvent>): void =>
     {

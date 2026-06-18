@@ -6,6 +6,7 @@ import {
   FlowKitGridSnap,
   FlowKitKeyboardCommands,
   FlowKitMiniMap,
+  EdgePathType,
   IConnection,
   IEdge,
   INode,
@@ -24,6 +25,7 @@ const miniMapNodeColors = {
 
 type WorkflowCanvasProps = {
   containers: WorkflowContainer[];
+  edgePathType: EdgePathType;
   edges: WorkflowEdge[];
   nodes: WorkflowNodeType[];
   nodeTypes: NodeTypes;
@@ -35,6 +37,7 @@ type WorkflowCanvasProps = {
 
 export function WorkflowCanvas({
   containers,
+  edgePathType,
   edges,
   nodes,
   nodeTypes,
@@ -48,6 +51,7 @@ export function WorkflowCanvas({
       <FlowKit
         centerOnLoad
         containers={containers}
+        edgePathType={edgePathType}
         edges={edges}
         nodes={nodes}
         nodeTypes={nodeTypes}

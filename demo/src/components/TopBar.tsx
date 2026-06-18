@@ -1,12 +1,24 @@
+import { EdgePathType } from "../../../lib/index";
+
 type TopBarProps = {
   edgeCount: number;
+  edgePathType: EdgePathType;
   lastRunLabel: string;
   nodeCount: number;
+  onEdgePathTypeChange: (pathType: EdgePathType) => void;
   onRun: () => void;
   status: "idle" | "success";
 };
 
-export function TopBar({ edgeCount, lastRunLabel, nodeCount, onRun, status }: TopBarProps) {
+export function TopBar({
+  edgeCount,
+  edgePathType,
+  lastRunLabel,
+  nodeCount,
+  onEdgePathTypeChange,
+  onRun,
+  status,
+}: TopBarProps) {
   return (
     <header className="top-bar">
       <div className="brand-lockup">
@@ -39,6 +51,24 @@ export function TopBar({ edgeCount, lastRunLabel, nodeCount, onRun, status }: To
       <div className="view-controls">
         <span>{nodeCount} nodes</span>
         <span>{edgeCount} edges</span>
+        <div className="edge-path-toggle" aria-label="Edge path style">
+          <button
+            aria-pressed={edgePathType === "bezier"}
+            className={edgePathType === "bezier" ? "active" : undefined}
+            onClick={() => onEdgePathTypeChange("bezier")}
+            type="button"
+          >
+            Bezier
+          </button>
+          <button
+            aria-pressed={edgePathType === "smooth-step"}
+            className={edgePathType === "smooth-step" ? "active" : undefined}
+            onClick={() => onEdgePathTypeChange("smooth-step")}
+            type="button"
+          >
+            Smooth
+          </button>
+        </div>
         <button className="icon-button" aria-label="Grid view" type="button">
           #
         </button>
