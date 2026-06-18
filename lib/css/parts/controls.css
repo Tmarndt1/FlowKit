@@ -1,0 +1,26 @@
+.node-flow-controls {
+    box-shadow: 0 0 2px 1px rgb(20, 20, 20);
+    position: absolute;
+    z-index: 15;
+    bottom: 10px;
+    left: 10px;
+    background: rgb(40, 40, 40);
+}
+
+.node-flow-controls > button {
+    background: gainsboro;
+    border: 0;
+    border-bottom: 1px solid white;
+    color: #151515;
+    cursor: pointer;
+    display: block;
+    font: inherit;
+    font-weight: 700;
+    min-height: 28px;
+    min-width: 28px;
+    padding: 0;
+}
+
+.node-flow-controls > button:hover {
+    background: white;
+}

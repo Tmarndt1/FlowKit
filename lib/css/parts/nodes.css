@@ -1,0 +1,28 @@
+.node-flow-node {
+    min-width: 25px;
+    min-height: 25px;
+    border: 1px solid rgb(255, 255, 255, .2);
+    border-radius: 3px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    color: gainsboro;
+    font-size: .85rem;
+    position: absolute;
+    cursor: grab;
+    pointer-events: all;
+    touch-action: none;
+    will-change: transform;
+}
+
+.node-flow-node-wrapper {
+    position: absolute;
+    cursor: grab;
+    pointer-events: all;
+    touch-action: none;
+    will-change: transform;
+}
+
+.node-flow-node-selected {
+    border: 1px solid white;
+}

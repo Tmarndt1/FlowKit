@@ -1,0 +1,25 @@
+{
+  "name": "nodeflow",
+  "version": "1.0.0",
+  "description": "A React library for building interactive node flow canvases.",
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "scripts": {
+    "build": "tsc",
+    "test": "tsc --noEmit"
+  },
+  "author": "Travis Arndt",
+  "license": "ISC",
+  "peerDependencies": {
+    "react": ">=19"
+  },
+  "devDependencies": {
+    "@types/node": "25.9.3",
+    "@types/react": "19.2.17",
+    "react": "19.2.7",
+    "typescript": "6.0.3"
+  },
+  "dependencies": {
+    "zustand": "5.0.14"
+  }
+}

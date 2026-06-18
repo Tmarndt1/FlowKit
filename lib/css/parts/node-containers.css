@@ -1,0 +1,71 @@
+.node-flow-node-container {
+    border: 1px solid rgba(118, 184, 255, .75);
+    border-radius: 6px;
+    background: rgba(48, 91, 128, .16);
+    box-sizing: border-box;
+    color: rgb(210, 232, 255);
+    font-size: .78rem;
+    left: 0;
+    min-height: 44px;
+    min-width: 80px;
+    pointer-events: none;
+    position: absolute;
+    top: 0;
+    will-change: transform;
+    z-index: 40;
+}
+
+.node-flow-node-container-drop-target {
+    background: rgba(74, 142, 103, .24);
+    border-color: rgba(96, 255, 173, .95);
+    box-shadow: inset 0 0 0 1px rgba(96, 255, 173, .42), 0 0 0 2px rgba(96, 255, 173, .14);
+}
+
+.node-flow-node-container-drop-target .node-flow-node-container-header {
+    background: rgba(47, 112, 78, .9);
+    border-bottom-color: rgba(96, 255, 173, .55);
+    color: white;
+}
+
+.node-flow-node-container-header {
+    align-items: center;
+    background: rgba(40, 76, 107, .86);
+    border-bottom: 1px solid rgba(118, 184, 255, .45);
+    box-sizing: border-box;
+    cursor: grab;
+    display: flex;
+    height: 28px;
+    padding: 0 10px;
+    pointer-events: all;
+    touch-action: none;
+}
+
+.node-flow-node-container-resize {
+    pointer-events: all;
+    position: absolute;
+    touch-action: none;
+}
+
+.node-flow-node-container-resize-east {
+    cursor: ew-resize;
+    inset: 28px -5px 10px auto;
+    width: 10px;
+}
+
+.node-flow-node-container-resize-south {
+    bottom: -5px;
+    cursor: ns-resize;
+    height: 10px;
+    left: 10px;
+    right: 10px;
+}
+
+.node-flow-node-container-resize-southeast {
+    border-bottom: 2px solid rgba(210, 232, 255, .82);
+    border-right: 2px solid rgba(210, 232, 255, .82);
+    bottom: 4px;
+    cursor: nwse-resize;
+    height: 12px;
+    right: 4px;
+    width: 12px;
+}

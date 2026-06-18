@@ -1,0 +1,31 @@
+.node-flow line {
+    stroke-linecap: round;
+}
+
+.node-flow-edge-flow {
+    stroke-dasharray: 8 4;
+    animation: edge-flow 1s linear infinite;
+}
+
+.node-flow-edge-hitbox {
+    fill: none;
+    pointer-events: stroke;
+    stroke: transparent;
+    stroke-linecap: round;
+    stroke-linejoin: round;
+    stroke-width: var(--node-flow-edge-hitbox-width, 18px);
+}
+
+.node-flow-edge-arrow {
+    fill: var(--node-flow-edge-arrow-color, #67e8f9);
+}
+
+@keyframes edge-flow {
+    from {
+        stroke-dashoffset: 0;
+    }
+
+    to {
+        stroke-dashoffset: -12;
+    }
+}

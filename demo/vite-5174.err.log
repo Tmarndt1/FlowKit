@@ -1,0 +1,254 @@
+[2m11:31:04 AM[22m [33m[1m[vite][22m[39m [33m[2m(client)[22m[39m [2m[console.warn] [22mYour app (or one of its dependencies) is using an outdated JSX transform. Update to the modern JSX transform for faster performance: https://react.dev/link/new-jsx-transform
+[2m11:32:46 AM[22m [33m[1m[vite][22m[39m [33m[2m(client)[22m[39m [2m[console.warn] [22mYour app (or one of its dependencies) is using an outdated JSX transform. Update to the modern JSX transform for faster performance: https://react.dev/link/new-jsx-transform
+[2m11:34:06 AM[22m [33m[1m[vite][22m[39m [33m[2m(client)[22m[39m [2m[console.warn] [22mYour app (or one of its dependencies) is using an outdated JSX transform. Update to the modern JSX transform for faster performance: https://react.dev/link/new-jsx-transform
+[2m11:34:07 AM[22m [33m[1m[vite][22m[39m [33m[2m(client)[22m[39m [2m[console.warn] [22mYour app (or one of its dependencies) is using an outdated JSX transform. Update to the modern JSX transform for faster performance: https://react.dev/link/new-jsx-transform
+[2m11:35:46 AM[22m [33m[1m[vite][22m[39m [33m[2m(client)[22m[39m [2m[console.warn] [22mYour app (or one of its dependencies) is using an outdated JSX transform. Update to the modern JSX transform for faster performance: https://react.dev/link/new-jsx-transform
+[2m11:38:12 AM[22m [33m[1m[vite][22m[39m [33m[2m(client)[22m[39m [2m[console.warn] [22mYour app (or one of its dependencies) is using an outdated JSX transform. Update to the modern JSX transform for faster performance: https://react.dev/link/new-jsx-transform
+[2m11:38:12 AM[22m [33m[1m[vite][22m[39m [33m[2m(client)[22m[39m [2m[console.warn] [22mYour app (or one of its dependencies) is using an outdated JSX transform. Update to the modern JSX transform for faster performance: https://react.dev/link/new-jsx-transform
+[2m11:38:14 AM[22m [31m[1m[vite][22m[39m [31m[2m(client)[22m[39m [31m[Unhandled error] [1mError[22m: Maximum update depth exceeded. This can happen when a component repeatedly calls setState inside componentWillUpdate or componentDidUpdate. React limits the number of nested updates to prevent infinite loops.
+[39m > getRootForUpdatedFiber node_modules/react-dom/cjs/react-dom-client.development.js:4624:10
+ > enqueueConcurrentRenderForLane node_modules/react-dom/cjs/react-dom-client.development.js:4588:13
+ > forceStoreRerender node_modules/react-dom/cjs/react-dom-client.development.js:8261:17
+ > node_modules/react-dom/cjs/react-dom-client.development.js:8247:10
+ > ../node_modules/zustand/vanilla.js:11:38
+ > setState ../node_modules/zustand/vanilla.js:11:16
+ > Object.notifyEndpointsChanged [as current] ../stores/NodeFlowStore.ts:174:12
+    172 |          hasContainerChangeListener: false,
+    173 |          notifyEndpointsChanged: (endpoints) =>
+    174 |              set({
+        |              ^
+    175 |                  endpointUpdate: {
+    176 |                      endpoints,
+ > HTMLDocument.<anonymous> ../components/nodes/Node.tsx:108:34
+
+[2m11:38:20 AM[22m [33m[1m[vite][22m[39m [33m[2m(client)[22m[39m [2m[console.warn] [22mYour app (or one of its dependencies) is using an outdated JSX transform. Update to the modern JSX transform for faster performance: https://react.dev/link/new-jsx-transform
+[2m11:38:21 AM[22m [33m[1m[vite][22m[39m [33m[2m(client)[22m[39m [2m[console.warn] [22mYour app (or one of its dependencies) is using an outdated JSX transform. Update to the modern JSX transform for faster performance: https://react.dev/link/new-jsx-transform
+[2m11:38:30 AM[22m [33m[1m[vite][22m[39m [33m[2m(client)[22m[39m [2m[console.warn] [22mYour app (or one of its dependencies) is using an outdated JSX transform. Update to the modern JSX transform for faster performance: https://react.dev/link/new-jsx-transform
+[2m11:38:30 AM[22m [33m[1m[vite][22m[39m [33m[2m(client)[22m[39m [2m[console.warn] [22mYour app (or one of its dependencies) is using an outdated JSX transform. Update to the modern JSX transform for faster performance: https://react.dev/link/new-jsx-transform
+[2m11:38:39 AM[22m [33m[1m[vite][22m[39m [33m[2m(client)[22m[39m [2m[console.warn] [22mYour app (or one of its dependencies) is using an outdated JSX transform. Update to the modern JSX transform for faster performance: https://react.dev/link/new-jsx-transform
+[2m11:38:39 AM[22m [33m[1m[vite][22m[39m [33m[2m(client)[22m[39m [2m[console.warn] [22mYour app (or one of its dependencies) is using an outdated JSX transform. Update to the modern JSX transform for faster performance: https://react.dev/link/new-jsx-transform
+[2m11:39:22 AM[22m [33m[1m[vite][22m[39m [33m[2m(client)[22m[39m [2m[console.warn] [22mYour app (or one of its dependencies) is using an outdated JSX transform. Update to the modern JSX transform for faster performance: https://react.dev/link/new-jsx-transform
+[2m11:39:28 AM[22m [31m[1m[vite][22m[39m [31m[2m(client)[22m[39m [31m[Unhandled error] [1mError[22m: Maximum update depth exceeded. This can happen when a component repeatedly calls setState inside componentWillUpdate or componentDidUpdate. React limits the number of nested updates to prevent infinite loops.
+[39m > getRootForUpdatedFiber node_modules/react-dom/cjs/react-dom-client.development.js:4624:10
+ > enqueueConcurrentRenderForLane node_modules/react-dom/cjs/react-dom-client.development.js:4588:13
+ > forceStoreRerender node_modules/react-dom/cjs/react-dom-client.development.js:8261:17
+ > node_modules/react-dom/cjs/react-dom-client.development.js:8247:10
+ > ../node_modules/zustand/vanilla.js:11:38
+ > setState ../node_modules/zustand/vanilla.js:11:16
+ > Object.notifyEndpointsChanged [as current] ../stores/NodeFlowStore.ts:174:12
+    172 |          hasContainerChangeListener: false,
+    173 |          notifyEndpointsChanged: (endpoints) =>
+    174 |              set({
+        |              ^
+    175 |                  endpointUpdate: {
+    176 |                      endpoints,
+ > HTMLDocument.<anonymous> ../components/nodes/Node.tsx:108:34
+
+[2m11:41:31 AM[22m [33m[1m[vite][22m[39m [33m[2m(client)[22m[39m [2m[console.warn] [22mYour app (or one of its dependencies) is using an outdated JSX transform. Update to the modern JSX transform for faster performance: https://react.dev/link/new-jsx-transform
+[2m11:43:07 AM[22m [33m[1m[vite][22m[39m [33m[2m(client)[22m[39m [2m[console.warn] [22mYour app (or one of its dependencies) is using an outdated JSX transform. Update to the modern JSX transform for faster performance: https://react.dev/link/new-jsx-transform
+[2m11:43:07 AM[22m [33m[1m[vite][22m[39m [33m[2m(client)[22m[39m [2m[console.warn] [22mYour app (or one of its dependencies) is using an outdated JSX transform. Update to the modern JSX transform for faster performance: https://react.dev/link/new-jsx-transform
+[2m11:43:09 AM[22m [31m[1m[vite][22m[39m [31m[2m(client)[22m[39m [31m[Unhandled error] [1mError[22m: Maximum update depth exceeded. This can happen when a component repeatedly calls setState inside componentWillUpdate or componentDidUpdate. React limits the number of nested updates to prevent infinite loops.
+[39m > getRootForUpdatedFiber node_modules/react-dom/cjs/react-dom-client.development.js:4624:10
+ > enqueueConcurrentRenderForLane node_modules/react-dom/cjs/react-dom-client.development.js:4588:13
+ > forceStoreRerender node_modules/react-dom/cjs/react-dom-client.development.js:8261:17
+ > node_modules/react-dom/cjs/react-dom-client.development.js:8247:10
+ > ../node_modules/zustand/vanilla.js:11:38
+ > setState ../node_modules/zustand/vanilla.js:11:16
+ > Object.notifyEndpointsChanged [as current] ../stores/NodeFlowStore.ts:174:12
+    172 |          hasContainerChangeListener: false,
+    173 |          notifyEndpointsChanged: (endpoints) =>
+    174 |              set({
+        |              ^
+    175 |                  endpointUpdate: {
+    176 |                      endpoints,
+ > HTMLDocument.<anonymous> ../components/nodes/Node.tsx:108:34
+
+[2m11:43:22 AM[22m [31m[1m[vite][22m[39m [31m[2m(client)[22m[39m [31m[Unhandled error] [1mError[22m: Maximum update depth exceeded. This can happen when a component repeatedly calls setState inside componentWillUpdate or componentDidUpdate. React limits the number of nested updates to prevent infinite loops.
+[39m > getRootForUpdatedFiber node_modules/react-dom/cjs/react-dom-client.development.js:4624:10
+ > enqueueConcurrentRenderForLane node_modules/react-dom/cjs/react-dom-client.development.js:4588:13
+ > forceStoreRerender node_modules/react-dom/cjs/react-dom-client.development.js:8261:17
+ > node_modules/react-dom/cjs/react-dom-client.development.js:8247:10
+ > ../node_modules/zustand/vanilla.js:11:38
+ > setState ../node_modules/zustand/vanilla.js:11:16
+ > Object.notifyEndpointsChanged [as current] ../stores/NodeFlowStore.ts:174:12
+    172 |          hasContainerChangeListener: false,
+    173 |          notifyEndpointsChanged: (endpoints) =>
+    174 |              set({
+        |              ^
+    175 |                  endpointUpdate: {
+    176 |                      endpoints,
+ > HTMLDocument.<anonymous> ../components/nodes/Node.tsx:108:34
+
+[2m11:43:22 AM[22m [31m[1m[vite][22m[39m [31m[2m(client)[22m[39m [31m[Unhandled error] [1mError[22m: Maximum update depth exceeded. This can happen when a component repeatedly calls setState inside componentWillUpdate or componentDidUpdate. React limits the number of nested updates to prevent infinite loops.
+[39m > getRootForUpdatedFiber node_modules/react-dom/cjs/react-dom-client.development.js:4624:10
+ > enqueueConcurrentRenderForLane node_modules/react-dom/cjs/react-dom-client.development.js:4588:13
+ > forceStoreRerender node_modules/react-dom/cjs/react-dom-client.development.js:8261:17
+ > node_modules/react-dom/cjs/react-dom-client.development.js:8247:10
+ > ../node_modules/zustand/vanilla.js:11:38
+ > setState ../node_modules/zustand/vanilla.js:11:16
+ > Object.notifyEndpointsChanged [as current] ../stores/NodeFlowStore.ts:174:12
+    172 |          hasContainerChangeListener: false,
+    173 |          notifyEndpointsChanged: (endpoints) =>
+    174 |              set({
+        |              ^
+    175 |                  endpointUpdate: {
+    176 |                      endpoints,
+ > HTMLDocument.<anonymous> ../components/nodes/Node.tsx:108:34
+
+[31mUnable to resolve `@import "./parts/core.css"` from C:/Users/tmarn/Projects/NodeFlow/css[39m
+[2m11:45:14 AM[22m [31m[1m[vite][22m[39m [31mInternal server error: [postcss] ENOENT: no such file or directory, open 'C:\Users\tmarn\Projects\NodeFlow\demo\parts\core.css'[39m
+  Plugin: [35mvite:css[39m
+  File: [36mC:/Users/tmarn/Projects/NodeFlow/css/node-flow.css[39m:undefined:NaN
+      at async open (node:internal/fs/promises:640:25)
+      at async Object.readFile (node:internal/fs/promises:1283:14)
+      at async Object.load (file:///C:/Users/tmarn/Projects/NodeFlow/demo/node_modules/vite/dist/node/chunks/node.js:21112:17)
+      at async loadImportContent (file:///C:/Users/tmarn/Projects/NodeFlow/demo/node_modules/vite/dist/node/chunks/postcss-import.js:392:19)
+      at async Promise.all (index 0)
+      at async resolveImportId (file:///C:/Users/tmarn/Projects/NodeFlow/demo/node_modules/vite/dist/node/chunks/postcss-import.js:378:20)
+      at async parseStyles (file:///C:/Users/tmarn/Projects/NodeFlow/demo/node_modules/vite/dist/node/chunks/postcss-import.js:331:4)
+      at async Object.Once (file:///C:/Users/tmarn/Projects/NodeFlow/demo/node_modules/vite/dist/node/chunks/postcss-import.js:455:20)
+      at async LazyResult.runAsync (C:\Users\tmarn\Projects\NodeFlow\demo\node_modules\postcss\lib\lazy-result.js:293:11)
+      at async runPostCSS (file:///C:/Users/tmarn/Projects/NodeFlow/demo/node_modules/vite/dist/node/chunks/node.js:21166:19)
+[2m11:45:14 AM[22m [31m[1m[vite][22m[39m [31m[2m(client)[22m[39m [2m[console.error] [22m[vite] Failed to reload /@fs/C:/Users/tmarn/Projects/NodeFlow/css/node-flow.css. This could be due to syntax errors or importing non-existent modules. (see errors above)
+[31mUnable to resolve `@import "./parts/core.css"` from C:/Users/tmarn/Projects/NodeFlow/css[39m
+[2m11:45:14 AM[22m [31m[1m[vite][22m[39m [31mInternal server error: [postcss] ENOENT: no such file or directory, open 'C:\Users\tmarn\Projects\NodeFlow\demo\parts\core.css'[39m
+  Plugin: [35mvite:css[39m
+  File: [36mC:/Users/tmarn/Projects/NodeFlow/css/node-flow.css[39m:undefined:NaN
+      at async open (node:internal/fs/promises:640:25)
+      at async Object.readFile (node:internal/fs/promises:1283:14)
+      at async Object.load (file:///C:/Users/tmarn/Projects/NodeFlow/demo/node_modules/vite/dist/node/chunks/node.js:21112:17)
+      at async loadImportContent (file:///C:/Users/tmarn/Projects/NodeFlow/demo/node_modules/vite/dist/node/chunks/postcss-import.js:392:19)
+      at async Promise.all (index 0)
+      at async resolveImportId (file:///C:/Users/tmarn/Projects/NodeFlow/demo/node_modules/vite/dist/node/chunks/postcss-import.js:378:20)
+      at async parseStyles (file:///C:/Users/tmarn/Projects/NodeFlow/demo/node_modules/vite/dist/node/chunks/postcss-import.js:331:4)
+      at async Object.Once (file:///C:/Users/tmarn/Projects/NodeFlow/demo/node_modules/vite/dist/node/chunks/postcss-import.js:455:20)
+      at async LazyResult.runAsync (C:\Users\tmarn\Projects\NodeFlow\demo\node_modules\postcss\lib\lazy-result.js:293:11)
+      at async runPostCSS (file:///C:/Users/tmarn/Projects/NodeFlow/demo/node_modules/vite/dist/node/chunks/node.js:21166:19)
+[2m11:45:14 AM[22m [31m[1m[vite][22m[39m [31m[2m(client)[22m[39m [2m[console.error] [22m[vite] Failed to reload /@fs/C:/Users/tmarn/Projects/NodeFlow/css/node-flow.css. This could be due to syntax errors or importing non-existent modules. (see errors above)
+[31mUnable to resolve `@import "./parts/core.css"` from C:/Users/tmarn/Projects/NodeFlow/css[39m
+[2m11:45:14 AM[22m [31m[1m[vite][22m[39m [31mInternal server error: [postcss] ENOENT: no such file or directory, open 'C:\Users\tmarn\Projects\NodeFlow\demo\parts\core.css'[39m
+  Plugin: [35mvite:css[39m
+  File: [36mC:/Users/tmarn/Projects/NodeFlow/css/node-flow.css[39m:undefined:NaN
+      at async open (node:internal/fs/promises:640:25)
+      at async Object.readFile (node:internal/fs/promises:1283:14)
+      at async Object.load (file:///C:/Users/tmarn/Projects/NodeFlow/demo/node_modules/vite/dist/node/chunks/node.js:21112:17)
+      at async loadImportContent (file:///C:/Users/tmarn/Projects/NodeFlow/demo/node_modules/vite/dist/node/chunks/postcss-import.js:392:19)
+      at async Promise.all (index 0)
+      at async resolveImportId (file:///C:/Users/tmarn/Projects/NodeFlow/demo/node_modules/vite/dist/node/chunks/postcss-import.js:378:20)
+      at async parseStyles (file:///C:/Users/tmarn/Projects/NodeFlow/demo/node_modules/vite/dist/node/chunks/postcss-import.js:331:4)
+      at async Object.Once (file:///C:/Users/tmarn/Projects/NodeFlow/demo/node_modules/vite/dist/node/chunks/postcss-import.js:455:20)
+      at async LazyResult.runAsync (C:\Users\tmarn\Projects\NodeFlow\demo\node_modules\postcss\lib\lazy-result.js:293:11)
+      at async runPostCSS (file:///C:/Users/tmarn/Projects/NodeFlow/demo/node_modules/vite/dist/node/chunks/node.js:21166:19)
+[2m11:45:14 AM[22m [31m[1m[vite][22m[39m [31m[2m(client)[22m[39m [2m[console.error] [22m[vite] Failed to reload /@fs/C:/Users/tmarn/Projects/NodeFlow/css/node-flow.css. This could be due to syntax errors or importing non-existent modules. (see errors above)
+[31mUnable to resolve `@import "./parts/core.css"` from C:/Users/tmarn/Projects/NodeFlow/css[39m
+[2m11:45:14 AM[22m [31m[1m[vite][22m[39m [31mInternal server error: [postcss] ENOENT: no such file or directory, open 'C:\Users\tmarn\Projects\NodeFlow\demo\parts\core.css'[39m
+  Plugin: [35mvite:css[39m
+  File: [36mC:/Users/tmarn/Projects/NodeFlow/css/node-flow.css[39m:undefined:NaN
+      at async open (node:internal/fs/promises:640:25)
+      at async Object.readFile (node:internal/fs/promises:1283:14)
+      at async Object.load (file:///C:/Users/tmarn/Projects/NodeFlow/demo/node_modules/vite/dist/node/chunks/node.js:21112:17)
+      at async loadImportContent (file:///C:/Users/tmarn/Projects/NodeFlow/demo/node_modules/vite/dist/node/chunks/postcss-import.js:392:19)
+      at async Promise.all (index 0)
+      at async resolveImportId (file:///C:/Users/tmarn/Projects/NodeFlow/demo/node_modules/vite/dist/node/chunks/postcss-import.js:378:20)
+      at async parseStyles (file:///C:/Users/tmarn/Projects/NodeFlow/demo/node_modules/vite/dist/node/chunks/postcss-import.js:331:4)
+      at async Object.Once (file:///C:/Users/tmarn/Projects/NodeFlow/demo/node_modules/vite/dist/node/chunks/postcss-import.js:455:20)
+      at async LazyResult.runAsync (C:\Users\tmarn\Projects\NodeFlow\demo\node_modules\postcss\lib\lazy-result.js:293:11)
+      at async runPostCSS (file:///C:/Users/tmarn/Projects/NodeFlow/demo/node_modules/vite/dist/node/chunks/node.js:21166:19)
+[2m11:45:14 AM[22m [31m[1m[vite][22m[39m [31m[2m(client)[22m[39m [2m[console.error] [22m[vite] Failed to reload /@fs/C:/Users/tmarn/Projects/NodeFlow/css/node-flow.css. This could be due to syntax errors or importing non-existent modules. (see errors above)
+[31mUnable to resolve `@import "./parts/core.css"` from C:/Users/tmarn/Projects/NodeFlow/css[39m
+[2m12:01:13 PM[22m [31m[1m[vite][22m[39m [31m[2m(client)[22m[39m Pre-transform error: [postcss] ENOENT: no such file or directory, open 'C:\Users\tmarn\Projects\NodeFlow\demo\parts\core.css'
+  Plugin: [35mvite:css[39m
+  File: [36mC:/Users/tmarn/Projects/NodeFlow/css/node-flow.css[39m:undefined:NaN
+[31mUnable to resolve `@import "./parts/core.css"` from C:/Users/tmarn/Projects/NodeFlow/css[39m
+[2m12:01:13 PM[22m [31m[1m[vite][22m[39m [31mInternal server error: [postcss] ENOENT: no such file or directory, open 'C:\Users\tmarn\Projects\NodeFlow\demo\parts\core.css'[39m
+  Plugin: [35mvite:css[39m
+  File: [36mC:/Users/tmarn/Projects/NodeFlow/css/node-flow.css[39m:undefined:NaN
+      at async open (node:internal/fs/promises:640:25)
+      at async Object.readFile (node:internal/fs/promises:1283:14)
+      at async Object.load (file:///C:/Users/tmarn/Projects/NodeFlow/demo/node_modules/vite/dist/node/chunks/node.js:21112:17)
+      at async loadImportContent (file:///C:/Users/tmarn/Projects/NodeFlow/demo/node_modules/vite/dist/node/chunks/postcss-import.js:392:19)
+      at async Promise.all (index 0)
+      at async resolveImportId (file:///C:/Users/tmarn/Projects/NodeFlow/demo/node_modules/vite/dist/node/chunks/postcss-import.js:378:20)
+      at async parseStyles (file:///C:/Users/tmarn/Projects/NodeFlow/demo/node_modules/vite/dist/node/chunks/postcss-import.js:331:4)
+      at async Object.Once (file:///C:/Users/tmarn/Projects/NodeFlow/demo/node_modules/vite/dist/node/chunks/postcss-import.js:455:20)
+      at async LazyResult.runAsync (C:\Users\tmarn\Projects\NodeFlow\demo\node_modules\postcss\lib\lazy-result.js:293:11)
+      at async runPostCSS (file:///C:/Users/tmarn/Projects/NodeFlow/demo/node_modules/vite/dist/node/chunks/node.js:21166:19)
+[31mUnable to resolve `@import "./parts/core.css"` from C:/Users/tmarn/Projects/NodeFlow/css[39m
+[2m12:01:34 PM[22m [31m[1m[vite][22m[39m [31mInternal server error: [postcss] ENOENT: no such file or directory, open 'C:\Users\tmarn\Projects\NodeFlow\demo\parts\core.css'[39m
+  Plugin: [35mvite:css[39m
+  File: [36mC:/Users/tmarn/Projects/NodeFlow/css/node-flow.css[39m:undefined:NaN
+      at async open (node:internal/fs/promises:640:25)
+      at async Object.readFile (node:internal/fs/promises:1283:14)
+      at async Object.load (file:///C:/Users/tmarn/Projects/NodeFlow/demo/node_modules/vite/dist/node/chunks/node.js:21112:17)
+      at async loadImportContent (file:///C:/Users/tmarn/Projects/NodeFlow/demo/node_modules/vite/dist/node/chunks/postcss-import.js:392:19)
+      at async Promise.all (index 0)
+      at async resolveImportId (file:///C:/Users/tmarn/Projects/NodeFlow/demo/node_modules/vite/dist/node/chunks/postcss-import.js:378:20)
+      at async parseStyles (file:///C:/Users/tmarn/Projects/NodeFlow/demo/node_modules/vite/dist/node/chunks/postcss-import.js:331:4)
+      at async Object.Once (file:///C:/Users/tmarn/Projects/NodeFlow/demo/node_modules/vite/dist/node/chunks/postcss-import.js:455:20)
+      at async LazyResult.runAsync (C:\Users\tmarn\Projects\NodeFlow\demo\node_modules\postcss\lib\lazy-result.js:293:11)
+      at async runPostCSS (file:///C:/Users/tmarn/Projects/NodeFlow/demo/node_modules/vite/dist/node/chunks/node.js:21166:19)
+[31mUnable to resolve `@import "./parts/core.css"` from C:/Users/tmarn/Projects/NodeFlow/css[39m
+[2m12:01:56 PM[22m [31m[1m[vite][22m[39m [31mInternal server error: [postcss] ENOENT: no such file or directory, open 'C:\Users\tmarn\Projects\NodeFlow\demo\parts\core.css'[39m
+  Plugin: [35mvite:css[39m
+  File: [36mC:/Users/tmarn/Projects/NodeFlow/css/node-flow.css[39m:undefined:NaN
+      at async open (node:internal/fs/promises:640:25)
+      at async Object.readFile (node:internal/fs/promises:1283:14)
+      at async Object.load (file:///C:/Users/tmarn/Projects/NodeFlow/demo/node_modules/vite/dist/node/chunks/node.js:21112:17)
+      at async loadImportContent (file:///C:/Users/tmarn/Projects/NodeFlow/demo/node_modules/vite/dist/node/chunks/postcss-import.js:392:19)
+      at async Promise.all (index 0)
+      at async resolveImportId (file:///C:/Users/tmarn/Projects/NodeFlow/demo/node_modules/vite/dist/node/chunks/postcss-import.js:378:20)
+      at async parseStyles (file:///C:/Users/tmarn/Projects/NodeFlow/demo/node_modules/vite/dist/node/chunks/postcss-import.js:331:4)
+      at async Object.Once (file:///C:/Users/tmarn/Projects/NodeFlow/demo/node_modules/vite/dist/node/chunks/postcss-import.js:455:20)
+      at async LazyResult.runAsync (C:\Users\tmarn\Projects\NodeFlow\demo\node_modules\postcss\lib\lazy-result.js:293:11)
+      at async runPostCSS (file:///C:/Users/tmarn/Projects/NodeFlow/demo/node_modules/vite/dist/node/chunks/node.js:21166:19)
+[31mUnable to resolve `@import "./parts/core.css"` from C:/Users/tmarn/Projects/NodeFlow/css[39m
+[2m12:01:56 PM[22m [31m[1m[vite][22m[39m [31mInternal server error: [postcss] ENOENT: no such file or directory, open 'C:\Users\tmarn\Projects\NodeFlow\demo\parts\core.css'[39m
+  Plugin: [35mvite:css[39m
+  File: [36mC:/Users/tmarn/Projects/NodeFlow/css/node-flow.css[39m:undefined:NaN
+      at async open (node:internal/fs/promises:640:25)
+      at async Object.readFile (node:internal/fs/promises:1283:14)
+      at async Object.load (file:///C:/Users/tmarn/Projects/NodeFlow/demo/node_modules/vite/dist/node/chunks/node.js:21112:17)
+      at async loadImportContent (file:///C:/Users/tmarn/Projects/NodeFlow/demo/node_modules/vite/dist/node/chunks/postcss-import.js:392:19)
+      at async Promise.all (index 0)
+      at async resolveImportId (file:///C:/Users/tmarn/Projects/NodeFlow/demo/node_modules/vite/dist/node/chunks/postcss-import.js:378:20)
+      at async parseStyles (file:///C:/Users/tmarn/Projects/NodeFlow/demo/node_modules/vite/dist/node/chunks/postcss-import.js:331:4)
+      at async Object.Once (file:///C:/Users/tmarn/Projects/NodeFlow/demo/node_modules/vite/dist/node/chunks/postcss-import.js:455:20)
+      at async LazyResult.runAsync (C:\Users\tmarn\Projects\NodeFlow\demo\node_modules\postcss\lib\lazy-result.js:293:11)
+      at async runPostCSS (file:///C:/Users/tmarn/Projects/NodeFlow/demo/node_modules/vite/dist/node/chunks/node.js:21166:19)
+[31mUnable to resolve `@import "./parts/core.css"` from C:/Users/tmarn/Projects/NodeFlow/css[39m
+[2m12:02:06 PM[22m [31m[1m[vite][22m[39m [31mInternal server error: [postcss] ENOENT: no such file or directory, open 'C:\Users\tmarn\Projects\NodeFlow\demo\parts\core.css'[39m
+  Plugin: [35mvite:css[39m
+  File: [36mC:/Users/tmarn/Projects/NodeFlow/css/node-flow.css[39m:undefined:NaN
+      at async open (node:internal/fs/promises:640:25)
+      at async Object.readFile (node:internal/fs/promises:1283:14)
+      at async Object.load (file:///C:/Users/tmarn/Projects/NodeFlow/demo/node_modules/vite/dist/node/chunks/node.js:21112:17)
+      at async loadImportContent (file:///C:/Users/tmarn/Projects/NodeFlow/demo/node_modules/vite/dist/node/chunks/postcss-import.js:392:19)
+      at async Promise.all (index 0)
+      at async resolveImportId (file:///C:/Users/tmarn/Projects/NodeFlow/demo/node_modules/vite/dist/node/chunks/postcss-import.js:378:20)
+      at async parseStyles (file:///C:/Users/tmarn/Projects/NodeFlow/demo/node_modules/vite/dist/node/chunks/postcss-import.js:331:4)
+      at async Object.Once (file:///C:/Users/tmarn/Projects/NodeFlow/demo/node_modules/vite/dist/node/chunks/postcss-import.js:455:20)
+      at async LazyResult.runAsync (C:\Users\tmarn\Projects\NodeFlow\demo\node_modules\postcss\lib\lazy-result.js:293:11)
+      at async runPostCSS (file:///C:/Users/tmarn/Projects/NodeFlow/demo/node_modules/vite/dist/node/chunks/node.js:21166:19)
+[31mUnable to resolve `@import "./parts/core.css"` from C:/Users/tmarn/Projects/NodeFlow/css[39m
+[2m12:03:20 PM[22m [31m[1m[vite][22m[39m [31mInternal server error: [postcss] ENOENT: no such file or directory, open 'C:\Users\tmarn\Projects\NodeFlow\demo\parts\core.css'[39m
+  Plugin: [35mvite:css[39m
+  File: [36mC:/Users/tmarn/Projects/NodeFlow/css/node-flow.css[39m:undefined:NaN
+      at async open (node:internal/fs/promises:640:25)
+      at async Object.readFile (node:internal/fs/promises:1283:14)
+      at async Object.load (file:///C:/Users/tmarn/Projects/NodeFlow/demo/node_modules/vite/dist/node/chunks/node.js:21112:17)
+      at async loadImportContent (file:///C:/Users/tmarn/Projects/NodeFlow/demo/node_modules/vite/dist/node/chunks/postcss-import.js:392:19)
+      at async Promise.all (index 0)
+      at async resolveImportId (file:///C:/Users/tmarn/Projects/NodeFlow/demo/node_modules/vite/dist/node/chunks/postcss-import.js:378:20)
+      at async parseStyles (file:///C:/Users/tmarn/Projects/NodeFlow/demo/node_modules/vite/dist/node/chunks/postcss-import.js:331:4)
+      at async Object.Once (file:///C:/Users/tmarn/Projects/NodeFlow/demo/node_modules/vite/dist/node/chunks/postcss-import.js:455:20)
+      at async LazyResult.runAsync (C:\Users\tmarn\Projects\NodeFlow\demo\node_modules\postcss\lib\lazy-result.js:293:11)
+      at async runPostCSS (file:///C:/Users/tmarn/Projects/NodeFlow/demo/node_modules/vite/dist/node/chunks/node.js:21166:19)
+[2m12:04:25 PM[22m [33m[1m[vite][22m[39m [33m[2m(client)[22m[39m [2m[console.warn] [22mYour app (or one of its dependencies) is using an outdated JSX transform. Update to the modern JSX transform for faster performance: https://react.dev/link/new-jsx-transform
+[2m12:04:25 PM[22m [33m[1m[vite][22m[39m [33m[2m(client)[22m[39m [2m[console.warn] [22mYour app (or one of its dependencies) is using an outdated JSX transform. Update to the modern JSX transform for faster performance: https://react.dev/link/new-jsx-transform
+[2m12:07:07 PM[22m [33m[1m[vite][22m[39m [33m[2m(client)[22m[39m [2m[console.warn] [22mYour app (or one of its dependencies) is using an outdated JSX transform. Update to the modern JSX transform for faster performance: https://react.dev/link/new-jsx-transform
+[2m12:07:08 PM[22m [33m[1m[vite][22m[39m [33m[2m(client)[22m[39m [2m[console.warn] [22mYour app (or one of its dependencies) is using an outdated JSX transform. Update to the modern JSX transform for faster performance: https://react.dev/link/new-jsx-transform
+[2m12:07:23 PM[22m [33m[1m[vite][22m[39m [33m[2m(client)[22m[39m [2m[console.warn] [22mYour app (or one of its dependencies) is using an outdated JSX transform. Update to the modern JSX transform for faster performance: https://react.dev/link/new-jsx-transform
+[2m12:07:23 PM[22m [33m[1m[vite][22m[39m [33m[2m(client)[22m[39m [2m[console.warn] [22mYour app (or one of its dependencies) is using an outdated JSX transform. Update to the modern JSX transform for faster performance: https://react.dev/link/new-jsx-transform
+[2m12:07:40 PM[22m [33m[1m[vite][22m[39m [33m[2m(client)[22m[39m [2m[console.warn] [22mYour app (or one of its dependencies) is using an outdated JSX transform. Update to the modern JSX transform for faster performance: https://react.dev/link/new-jsx-transform
+[2m12:07:40 PM[22m [33m[1m[vite][22m[39m [33m[2m(client)[22m[39m [2m[console.warn] [22mYour app (or one of its dependencies) is using an outdated JSX transform. Update to the modern JSX transform for faster performance: https://react.dev/link/new-jsx-transform
+[2m12:08:19 PM[22m [33m[1m[vite][22m[39m [33m[2m(client)[22m[39m [2m[console.warn] [22mYour app (or one of its dependencies) is using an outdated JSX transform. Update to the modern JSX transform for faster performance: https://react.dev/link/new-jsx-transform

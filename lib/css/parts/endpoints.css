@@ -1,0 +1,9 @@
+.node-flow-endpoint {
+    pointer-events: all;
+    touch-action: none;
+}
+
+.node-flow-endpoint-proximity-target {
+    filter: drop-shadow(0 0 8px rgba(103, 232, 249, .95));
+    transform: scale(1.35);
+}
