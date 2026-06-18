@@ -14,12 +14,37 @@ import {
     createNodeFlowStores,
     NodeFlowStores,
 } from "../stores/NodeFlowStore";
+import { IEndpoint } from "../interfaces/IEndpoint";
 
 export { useNodeFlowSelection } from "./NodeFlowContext";
 export { useNodeFlowSelectionChange } from "./FlowKitEvents";
 
 function getTransformValue(x: number, y: number, scale: number): string {
     return `translate(${x}px, ${y}px) scale(${scale})`;
+}
+
+export interface ICanConnectArgs {
+    source: IEndpoint<any>;
+    target: IEndpoint<any>;
+}
+
+export type CanConnect = (args: ICanConnectArgs) => boolean;
+
+interface FlowKitConfigContextValue {
+    canConnect?: CanConnect;
+}
+
+const FlowKitConfigContext =
+    React.createContext<FlowKitConfigContextValue | null>(null);
+
+export function useFlowKitConfig(): FlowKitConfigContextValue {
+    const context = React.useContext(FlowKitConfigContext);
+
+    if (context == null) {
+        throw new Error("useFlowKitConfig must be used inside FlowKit.");
+    }
+
+    return context;
 }
 
 function setTransform(
@@ -90,6 +115,7 @@ interface IProps {
     proximityConnect?: boolean | ProximityConnectOptions;
     children?: React.ReactNode;
     customNodeProps?: NodeComponentProps;
+    canConnect?: CanConnect
 }
 
 export const FlowKit: React.FC<IProps> = (props) => {
@@ -124,6 +150,13 @@ export const FlowKit: React.FC<IProps> = (props) => {
     const renderStore = stores.render;
     propsRef.current = props;
     stateRef.current = { nodes: props.nodes, edges: props.edges };
+
+    const config = React.useMemo(
+        () => ({
+            canConnect: props.canConnect
+        }),
+        [props.canConnect]
+    );
 
     const updateCanvasTransform = React.useCallback((x: number, y: number, scale: number): void => {
         setTransform(contentRef.current, x, y, scale);
@@ -377,37 +410,39 @@ export const FlowKit: React.FC<IProps> = (props) => {
 
     return (
         <NodeFlowContext.Provider value={stores}>
-            <FlowKitControlsContext.Provider value={controls}>
-                <div className="node-flow" style={props.style}>
-                    <div
-                        className="node-flow-viewport"
-                        onWheel={(event) => onZoom(event.deltaY > 0)}
-                        ref={viewportRef}
-                        onMouseDown={onMouseDown}
-                        onMouseUp={onMouseUp}
-                        onMouseMove={onMouseMove}
-                        onPointerMove={onPointerMove}
-                    >
-                        {props.children}
-                        <div className="node-flow-content" ref={contentRef}>
-                            <EdgeLayer
-                                ref={edgeLayerRef}
-                                edges={props.edges}
-                                edgeTypes={props.edgeTypes}
-                                nodes={props.nodes}
-                                proximityConnect={props.proximityConnect}
-                            />
-                            <NodesLayer
-                                ref={nodesLayerRef}
-                                containers={props.containers}
-                                customNodeProps={props.customNodeProps}
-                                nodeTypes={props.nodeTypes}
-                                nodes={props.nodes}
-                            />
+            <FlowKitConfigContext.Provider value={config}>
+                <FlowKitControlsContext.Provider value={controls}>
+                    <div className="node-flow" style={props.style}>
+                        <div
+                            className="node-flow-viewport"
+                            onWheel={(event) => onZoom(event.deltaY > 0)}
+                            ref={viewportRef}
+                            onMouseDown={onMouseDown}
+                            onMouseUp={onMouseUp}
+                            onMouseMove={onMouseMove}
+                            onPointerMove={onPointerMove}
+                        >
+                            {props.children}
+                            <div className="node-flow-content" ref={contentRef}>
+                                <EdgeLayer
+                                    ref={edgeLayerRef}
+                                    edges={props.edges}
+                                    edgeTypes={props.edgeTypes}
+                                    nodes={props.nodes}
+                                    proximityConnect={props.proximityConnect}
+                                />
+                                <NodesLayer
+                                    ref={nodesLayerRef}
+                                    containers={props.containers}
+                                    customNodeProps={props.customNodeProps}
+                                    nodeTypes={props.nodeTypes}
+                                    nodes={props.nodes}
+                                />
+                            </div>
                         </div>
                     </div>
-                </div>
-            </FlowKitControlsContext.Provider>
+                </FlowKitControlsContext.Provider>
+            </FlowKitConfigContext.Provider>
         </NodeFlowContext.Provider>
     );
 };

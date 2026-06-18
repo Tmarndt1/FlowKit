@@ -6,6 +6,7 @@ import {
 	useNodeFlowInteractionStore,
 	useNodeFlowSelectionStore,
 } from "../NodeFlowContext";
+import { useFlowKitConfig } from "../FlowKit";
 
 enum IsValid {
 	None,
@@ -18,7 +19,6 @@ interface IProps {
 	endpoint: IEndpoint<any>;
 	style?: React.CSSProperties;
 	className?: string;
-	isValidConnection?: (connection: IEndpointConnection) => boolean;
 	canDrop?: () => boolean;
 	canDrag?: () => boolean;
 }
@@ -29,6 +29,7 @@ interface IState {
 }
 
 export const Endpoint: React.FC<IProps> = (props) => {
+	const { canConnect } = useFlowKitConfig();
 	const stores = React.useContext(NodeFlowContext);
 	const sourceEndpoint = useNodeFlowInteractionStore((state) => state.sourceEndpoint);
 	const edgeSelected = useNodeFlowSelectionStore(
@@ -63,12 +64,11 @@ export const Endpoint: React.FC<IProps> = (props) => {
 
 	const releaseEdge = (): void => {
         const currentSourceEndpoint = stores?.interaction.getState().sourceEndpoint;
-        const isValidConnection = props.isValidConnection ?? props.endpoint.isValidConnection;
 
 		if (
             currentSourceEndpoint != null &&
             state.valid !== IsValid.False &&
-            isValidConnection?.({
+            canConnect?.({
                 source: currentSourceEndpoint.endpoint,
                 target: props.endpoint,
             }) !== false
@@ -119,11 +119,10 @@ export const Endpoint: React.FC<IProps> = (props) => {
 				valid: IsValid.False,
 				usable: false,
 			}));
-		} else if (creatingEdge && typeof (props.isValidConnection ?? props.endpoint.isValidConnection) === "function") {
+		} else if (creatingEdge && typeof (canConnect) === "function") {
 			if (sourceEndpoint == null) return;
 
-            const isValidConnection = props.isValidConnection ?? props.endpoint.isValidConnection;
-			const valid: IsValid = isValidConnection?.({
+			const valid: IsValid = canConnect?.({
 				source: sourceEndpoint.endpoint,
 				target: props.endpoint,
 			}) ? IsValid.True : IsValid.False;

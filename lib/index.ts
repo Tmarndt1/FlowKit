@@ -1,4 +1,4 @@
-export { FlowKit as NodeFlow, useNodeFlowSelection, useNodeFlowSelectionChange } from "./components/FlowKit";
+export { FlowKit, useNodeFlowSelection, useNodeFlowSelectionChange } from "./components/FlowKit";
 export { FlowKitControls, useFlowKitControls } from "./components/FlowKitControls";
 export { FlowKitDots } from "./components/FlowKitDots";
 export { FlowKitEvents } from "./components/FlowKitEvents";

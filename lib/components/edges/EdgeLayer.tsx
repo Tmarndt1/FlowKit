@@ -9,6 +9,7 @@ import {
     useNodeFlowInteractionStore,
     useNodeFlowViewportStore
 } from "../NodeFlowContext";
+import { useFlowKitConfig } from "../FlowKit";
 
 export interface EdgeLayerHandle {
     element: SVGSVGElement | null;
@@ -86,6 +87,7 @@ function getEndpointElementAtPoint(
 }
 
 export const EdgeLayer = React.forwardRef<EdgeLayerHandle, IProps>((props, ref) => {
+    const { canConnect } = useFlowKitConfig();
     const containerRect = useNodeFlowViewportStore((state) => state.containerRect);
     const scale = useNodeFlowViewportStore((state) => state.scale);
     const sourceEndpoint = useNodeFlowInteractionStore((state) => state.sourceEndpoint);
@@ -116,15 +118,15 @@ export const EdgeLayer = React.forwardRef<EdgeLayerHandle, IProps>((props, ref) 
         return null;
     }, []);
 
-    const isEndpointConnectionValid = React.useCallback((
+    const canCreateConnection = React.useCallback((
         source: IEndpoint<any>,
         target: IEndpoint<any>
     ): boolean => {
-        return (
-            source.isValidConnection?.({ source, target }) !== false &&
-            target.isValidConnection?.({ source, target }) !== false
-        );
-    }, []);
+        return canConnect?.({
+            source,
+            target
+        }) !== false;
+    }, [canConnect]);
 
     const setDrawnEdgeVisible = React.useCallback((visible: boolean): void => {
         if (drawnEdgeRef.current == null) return;
@@ -181,10 +183,10 @@ export const EdgeLayer = React.forwardRef<EdgeLayerHandle, IProps>((props, ref) 
 
         if (targetEndpoint == null) return null;
 
-        return isEndpointConnectionValid(currentSourceEndpoint.endpoint, targetEndpoint)
+        return canCreateConnection(currentSourceEndpoint.endpoint, targetEndpoint)
             ? targetElement
             : null;
-    }, [getEndpointById, isEndpointConnectionValid]);
+    }, [getEndpointById, canCreateConnection]);
 
     const handlePointerMove = React.useCallback((x: number, y: number): void => {
         const currentSourceEndpoint = sourceEndpointRef.current;

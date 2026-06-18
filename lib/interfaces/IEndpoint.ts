@@ -13,5 +13,4 @@ export interface IEndpoint<T> {
     position: Position;
     data?: T;
     style?: React.CSSProperties;
-    isValidConnection?: (connection: IEndpointConnection) => boolean;
 }

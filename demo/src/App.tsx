@@ -10,7 +10,7 @@ import {
   FlowKitGridSnap,
   FlowKitKeyboardCommands,
   FlowKitMiniMap,
-  NodeFlow,
+  FlowKit,
   IConnection,
   IEdge,
   IEndpoint,
@@ -199,14 +199,12 @@ function createEndpoints(nodeKey: string, preset: WorkflowPreset): IEndpoint<Wor
       offset: { x: 0, y: endpointStartY + index * endpointGap },
       position: Position.Left,
       data: endpoint,
-      isValidConnection: isWorkflowConnectionValid,
     })),
     ...preset.outputs.map((endpoint, index) => ({
       id: `${nodeKey}-out-${index}`,
       offset: { x: nodeWidth, y: endpointStartY + index * endpointGap },
       position: Position.Right,
       data: endpoint,
-      isValidConnection: isWorkflowConnectionValid,
     })),
   ];
 }
@@ -583,7 +581,7 @@ export function App() {
         </header>
 
         <div className="demo-canvas">
-          <NodeFlow
+          <FlowKit
             key={mode}
             nodes={activeNodes}
             edges={activeEdges}
@@ -593,6 +591,7 @@ export function App() {
             proximityConnect={{ radius: 56 }}
             zoomMin={0.35}
             zoomMax={2}
+            canConnect={isWorkflowConnectionValid}
           >
             <FlowKitGrid size={24} color="rgba(255, 255, 255, .055)" />
             <FlowKitControls />
@@ -608,7 +607,7 @@ export function App() {
               onRemove={onRemove}
             />
             <FlowKitMiniMap nodes={activeNodes} />
-          </NodeFlow>
+          </FlowKit>
         </div>
       </section>
     </main>
