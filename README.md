@@ -1,7 +1,7 @@
 # FlowKit
 
 <p align="center">
-  <img src="./docs/images/flowkit.png" alt="FlowKit Example" width="100%" />
+  <img src="./docs/images/FlowKit.png" alt="FlowKit Example" width="100%" />
 </p>
 
 <p align="center">
