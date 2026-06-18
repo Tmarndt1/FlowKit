@@ -50,7 +50,7 @@ export const FlowKitControls: React.FC<IProps> = (props) => {
             )}
             {showRecenter && (
                 <button aria-label="Recenter" onClick={controls.recenter} type="button">
-                    o
+                    <span aria-hidden="true" className="node-flow-recenter-icon" />
                 </button>
             )}
         </div>

@@ -14,6 +14,14 @@ import {
 import { WorkflowContainer, WorkflowEdge, WorkflowNode as WorkflowNodeType } from "../types";
 import { isWorkflowConnectionValid } from "../workflowModel";
 
+const miniMapNodeColors = {
+  input: { background: "rgba(73, 212, 230, .5)", borderColor: "rgba(73, 212, 230, .9)" },
+  math: { background: "rgba(245, 189, 34, .48)", borderColor: "rgba(245, 189, 34, .9)" },
+  logic: { background: "rgba(164, 119, 255, .48)", borderColor: "rgba(164, 119, 255, .9)" },
+  utility: { background: "rgba(73, 214, 111, .46)", borderColor: "rgba(73, 214, 111, .9)" },
+  output: { background: "rgba(255, 103, 103, .48)", borderColor: "rgba(255, 103, 103, .9)" },
+};
+
 type WorkflowCanvasProps = {
   containers: WorkflowContainer[];
   edges: WorkflowEdge[];
@@ -57,7 +65,13 @@ export function WorkflowCanvas({
         />
         <FlowKitGridSnap size={28} containers />
         <FlowKitKeyboardCommands edges={edges} nodes={nodes} onRemove={onRemove} />
-        <FlowKitMiniMap nodes={nodes} />
+        <FlowKitMiniMap
+          height={122}
+          nodes={nodes}
+          width={270}
+          nodeClassName={(node) => `node-flow-mini-map-node-${node.data?.category ?? "utility"}`}
+          nodeStyle={(node) => miniMapNodeColors[node.data?.category ?? "utility"]}
+        />
       </FlowKit>
     </section>
   );

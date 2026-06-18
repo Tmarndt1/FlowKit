@@ -26,6 +26,8 @@ interface MiniMapBounds {
 interface IProps {
     className?: string;
     height?: number;
+    nodeClassName?: (node: INode<any, any>) => string | undefined;
+    nodeStyle?: (node: INode<any, any>) => React.CSSProperties | undefined;
     nodes: INode<any, any>[];
     padding?: number;
     position?: MiniMapPosition;
@@ -84,27 +86,44 @@ export const FlowKitMiniMap: React.FC<IProps> = (props) => {
     const selectedNodeKey = useNodeFlowSelectionStore((state) => state.selectedNode?.key ?? null);
     const miniMapRef = React.useRef<HTMLDivElement>(null);
     const [viewportRect, setViewportRect] = React.useState<DOMRect | null>(null);
+    const [measurementVersion, setMeasurementVersion] = React.useState(0);
 
     React.useLayoutEffect(() => {
         const updateViewportRect = (): void => {
             setViewportRect(getViewportRect(miniMapRef.current));
         };
 
+        const updateMeasurements = (): void => {
+            updateViewportRect();
+            setMeasurementVersion((version) => version + 1);
+        };
+
         updateViewportRect();
 
         const flow = miniMapRef.current?.closest(".node-flow");
         const viewport = flow?.querySelector<HTMLElement>(".node-flow-viewport");
+        let frameId = window.requestAnimationFrame(updateMeasurements);
 
-        if (viewport == null || typeof ResizeObserver === "undefined") return;
+        if (typeof ResizeObserver === "undefined") {
+            return () => {
+                window.cancelAnimationFrame(frameId);
+            };
+        }
 
-        const resizeObserver = new ResizeObserver(updateViewportRect);
+        const resizeObserver = new ResizeObserver(updateMeasurements);
 
-        resizeObserver.observe(viewport);
+        if (viewport != null) resizeObserver.observe(viewport);
+        props.nodes.forEach((node) => {
+            const nodeElement = document.getElementById(node.key);
+
+            if (nodeElement != null) resizeObserver.observe(nodeElement);
+        });
 
         return () => {
+            window.cancelAnimationFrame(frameId);
             resizeObserver.disconnect();
         };
-    }, []);
+    }, [props.nodes]);
 
     const miniMapNodes = React.useMemo<MiniMapNode[]>(
         () =>
@@ -119,7 +138,7 @@ export const FlowKitMiniMap: React.FC<IProps> = (props) => {
                     height: size.height,
                 };
             }),
-        [endpointUpdateVersion, props.nodes]
+        [endpointUpdateVersion, measurementVersion, props.nodes]
     );
     const bounds = React.useMemo(
         () => getMiniMapBounds(miniMapNodes, padding),
@@ -163,21 +182,29 @@ export const FlowKitMiniMap: React.FC<IProps> = (props) => {
                     width: contentWidth,
                 }}
             >
-                {miniMapNodes.map((node) => (
-                    <div
-                        className={
-                            node.key === selectedNodeKey
-                                ? "node-flow-mini-map-node node-flow-mini-map-node-selected"
-                                : "node-flow-mini-map-node"
-                        }
-                        key={node.key}
-                        style={{
-                            height: Math.max(3, node.height * miniScale),
-                            transform: `translate(${(node.x - bounds.left) * miniScale}px, ${(node.y - bounds.top) * miniScale}px)`,
-                            width: Math.max(3, node.width * miniScale),
-                        }}
-                    />
-                ))}
+                {miniMapNodes.map((node) => {
+                    const sourceNode = props.nodes.find((item) => item.key === node.key);
+                    const nodeClassName = sourceNode == null ? undefined : props.nodeClassName?.(sourceNode);
+                    const nodeStyle = sourceNode == null ? undefined : props.nodeStyle?.(sourceNode);
+                    const className = [
+                        "node-flow-mini-map-node",
+                        nodeClassName,
+                        node.key === selectedNodeKey ? "node-flow-mini-map-node-selected" : undefined,
+                    ].filter(Boolean).join(" ");
+
+                    return (
+                        <div
+                            className={className}
+                            key={node.key}
+                            style={{
+                                height: Math.max(3, node.height * miniScale),
+                                transform: `translate(${(node.x - bounds.left) * miniScale}px, ${(node.y - bounds.top) * miniScale}px)`,
+                                width: Math.max(3, node.width * miniScale),
+                                ...nodeStyle,
+                            }}
+                        />
+                    );
+                })}
             </div>
             {viewportStyle != null && (
                 <div className="node-flow-mini-map-viewport" style={viewportStyle} />

@@ -560,30 +560,87 @@ button {
 }
 
 .canvas-panel .node-flow-controls {
-  background: rgba(17, 24, 35, 0.9);
-  border: 1px solid #334054;
-  border-radius: 7px;
-  bottom: 28px;
+  background: #090e16f5;
+  border: 1px solid #7a91b28c;
+  /* border-top: 0; */
+  border-radius: 8px;
+  justify-content: center;
+  gap: 4px;
+  /* width: 270px; */
+  height: 48px;
+  padding: 5px;
   display: flex;
-  gap: 2px;
-  left: 54px;
+  bottom: 28px;
+  left: 22px;
   overflow: hidden;
+  box-shadow: 0 16px 36px #00000085, 0 0 0 1px #ffffff0d;
 }
 
 .canvas-panel .node-flow-controls > button {
-  background: #172131;
-  border: 0;
+  align-items: center;
+  background: linear-gradient(180deg, #263447 0%, #172131 100%);
+  border: 1px solid rgba(144, 164, 190, 0.35);
+  border-radius: 6px;
+  color: #edf4ff;
   cursor: pointer;
-  height: 34px;
-  width: 34px;
+  display: inline-flex;
+  font-size: 18px;
+  height: 36px;
+  justify-content: center;
+  line-height: 1;
+  min-height: 36px;
+  min-width: 36px;
+  text-shadow: 0 1px 0 rgba(0, 0, 0, 0.45);
+  width: 36px;
+}
+
+.canvas-panel .node-flow-controls > button:hover {
+  background: linear-gradient(180deg, #33445b 0%, #202d3f 100%);
+  border-color: rgba(125, 211, 252, 0.62);
+  box-shadow: 0 0 0 2px rgba(125, 211, 252, 0.12);
+}
+
+.canvas-panel .node-flow-recenter-icon {
+  border-radius: 3px;
+  height: 15px;
+  width: 15px;
+}
+
+.canvas-panel .node-flow-recenter-icon::after {
+  border-radius: 2px;
+  height: 7px;
+  width: 7px;
 }
 
 .canvas-panel .node-flow-mini-map {
-  bottom: 76px;
-  height: 122px;
-  left: 22px;
-  top: auto;
+  background-color: #0c1119eb;
+  background-image: linear-gradient(#7d97bc14 1px, #0000 1px), linear-gradient(90deg, #7d97bc14 1px, #0000 1px), none;
+  background-position: 0 0, 0 0, 0 0;
+  background-repeat: repeat, repeat, repeat;
+  background-size: 16px 16px;
+  background-attachment: scroll, scroll, scroll;
+  background-origin: padding-box, padding-box, padding-box;
+  background-clip: border-box, border-box, border-box;
+  /* border-radius: 8px 8px 0 0; */
   width: 270px;
+  height: 122px;
+  top: auto;
+  bottom: 100px;
+  left: 22px;
+  border-radius: 8px;
+}
+
+.canvas-panel .node-flow-mini-map {
+  background:
+    linear-gradient(rgba(125, 151, 188, 0.08) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(125, 151, 188, 0.08) 1px, transparent 1px),
+    rgba(12, 17, 25, 0.92);
+  background-size: 16px 16px;
+}
+
+.canvas-panel .node-flow-mini-map-node {
+  border-radius: 3px;
+  opacity: 1;
 }
 
 .canvas-panel .node-flow-node-container {

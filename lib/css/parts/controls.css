@@ -24,3 +24,23 @@
 .node-flow-controls > button:hover {
     background: white;
 }
+
+.node-flow-recenter-icon {
+    border: 2px solid currentColor;
+    box-sizing: border-box;
+    display: inline-block;
+    height: 14px;
+    position: relative;
+    width: 14px;
+}
+
+.node-flow-recenter-icon::after {
+    border: 1px solid currentColor;
+    box-sizing: border-box;
+    content: "";
+    height: 6px;
+    left: 2px;
+    position: absolute;
+    top: 2px;
+    width: 6px;
+}

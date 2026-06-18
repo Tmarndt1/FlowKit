@@ -11,7 +11,7 @@ export function TopBar({ edgeCount, lastRunLabel, nodeCount, onRun, status }: To
     <header className="top-bar">
       <div className="brand-lockup">
         <span className="brand-mark">G</span>
-        <strong>NodeFlow</strong>
+        <strong>FlowKit</strong>
         <span>Engine</span>
       </div>
 
