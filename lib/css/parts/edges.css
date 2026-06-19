@@ -1,23 +1,113 @@
-.node-flow line {
+.flow-kit line {
     stroke-linecap: round;
 }
 
-.node-flow-edge-flow {
+.flow-kit-edge {
+    pointer-events: all;
+}
+
+.flow-kit-edge-path.animated {
     stroke-dasharray: 8 4;
     animation: edge-flow 1s linear infinite;
 }
 
-.node-flow-edge-hitbox {
+.flow-kit-edge-path.folded {
+    opacity: 0.18;
+    stroke-dasharray: 3 8;
+}
+
+.flow-kit-edge-path.fold-stub {
+    opacity: 0.78;
+}
+
+.flow-kit-edge-fold-preview .flow-kit-edge-path {
+    stroke: var(--flow-kit-edge-fold-preview-color, #67e8f9);
+}
+
+.flow-kit-edge-path.selected {
+    stroke: white;
+}
+
+.flow-kit-edge-measurement-path {
+    fill: none;
+    opacity: 0;
+    pointer-events: none;
+    stroke: transparent;
+}
+
+.flow-kit-edge-hitbox {
     fill: none;
     pointer-events: stroke;
     stroke: transparent;
     stroke-linecap: round;
     stroke-linejoin: round;
-    stroke-width: var(--node-flow-edge-hitbox-width, 18px);
+    stroke-width: var(--flow-kit-edge-hitbox-width, 18px);
 }
 
-.node-flow-edge-arrow {
-    fill: var(--node-flow-edge-arrow-color, #67e8f9);
+.flow-kit-edge-arrow {
+    fill: var(--flow-kit-edge-arrow-color, #67e8f9);
+}
+
+.flow-kit-edge-fold-control {
+    cursor: pointer;
+    pointer-events: all;
+}
+
+.flow-kit-edge-fold-control circle {
+    fill: var(--flow-kit-edge-control-background, #111827);
+    stroke: var(--flow-kit-edge-control-border, #67e8f9);
+    stroke-width: 1.5px;
+}
+
+.flow-kit-edge-fold-control path {
+    fill: none;
+    stroke: var(--flow-kit-edge-control-color, #e5faff);
+    stroke-linecap: round;
+    stroke-width: 2px;
+}
+
+.flow-kit-edge-fold-control:hover circle,
+.flow-kit-edge-fold-control:focus-visible circle,
+.flow-kit-edge-fold-control-open circle {
+    fill: var(--flow-kit-edge-control-background-hover, #172033);
+    stroke: var(--flow-kit-edge-control-border-hover, #a78bfa);
+}
+
+.flow-kit-edge-fold-control:focus-visible {
+    outline: none;
+}
+
+.flow-kit-edge-fold-menu {
+    overflow: visible;
+    pointer-events: all;
+}
+
+.flow-kit-edge-fold-menu-panel {
+    background: var(--flow-kit-edge-menu-background, #111827);
+    border: 1px solid var(--flow-kit-edge-menu-border, #2d3748);
+    border-radius: 6px;
+    box-shadow: 0 16px 36px rgba(0, 0, 0, 0.32);
+    display: grid;
+    gap: 2px;
+    padding: 6px;
+    width: 136px;
+}
+
+.flow-kit-edge-fold-menu-panel button {
+    background: transparent;
+    border: 0;
+    border-radius: 4px;
+    color: var(--flow-kit-edge-menu-color, #dbeafe);
+    cursor: pointer;
+    font: inherit;
+    font-size: 12px;
+    padding: 7px 8px;
+    text-align: left;
+}
+
+.flow-kit-edge-fold-menu-panel button:hover {
+    background: var(--flow-kit-edge-menu-item-hover, rgba(103, 232, 249, 0.14));
+    color: var(--flow-kit-edge-menu-color-hover, #ffffff);
 }
 
 @keyframes edge-flow {

@@ -1,4 +1,4 @@
-.node-flow-mini-map {
+.flow-kit-mini-map {
     background: rgba(18, 20, 24, .86);
     border: 1px solid rgba(255, 255, 255, .14);
     border-radius: 6px;
@@ -10,34 +10,34 @@
     z-index: 30;
 }
 
-.node-flow-mini-map-top-left {
+.flow-kit-mini-map-top-left {
     left: 12px;
     top: 12px;
 }
 
-.node-flow-mini-map-top-right {
+.flow-kit-mini-map-top-right {
     right: 12px;
     top: 12px;
 }
 
-.node-flow-mini-map-bottom-left {
+.flow-kit-mini-map-bottom-left {
     bottom: 12px;
     left: 12px;
 }
 
-.node-flow-mini-map-bottom-right {
+.flow-kit-mini-map-bottom-right {
     bottom: 12px;
     right: 12px;
 }
 
-.node-flow-mini-map-content {
+.flow-kit-mini-map-content {
     left: 0;
     position: absolute;
     top: 0;
     transform-origin: 0 0;
 }
 
-.node-flow-mini-map-node {
+.flow-kit-mini-map-node {
     background: rgba(140, 190, 255, .68);
     border: 1px solid rgba(210, 232, 255, .55);
     border-radius: 2px;
@@ -48,11 +48,11 @@
     transform-origin: 0 0;
 }
 
-.node-flow-mini-map-node-selected {
+.flow-kit-mini-map-node-selected {
     box-shadow: 0 0 0 1px rgba(255, 255, 255, .9), 0 0 10px rgba(255, 255, 255, .28);
 }
 
-.node-flow-mini-map-viewport {
+.flow-kit-mini-map-viewport {
     border: 1px solid rgba(255, 255, 255, .78);
     box-shadow: inset 0 0 0 1px rgba(0, 0, 0, .35);
     box-sizing: border-box;

@@ -275,25 +275,25 @@ export const NodeContainer: React.FC<IProps> = (props) => {
 
     return (
         <div
-            className="node-flow-node-container"
+            className="flow-kit-node-container"
             data-container-key={props.container.key}
             data-node-keys={props.container.nodeKeys.join(" ")}
             ref={containerRef}
             style={style}
         >
-            <div className="node-flow-node-container-header" onMouseDownCapture={onMouseDown}>
+            <div className="flow-kit-node-container-header" onMouseDownCapture={onMouseDown}>
                 {props.container.label ?? props.container.key}
             </div>
             <div
-                className="node-flow-node-container-resize node-flow-node-container-resize-east"
+                className="flow-kit-node-container-resize flow-kit-node-container-resize-east"
                 onMouseDownCapture={onResizeMouseDown("east")}
             />
             <div
-                className="node-flow-node-container-resize node-flow-node-container-resize-south"
+                className="flow-kit-node-container-resize flow-kit-node-container-resize-south"
                 onMouseDownCapture={onResizeMouseDown("south")}
             />
             <div
-                className="node-flow-node-container-resize node-flow-node-container-resize-southeast"
+                className="flow-kit-node-container-resize flow-kit-node-container-resize-southeast"
                 onMouseDownCapture={onResizeMouseDown("southeast")}
             />
         </div>

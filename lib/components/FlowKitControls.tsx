@@ -1,15 +1,21 @@
 import * as React from "react";
 
+/** Imperative viewport actions exposed to controls rendered inside FlowKit. */
 interface FlowKitControlsContextValue {
     recenter: () => void;
     zoomIn: () => void;
     zoomOut: () => void;
 }
 
-interface IProps {
+/** Props for the built-in zoom/recenter toolbar. */
+export interface FlowKitControlsProps {
+    /** Additional class for the controls wrapper. */
     className?: string;
+    /** Show the recenter button. Defaults to true. */
     recenter?: boolean;
+    /** Inline styles for the controls wrapper. */
     style?: React.CSSProperties;
+    /** Show zoom in/out buttons. Defaults to true. */
     zoom?: boolean;
 }
 
@@ -25,11 +31,12 @@ export function useFlowKitControls(): FlowKitControlsContextValue {
     return controls;
 }
 
-export const FlowKitControls: React.FC<IProps> = (props) => {
+/** Built-in control toolbar for zooming and recentering the viewport. */
+export const FlowKitControls: React.FC<FlowKitControlsProps> = (props) => {
     const controls = useFlowKitControls();
     const showZoom = props.zoom ?? true;
     const showRecenter = props.recenter ?? true;
-    const className = ["node-flow-controls", props.className].filter(Boolean).join(" ");
+    const className = ["flow-kit-controls", props.className].filter(Boolean).join(" ");
 
     return (
         <div
@@ -50,7 +57,7 @@ export const FlowKitControls: React.FC<IProps> = (props) => {
             )}
             {showRecenter && (
                 <button aria-label="Recenter" onClick={controls.recenter} type="button">
-                    <span aria-hidden="true" className="node-flow-recenter-icon" />
+                    <span aria-hidden="true" className="flow-kit-recenter-icon" />
                 </button>
             )}
         </div>

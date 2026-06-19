@@ -1,4 +1,4 @@
-.node-flow-node {
+.flow-kit-node {
     min-width: 25px;
     min-height: 25px;
     border: 1px solid rgb(255, 255, 255, .2);
@@ -15,7 +15,7 @@
     will-change: transform;
 }
 
-.node-flow-node-wrapper {
+.flow-kit-node-wrapper {
     position: absolute;
     cursor: grab;
     pointer-events: all;
@@ -23,6 +23,6 @@
     will-change: transform;
 }
 
-.node-flow-node-selected {
+.flow-kit-node.selected, .flow-kit-node-wrapper.selected {
     border: 1px solid white;
 }

@@ -11,21 +11,29 @@ import {
     useNodeFlowInteractionStore,
     useNodeFlowViewportStore
 } from "../NodeFlowContext";
-import { useFlowKitConfig } from "../FlowKit";
+import { useFlowKitConfig } from "../FlowKitConfigContext";
 
+/** Imperative hooks used by FlowKit to update in-progress edge drawing. */
 export interface EdgeLayerHandle {
+    /** Rendered SVG element containing edge paths. */
     element: SVGSVGElement | null;
+    /** Updates the temporary connection path while dragging from an endpoint. */
     handlePointerMove: (x: number, y: number) => void;
+    /** Attempts to complete the temporary connection path. */
     handlePointerRelease: (x: number, y: number) => void;
 }
 
+/** Options for snapping a dragged connection to nearby endpoints. */
 export interface ProximityConnectOptions {
+    /** Enable proximity connection behavior. Defaults to true when object form is used. */
     enabled?: boolean;
+    /** Maximum pixel distance from the pointer to a nearby endpoint. */
     radius?: number;
 }
 
 interface IProps {
     edges: IEdge<any>[];
+    edgeStateClassNames?: Map<string, string>;
     edgeTypes?: EdgeTypes;
     nodes: { endpoints: IEndpoint<any>[] }[];
     proximityConnect?: boolean | ProximityConnectOptions;
@@ -65,7 +73,7 @@ function getEndpointElementAtPoint(
 ): HTMLElement | null {
     const directHit = document
         .elementFromPoint(x, y)
-        ?.closest<HTMLElement>(".node-flow-endpoint");
+        ?.closest<HTMLElement>(".flow-kit-endpoint");
 
     if (directHit != null && directHit.id !== sourceEndpointId) return directHit;
     if (!options.enabled || options.radius <= 0) return null;
@@ -73,7 +81,7 @@ function getEndpointElementAtPoint(
     let closestEndpoint: HTMLElement | null = null;
     let closestDistance = Number.POSITIVE_INFINITY;
 
-    document.querySelectorAll<HTMLElement>(".node-flow-endpoint").forEach((endpoint) => {
+    document.querySelectorAll<HTMLElement>(".flow-kit-endpoint").forEach((endpoint) => {
         if (endpoint.id === sourceEndpointId) return;
 
         const center = getEndpointCenter(endpoint);
@@ -165,8 +173,8 @@ export const EdgeLayer = React.forwardRef<EdgeLayerHandle, IProps>((props, ref) 
     const setProximityTarget = React.useCallback((target: HTMLElement | null): void => {
         if (proximityTargetRef.current === target) return;
 
-        proximityTargetRef.current?.classList.remove("node-flow-endpoint-proximity-target");
-        target?.classList.add("node-flow-endpoint-proximity-target");
+        proximityTargetRef.current?.classList.remove("flow-kit-endpoint-proximity-target");
+        target?.classList.add("flow-kit-endpoint-proximity-target");
         proximityTargetRef.current = target;
     }, []);
 
@@ -322,6 +330,7 @@ export const EdgeLayer = React.forwardRef<EdgeLayerHandle, IProps>((props, ref) 
                     <Edge
                         key={edge.key}
                         edge={edge as IEdge<any>}
+                        stateClassName={currentProps.edgeStateClassNames?.get(edge.key)}
                     />
                 );
             } else if (
@@ -332,6 +341,7 @@ export const EdgeLayer = React.forwardRef<EdgeLayerHandle, IProps>((props, ref) 
                     <Edge
                         key={edge.key}
                         edge={edge as IEdge<any>}
+                        stateClassName={currentProps.edgeStateClassNames?.get(edge.key)}
                         customEdge={currentProps.edgeTypes[edge.type]}
                     />
                 );
@@ -340,6 +350,7 @@ export const EdgeLayer = React.forwardRef<EdgeLayerHandle, IProps>((props, ref) 
                     <Edge
                         key={edge.key}
                         edge={edge as IEdge<any>}
+                        stateClassName={currentProps.edgeStateClassNames?.get(edge.key)}
                     />
                 );
             }
@@ -349,10 +360,10 @@ export const EdgeLayer = React.forwardRef<EdgeLayerHandle, IProps>((props, ref) 
     }, []);
 
     return (
-        <svg className="node-flow-edges-container" ref={svgRef}>
+        <svg className="flow-kit-edges-container" ref={svgRef}>
             <defs>
                 <marker
-                    id="node-flow-edge-arrow"
+                    id="flow-kit-edge-arrow"
                     markerHeight={7}
                     markerUnits="strokeWidth"
                     markerWidth={7}
@@ -361,11 +372,11 @@ export const EdgeLayer = React.forwardRef<EdgeLayerHandle, IProps>((props, ref) 
                     refY={5}
                     viewBox="0 0 10 10"
                 >
-                    <path className="node-flow-edge-arrow" d="M 0 0 L 10 5 L 0 10 z" />
+                    <path className="flow-kit-edge-arrow" d="M 0 0 L 10 5 L 0 10 z" />
                 </marker>
             </defs>
             {getEdges()}
-            <path className="node-flow-edge-path" ref={drawnEdgeRef} style={{ display: "none" }} />
+            <path className="flow-kit-edge-path" ref={drawnEdgeRef} style={{ display: "none" }} />
         </svg>
     );
 });

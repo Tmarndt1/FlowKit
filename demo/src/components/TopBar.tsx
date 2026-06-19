@@ -1,20 +1,34 @@
 import { EdgePathType } from "../../../lib/index";
 
+export type DemoView = "floating" | "workflow";
+
 type TopBarProps = {
+  animatedEdges: boolean;
+  collapsibleEdges: boolean;
+  demoView: DemoView;
   edgeCount: number;
   edgePathType: EdgePathType;
   lastRunLabel: string;
   nodeCount: number;
+  onAnimatedEdgesChange: (animated: boolean) => void;
+  onCollapsibleEdgesChange: (enabled: boolean) => void;
+  onDemoViewChange: (view: DemoView) => void;
   onEdgePathTypeChange: (pathType: EdgePathType) => void;
   onRun: () => void;
   status: "idle" | "success";
 };
 
 export function TopBar({
+  animatedEdges,
+  collapsibleEdges,
+  demoView,
   edgeCount,
   edgePathType,
   lastRunLabel,
   nodeCount,
+  onAnimatedEdgesChange,
+  onCollapsibleEdgesChange,
+  onDemoViewChange,
   onEdgePathTypeChange,
   onRun,
   status,
@@ -32,6 +46,24 @@ export function TopBar({
         <button aria-label="Rename workflow" type="button">
           edit
         </button>
+        <div className="demo-view-toggle" aria-label="Demo view">
+          <button
+            aria-pressed={demoView === "workflow"}
+            className={demoView === "workflow" ? "active" : undefined}
+            onClick={() => onDemoViewChange("workflow")}
+            type="button"
+          >
+            Standard
+          </button>
+          <button
+            aria-pressed={demoView === "floating"}
+            className={demoView === "floating" ? "active" : undefined}
+            onClick={() => onDemoViewChange("floating")}
+            type="button"
+          >
+            Floating
+          </button>
+        </div>
       </div>
 
       <div className="run-controls" aria-label="Execution controls">
@@ -51,6 +83,22 @@ export function TopBar({
       <div className="view-controls">
         <span>{nodeCount} nodes</span>
         <span>{edgeCount} edges</span>
+        <button
+          aria-pressed={animatedEdges}
+          className={`edge-animation-toggle${animatedEdges ? " active" : ""}`}
+          onClick={() => onAnimatedEdgesChange(!animatedEdges)}
+          type="button"
+        >
+          Flow
+        </button>
+        <button
+          aria-pressed={collapsibleEdges}
+          className={`edge-animation-toggle edge-fold-toggle${collapsibleEdges ? " active" : ""}`}
+          onClick={() => onCollapsibleEdgesChange(!collapsibleEdges)}
+          type="button"
+        >
+          Fold
+        </button>
         <div className="edge-path-toggle" aria-label="Edge path style">
           <button
             aria-pressed={edgePathType === "bezier"}
@@ -69,25 +117,6 @@ export function TopBar({
             Smooth
           </button>
         </div>
-        <button className="icon-button" aria-label="Grid view" type="button">
-          #
-        </button>
-        <button className="icon-button" aria-label="List view" type="button">
-          =
-        </button>
-        <button className="icon-button" aria-label="Zoom out" type="button">
-          -
-        </button>
-        <span className="zoom-chip">100%</span>
-        <button className="icon-button" aria-label="Zoom in" type="button">
-          +
-        </button>
-        <button className="save-button" type="button">
-          Save
-        </button>
-        <button className="icon-button" aria-label="More actions" type="button">
-          :
-        </button>
       </div>
     </header>
   );

@@ -8,14 +8,21 @@ import {
     useNodeFlowSelection,
 } from "./NodeFlowContext";
 
-interface IProps {
+/** Props for the event bridge component that exposes FlowKit interactions. */
+export interface FlowKitEventsProps {
+    /** Called when a new endpoint connection is created. */
     onConnect?: (connection: IConnection) => any;
+    /** Called when container membership changes after a node drag. */
     onContainersChange?: (containers: INodeContainer[]) => any;
+    /** Called when a node or edge becomes selected. */
     onSelected?: (element: FlowElement) => void;
+    /** Called when selection changes, including clear-selection events. */
     onSelectionChange?: (selection: FlowElement | null, previousSelection: FlowElement | null) => void;
+    /** Called when a previously selected node or edge is unselected. */
     onUnselected?: (element: FlowElement) => void;
 }
 
+/** Subscribes to selection changes for components rendered inside FlowKit. */
 export function useNodeFlowSelectionChange(
     onSelected?: (element: FlowElement) => void,
     onUnselected?: (element: FlowElement) => void,
@@ -52,7 +59,8 @@ export function useNodeFlowSelectionChange(
     }, [selected]);
 }
 
-export const FlowKitEvents: React.FC<IProps> = (props) => {
+/** Non-visual component that forwards FlowKit interaction events to app callbacks. */
+export const FlowKitEvents: React.FC<FlowKitEventsProps> = (props) => {
     const endpointDropRequest = useNodeFlowInteractionStore((state) => state.endpointDropRequest);
     const containerChangeRequest = useNodeFlowRenderStore((state) => state.containerChangeRequest);
     const setHasContainerChangeListener = useNodeFlowRenderStore(

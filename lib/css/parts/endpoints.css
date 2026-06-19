@@ -1,9 +1,13 @@
-.node-flow-endpoint {
+.flow-kit-endpoint {
     pointer-events: all;
     touch-action: none;
 }
 
-.node-flow-endpoint-proximity-target {
+.flow-kit-endpoint-proximity-target {
     filter: drop-shadow(0 0 8px rgba(103, 232, 249, .95));
     transform: scale(1.35);
+}
+
+.flow-kit-endpoint-selected {
+    background: #7fff00;
 }

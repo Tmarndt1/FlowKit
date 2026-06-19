@@ -2,39 +2,34 @@ import * as React from "react";
 import { getBezier } from "../../functions/getBezier";
 import { getOrthogonal } from "../../functions/getOrthogonal";
 import { getSmoothStep } from "../../functions/getSmoothStep";
-import { IEdge } from "../../interfaces/IEdge";
+import { EdgeCollapseMode, IEdge } from "../../interfaces/IEdge";
 import {
     useNodeFlowRenderStore,
     useNodeFlowSelectionStore,
     useNodeFlowViewportStore
 } from "../NodeFlowContext";
-import { getEndpointPosition } from "../../functions/getEndpointPosition";
-import { useFlowKitConfig } from "../FlowKit";
+import { useFlowKitConfig } from "../FlowKitConfigContext";
+import { EdgeFoldControl } from "./EdgeFoldControl";
+import { hasSourceArrow, hasTargetArrow } from "./edgeMarkers";
+import { resolveEdgeAnchors } from "./edgeAnchors";
+import { useEdgeFoldMetrics } from "./useEdgeFoldMetrics";
 
 interface IProps {
     edge: IEdge<any>;
+    stateClassName?: string;
     customEdge?: React.ComponentClass | React.FunctionComponent;
-}
-
-function hasSourceArrow(edge: IEdge<any>): boolean {
-    if (edge.arrows == null || edge.arrows === "none") return false;
-    if (edge.arrows === "source" || edge.arrows === "both") return true;
-    if (typeof edge.arrows !== "object") return false;
-
-    return edge.arrows.source === true;
-}
-
-function hasTargetArrow(edge: IEdge<any>): boolean {
-    if (edge.arrows == null || edge.arrows === "none") return false;
-    if (edge.arrows === "target" || edge.arrows === "both") return true;
-    if (typeof edge.arrows !== "object") return false;
-
-    return edge.arrows.target === true;
 }
 
 const EdgeComponent: React.FC<IProps> = (props) =>
 {
-    const { edgePathType } = useFlowKitConfig();
+    const {
+        animatedEdges,
+        collapsibleEdges,
+        edgePathType,
+        onEdgeCollapsedChange,
+        onEdgeCollapsePreviewChange
+    } = useFlowKitConfig();
+    
     const containerRect = useNodeFlowViewportStore((state) => state.containerRect);
     const scale = useNodeFlowViewportStore((state) => state.scale);
     const selected = useNodeFlowSelectionStore((state) => state.selectedEdge?.key === props.edge.key);
@@ -45,8 +40,11 @@ const EdgeComponent: React.FC<IProps> = (props) =>
     const propsRef = React.useRef(props);
     const containerRectRef = React.useRef(containerRect);
     const scaleRef = React.useRef(scale);
+    const edgeGroupRef = React.useRef<SVGGElement>(null);
 
     const [path, setPath] = React.useState<string>("");
+    const [menuOpen, setMenuOpen] = React.useState<boolean>(false);
+    const { measurePathRef, pathFoldMetrics } = useEdgeFoldMetrics(path);
 
     propsRef.current = props;
     containerRectRef.current = containerRect;
@@ -62,24 +60,9 @@ const EdgeComponent: React.FC<IProps> = (props) =>
             return;
         }
 
-        const sourceElement = document.getElementById(currentProps.edge.sourceId);
-        const targetElement = document.getElementById(currentProps.edge.targetId);
+        const anchors = resolveEdgeAnchors(currentProps.edge);
 
-        if (sourceElement == null || targetElement == null)
-        {
-            return;
-        }
-
-        const sourcePosition = getEndpointPosition(sourceElement);
-        const targetPosition = getEndpointPosition(targetElement);
-
-        if (sourcePosition == null || targetPosition == null)
-        {
-            return;
-        }
-
-        const sourceRect = sourceElement.getBoundingClientRect();
-        const targetRect = targetElement.getBoundingClientRect();
+        if (anchors == null) return;
 
         const pathType = currentProps.edge.pathType ?? edgePathType ?? "bezier";
         const pathArgs = [
@@ -88,20 +71,14 @@ const EdgeComponent: React.FC<IProps> = (props) =>
                 y: currentContainerRect.top
             },
             {
-                offset: {
-                    x: sourceRect.left,
-                    y: sourceRect.top
-                },
-                position: sourcePosition,
-                buffer: sourceRect.width
+                offset: anchors.source.offset,
+                position: anchors.source.position,
+                buffer: anchors.source.buffer
             },
             {
-                offset: {
-                    x: targetRect.left,
-                    y: targetRect.top
-                },
-                position: targetPosition,
-                buffer: targetRect.width
+                offset: anchors.target.offset,
+                position: anchors.target.position,
+                buffer: anchors.target.buffer
             },
             scaleRef.current
         ] as const;
@@ -132,6 +109,103 @@ const EdgeComponent: React.FC<IProps> = (props) =>
         selectEdge(propsRef.current.edge);
     }, [selectEdge]);
 
+    const clearCollapsePreview = React.useCallback((): void => {
+        onEdgeCollapsePreviewChange?.({
+            edge: propsRef.current.edge,
+            mode: null
+        });
+    }, [onEdgeCollapsePreviewChange]);
+
+    const toggleCollapsed = React.useCallback((e: React.MouseEvent<SVGGElement, MouseEvent>): void => {
+        e.stopPropagation();
+        e.preventDefault();
+
+        const edge = propsRef.current.edge;
+        const collapsed = edge.collapsed ?? false;
+
+        if (!collapsed) {
+            setMenuOpen((current) => !current);
+            return;
+        }
+
+        setMenuOpen(false);
+        clearCollapsePreview();
+
+        onEdgeCollapsedChange?.({
+            collapsed: false,
+            edge,
+            mode: edge.collapseMode ?? "edge"
+        });
+    }, [clearCollapsePreview, onEdgeCollapsedChange]);
+
+    const chooseCollapseMode = React.useCallback((
+        e: React.MouseEvent<HTMLElement, MouseEvent>,
+        mode: EdgeCollapseMode
+    ): void => {
+        e.stopPropagation();
+        e.preventDefault();
+
+        setMenuOpen(false);
+        clearCollapsePreview();
+
+        onEdgeCollapsedChange?.({
+            collapsed: true,
+            edge: propsRef.current.edge,
+            mode
+        });
+    }, [clearCollapsePreview, onEdgeCollapsedChange]);
+
+    const previewCollapseMode = React.useCallback((mode: EdgeCollapseMode): void => {
+        onEdgeCollapsePreviewChange?.({
+            edge: propsRef.current.edge,
+            mode
+        });
+    }, [onEdgeCollapsePreviewChange]);
+
+    const onCollapseKeyDown = React.useCallback((e: React.KeyboardEvent<SVGGElement>): void => {
+        if (e.key !== "Enter" && e.key !== " ") return;
+
+        e.stopPropagation();
+        e.preventDefault();
+
+        const edge = propsRef.current.edge;
+        const collapsed = edge.collapsed ?? false;
+
+        if (!collapsed) {
+            setMenuOpen((current) => !current);
+            return;
+        }
+
+        setMenuOpen(false);
+        clearCollapsePreview();
+
+        onEdgeCollapsedChange?.({
+            collapsed: false,
+            edge,
+            mode: edge.collapseMode ?? "edge"
+        });
+    }, [clearCollapsePreview, onEdgeCollapsedChange]);
+
+    React.useEffect(() => {
+        if (!menuOpen) return;
+
+        const onDocumentPointerDown = (event: PointerEvent): void => {
+            const target = event.target;
+
+            if (!(target instanceof globalThis.Node)) return;
+            if (edgeGroupRef.current?.contains(target)) return;
+
+            setMenuOpen(false);
+            clearCollapsePreview();
+        };
+
+        document.addEventListener("pointerdown", onDocumentPointerDown, true);
+
+        return () => {
+            document.removeEventListener("pointerdown", onDocumentPointerDown, true);
+        };
+    }, [clearCollapsePreview, menuOpen]);
+
     React.useEffect(() =>
     {
         let count = 0;
@@ -160,6 +234,11 @@ const EdgeComponent: React.FC<IProps> = (props) =>
 
     React.useEffect(() =>
     {
+        if (props.edge.anchorMode === "floating") {
+            draw();
+            return;
+        }
+
         if (
             endpointUpdate?.endpoints.some(
                 (endpoint) =>
@@ -170,7 +249,7 @@ const EdgeComponent: React.FC<IProps> = (props) =>
         {
             draw();
         }
-    }, [draw, endpointUpdate, props.edge.sourceId, props.edge.targetId]);
+    }, [draw, endpointUpdate, props.edge.anchorMode, props.edge.sourceId, props.edge.targetId]);
 
     React.useEffect(() =>
     {
@@ -182,11 +261,46 @@ const EdgeComponent: React.FC<IProps> = (props) =>
 
     const edgeGroupProps = {
         id: props.edge.key,
-        className: "node-flow-edge",
+        className: [
+            "flow-kit-edge",
+            selected ? "selected" : "",
+            props.stateClassName ?? "",
+            props.edge.className ?? ""
+        ].filter(Boolean).join(" "),
         onClick: onSelect,
         onMouseDownCapture: stopEdgeDrag
     };
-
+    const animated = props.edge.animated ?? animatedEdges ?? false;
+    const collapsible = props.edge.collapsible ?? collapsibleEdges ?? false;
+    const collapsed = props.edge.collapsed ?? false;
+    const collapseMode = props.edge.collapseMode ?? "edge";
+    const directionallyFolded = collapsed && (collapseMode === "downstream" || collapseMode === "upstream");
+    const visualClassName = [
+        "flow-kit-edge-path",
+        selected ? "selected" : "",
+        animated && !collapsed ? "animated" : "",
+        directionallyFolded ? "fold-stub" : "",
+        collapsed && !directionallyFolded ? "folded" : ""
+    ].filter(Boolean).join(" ");
+    // Directional folds keep the visible half of the original path by trimming
+    // the measured SVG path with dash offsets instead of generating a new path.
+    const visualStyle: React.CSSProperties = {
+        ...(props.edge.style ?? {}),
+        ...(directionallyFolded && pathFoldMetrics != null
+            ? {
+                strokeDasharray: `${pathFoldMetrics.midpointLength} ${pathFoldMetrics.length}`,
+                strokeDashoffset: collapseMode === "upstream" ? -pathFoldMetrics.midpointLength : 0
+            }
+            : {})
+    };
+    const markerStart =
+        hasSourceArrow(props.edge) && !(directionallyFolded && collapseMode === "upstream")
+            ? "url(#flow-kit-edge-arrow)"
+            : undefined;
+    const markerEnd =
+        hasTargetArrow(props.edge) && !(directionallyFolded && collapseMode === "downstream")
+            ? "url(#flow-kit-edge-arrow)"
+            : undefined;
     if (props.customEdge)
     {
         const customProps = {
@@ -198,7 +312,7 @@ const EdgeComponent: React.FC<IProps> = (props) =>
         return (
             <g {...edgeGroupProps}>
                 <path
-                    className="node-flow-edge-hitbox"
+                    className="flow-kit-edge-hitbox"
                     d={path}
                 />
                 {React.createElement(props.customEdge, customProps as any)}
@@ -207,20 +321,38 @@ const EdgeComponent: React.FC<IProps> = (props) =>
     }
 
     return (
-        <g {...edgeGroupProps}>
+        <g {...edgeGroupProps} ref={edgeGroupRef}>
             <path
-                className="node-flow-edge-hitbox"
+                className="flow-kit-edge-measurement-path"
+                d={path}
+                ref={measurePathRef}
+            />
+
+            <path
+                className="flow-kit-edge-hitbox"
                 d={path}
             />
 
             <path
-                className="node-flow-edge-path node-flow-edge-flow"
+                className={visualClassName}
                 d={path}
-                markerEnd={hasTargetArrow(props.edge) ? "url(#node-flow-edge-arrow)" : undefined}
-                markerStart={hasSourceArrow(props.edge) ? "url(#node-flow-edge-arrow)" : undefined}
-                strokeDasharray="8 4"
-                style={selected ? { stroke: "white", ...(props.edge.style ?? {}) } : props.edge.style}
+                markerEnd={markerEnd}
+                markerStart={markerStart}
+                style={visualStyle}
             />
+
+            {collapsible && pathFoldMetrics != null && (
+                <EdgeFoldControl
+                    collapsed={collapsed}
+                    menuOpen={menuOpen}
+                    onChooseMode={chooseCollapseMode}
+                    onClearPreview={clearCollapsePreview}
+                    onKeyDown={onCollapseKeyDown}
+                    onPreviewMode={previewCollapseMode}
+                    onToggle={toggleCollapsed}
+                    pathFoldMetrics={pathFoldMetrics}
+                />
+            )}
         </g>
     );
 };
@@ -229,5 +361,6 @@ export const Edge = React.memo(
     EdgeComponent,
     (prevProps, nextProps) =>
         prevProps.edge === nextProps.edge &&
+        prevProps.stateClassName === nextProps.stateClassName &&
         prevProps.customEdge === nextProps.customEdge
 );

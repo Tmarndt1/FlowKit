@@ -6,7 +6,7 @@ import {
 	useNodeFlowInteractionStore,
 	useNodeFlowSelectionStore,
 } from "../NodeFlowContext";
-import { useFlowKitConfig } from "../FlowKit";
+import { useFlowKitConfig } from "../FlowKitConfigContext";
 
 enum IsValid {
 	None,
@@ -149,7 +149,7 @@ export const Endpoint: React.FC<IProps> = (props) => {
 		top: props.endpoint.offset.y,
 		left: props.endpoint.offset.x,
 		transform: "translate(-50%, -50%)",
-		background: state.valid === IsValid.False ? "#ff615d" : "#00ff7f",
+		background: edgeSelected ? undefined : state.valid === IsValid.False ? "#ff615d" : "#00ff7f",
 		cursor: state.usable ? "crosshair" : "auto",
 		...props.style ?? {}
 	};
@@ -158,11 +158,10 @@ export const Endpoint: React.FC<IProps> = (props) => {
 		style.background = "";
 	}
 
-  	let className: string = "node-flow-endpoint";
+  	let className: string = "flow-kit-endpoint";
 
 	if (edgeSelected) {
-		className += " edge-selected";
-		style.background = "#7fff00";
+		className += " flow-kit-endpoint-selected";
 	}
 
   	if (props.className) className += ` ${props.className}`;

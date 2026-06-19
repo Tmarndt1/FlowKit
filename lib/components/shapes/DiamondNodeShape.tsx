@@ -4,14 +4,14 @@ import { NodeShapeProps } from "./NodeShapeProps";
 export const DiamondNodeShape: React.FC<NodeShapeProps> = (props) => (
     <div
         className={[
-            "node-flow-shape",
-            "node-flow-shape-diamond",
-            props.showEndpoints ? "node-flow-shape-show-endpoints" : undefined,
+            "flow-kit-shape",
+            "flow-kit-shape-diamond",
+            props.showEndpoints ? "flow-kit-shape-show-endpoints" : undefined,
             props.className,
         ].filter(Boolean).join(" ")}
         style={props.style}
     >
-        <div className="node-flow-shape-surface" />
-        <div className="node-flow-shape-content">{props.children}</div>
+        <div className="flow-kit-shape-surface" />
+        <div className="flow-kit-shape-content">{props.children}</div>
     </div>
 );

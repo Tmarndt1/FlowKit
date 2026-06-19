@@ -105,6 +105,10 @@ button {
   font-size: 14px;
 }
 
+.workflow-title .demo-view-toggle {
+  margin-left: 8px;
+}
+
 .workflow-title button,
 .inspector-header button {
   background: transparent;
@@ -119,9 +123,12 @@ button {
   gap: 10px;
 }
 
-.button,
-.icon-button,
-.save-button {
+.run-controls {
+  position: relative;
+  z-index: 1;
+}
+
+.button {
   background: #111823;
   border: 1px solid #2a3445;
   border-radius: 5px;
@@ -131,8 +138,7 @@ button {
   padding: 0 14px;
 }
 
-.button:hover,
-.icon-button:hover {
+.button:hover {
   background: #1b2533;
 }
 
@@ -154,23 +160,61 @@ button {
 
 .view-controls {
   justify-content: flex-end;
+  overflow: hidden;
+  position: relative;
+  z-index: 2;
 }
 
 .view-controls span {
+  flex: 0 0 auto;
   font-size: 12px;
 }
 
-.edge-path-toggle {
+.edge-path-toggle,
+.demo-view-toggle {
   align-items: center;
   background: #0c121b;
   border: 1px solid #2a3445;
   border-radius: 6px;
   display: inline-flex;
+  flex: 0 0 auto;
   height: 32px;
   overflow: hidden;
 }
 
-.edge-path-toggle button {
+.edge-animation-toggle {
+  background: #0c121b;
+  border: 1px solid #2a3445;
+  border-radius: 6px;
+  color: #9faabe;
+  cursor: pointer;
+  font-size: 12px;
+  height: 32px;
+  min-width: 54px;
+  padding: 0 10px;
+}
+
+.edge-animation-toggle:hover {
+  background: #182232;
+  color: #edf1f8;
+}
+
+.edge-animation-toggle.active {
+  background: rgba(67, 220, 131, 0.14);
+  border-color: rgba(67, 220, 131, 0.55);
+  color: #68e28c;
+  box-shadow: inset 0 0 0 1px rgba(67, 220, 131, 0.16);
+}
+
+.edge-fold-toggle.active {
+  background: rgba(164, 119, 255, 0.14);
+  border-color: rgba(164, 119, 255, 0.58);
+  color: #c4a7ff;
+  box-shadow: inset 0 0 0 1px rgba(164, 119, 255, 0.16);
+}
+
+.edge-path-toggle button,
+.demo-view-toggle button {
   background: transparent;
   border: 0;
   color: #9faabe;
@@ -181,45 +225,32 @@ button {
   padding: 0 10px;
 }
 
-.edge-path-toggle button + button {
+.edge-path-toggle button + button,
+.demo-view-toggle button + button {
   border-left: 1px solid #263040;
 }
 
-.edge-path-toggle button:hover {
+.edge-path-toggle button:hover,
+.demo-view-toggle button:hover {
   background: #182232;
   color: #edf1f8;
 }
 
-.edge-path-toggle button.active {
+.edge-path-toggle button.active,
+.demo-view-toggle button.active {
   background: linear-gradient(180deg, #263247, #1a2332);
   color: #68e8ff;
   box-shadow: inset 0 0 0 1px rgba(104, 232, 255, 0.2);
-}
-
-.icon-button {
-  min-width: 32px;
-  padding: 0;
-}
-
-.zoom-chip {
-  background: #171f2b;
-  border: 1px solid #2a3445;
-  border-radius: 5px;
-  min-height: 32px;
-  padding: 7px 12px;
-}
-
-.save-button {
-  background: linear-gradient(135deg, #7c4dff, #9b5cff);
-  border: 0;
-  color: white;
-  min-width: 128px;
 }
 
 .demo-grid {
   display: grid;
   grid-template-columns: 250px minmax(0, 1fr) 280px;
   min-height: 0;
+}
+
+.demo-grid-floating {
+  grid-template-columns: minmax(0, 1fr);
 }
 
 .node-palette,
@@ -416,7 +447,7 @@ button {
   position: relative;
 }
 
-.canvas-panel .node-flow {
+.canvas-panel .flow-kit {
   background: #0e141d;
   border: 0;
   border-radius: 0;
@@ -425,24 +456,24 @@ button {
   overflow: hidden;
 }
 
-.canvas-panel .node-flow-viewport {
+.canvas-panel .flow-kit-viewport {
   background-color: #0e141d;
   background-image: none;
 }
 
-.canvas-panel .node-flow-grid-background {
+.canvas-panel .flow-kit-grid-background {
   background-position: 0 0;
   background-repeat: repeat;
   background-size: 32px 32px !important;
 }
 
-.canvas-panel .node-flow-node-wrapper {
+.canvas-panel .flow-kit-node-wrapper {
   border: 0;
   border-radius: 7px;
   color: #f2f5fb;
 }
 
-.canvas-panel .node-flow-node-selected .workflow-node {
+.canvas-panel .flow-kit-node.selected .workflow-node {
   border-color: #8fd0ff;
   box-shadow: 0 0 0 3px rgba(143, 208, 255, 0.18), 0 18px 34px rgba(0, 0, 0, 0.4);
 }
@@ -578,7 +609,7 @@ button {
   font-size: 10px;
 }
 
-.canvas-panel .node-flow-endpoint {
+.canvas-panel .flow-kit-endpoint {
   border: 2px solid #101720;
   border-radius: 50%;
   height: 16px;
@@ -587,16 +618,34 @@ button {
   z-index: 4;
 }
 
-.canvas-panel .node-flow-edge-path {
+.canvas-panel .flow-kit-edge-path {
   fill: none;
   pointer-events: stroke;
   stroke: #43dc83;
   stroke-linecap: round;
   stroke-linejoin: round;
+  transition: opacity 160ms ease, stroke 160ms ease;
   stroke-width: 3;
 }
 
-.canvas-panel .node-flow-controls {
+.canvas-panel .flow-kit-edge-fold-preview .flow-kit-edge-path {
+  stroke: #68e8ff;
+}
+
+.canvas-panel .flow-kit-node-wrapper {
+  transition: box-shadow 160ms ease, opacity 160ms ease;
+}
+
+.canvas-panel .flow-kit-node-wrapper.flow-kit-node-fold-preview {
+  box-shadow: 0 0 0 2px rgba(104, 232, 255, 0.9), 0 0 24px rgba(104, 232, 255, 0.28);
+}
+
+.canvas-panel .flow-kit-node-wrapper.flow-kit-node-fold-hidden {
+  opacity: 0;
+  pointer-events: none;
+}
+
+.canvas-panel .flow-kit-controls {
   background: #090e16f5;
   border: 1px solid #7a91b28c;
   /* border-top: 0; */
@@ -613,7 +662,7 @@ button {
   box-shadow: 0 16px 36px #00000085, 0 0 0 1px #ffffff0d;
 }
 
-.canvas-panel .node-flow-controls > button {
+.canvas-panel .flow-kit-controls > button {
   align-items: center;
   background: linear-gradient(180deg, #263447 0%, #172131 100%);
   border: 1px solid rgba(144, 164, 190, 0.35);
@@ -631,25 +680,25 @@ button {
   width: 36px;
 }
 
-.canvas-panel .node-flow-controls > button:hover {
+.canvas-panel .flow-kit-controls > button:hover {
   background: linear-gradient(180deg, #33445b 0%, #202d3f 100%);
   border-color: rgba(125, 211, 252, 0.62);
   box-shadow: 0 0 0 2px rgba(125, 211, 252, 0.12);
 }
 
-.canvas-panel .node-flow-recenter-icon {
+.canvas-panel .flow-kit-recenter-icon {
   border-radius: 3px;
   height: 15px;
   width: 15px;
 }
 
-.canvas-panel .node-flow-recenter-icon::after {
+.canvas-panel .flow-kit-recenter-icon::after {
   border-radius: 2px;
   height: 7px;
   width: 7px;
 }
 
-.canvas-panel .node-flow-mini-map {
+.canvas-panel .flow-kit-mini-map {
   background-color: #0c1119eb;
   background-image: linear-gradient(#7d97bc14 1px, #0000 1px), linear-gradient(90deg, #7d97bc14 1px, #0000 1px), none;
   background-position: 0 0, 0 0, 0 0;
@@ -667,7 +716,7 @@ button {
   border-radius: 8px;
 }
 
-.canvas-panel .node-flow-mini-map {
+.canvas-panel .flow-kit-mini-map {
   background:
     linear-gradient(rgba(125, 151, 188, 0.08) 1px, transparent 1px),
     linear-gradient(90deg, rgba(125, 151, 188, 0.08) 1px, transparent 1px),
@@ -675,20 +724,20 @@ button {
   background-size: 16px 16px;
 }
 
-.canvas-panel .node-flow-mini-map-node {
+.canvas-panel .flow-kit-mini-map-node {
   border-radius: 3px;
   opacity: 1;
 }
 
-.canvas-panel .node-flow-node-container {
+.canvas-panel .flow-kit-node-container {
   background: rgba(23, 45, 65, 0.18);
-  border: 1px dashed rgba(69, 178, 255, 0.66);
+  border: 1px solid rgba(69, 178, 255, 0.66);
   border-radius: 16px;
   box-shadow: inset 0 0 0 1px rgba(69, 178, 255, 0.08);
   overflow: hidden;
 }
 
-.canvas-panel .node-flow-node-container-header {
+.canvas-panel .flow-kit-node-container-header {
   background: rgba(45, 86, 120, 0.9);
   border: 0;
   border-bottom: 1px solid rgba(103, 164, 208, 0.62);
@@ -707,8 +756,446 @@ button {
   z-index: 2;
 }
 
-.canvas-panel .node-flow-node-container-header::before {
+.canvas-panel .flow-kit-node-container-drop-target {
+    background: rgba(74, 142, 103, .24);
+    border-color: rgba(96, 255, 173, .95);
+    box-shadow: inset 0 0 0 1px rgba(96, 255, 173, .42), 0 0 0 2px rgba(96, 255, 173, .14);
+}
+
+.canvas-panel .flow-kit-node-container-drop-target .flow-kit-node-container-header {
+    background: rgba(47, 112, 78, .9);
+    border-bottom-color: rgba(96, 255, 173, .55);
+    color: white;
+}
+
+.canvas-panel .flow-kit-node-container-header::before {
   content: none;
+}
+
+.network-panel {
+  background: #0d131c;
+  display: grid;
+  grid-template-rows: 42px minmax(0, 1fr);
+  min-height: 0;
+  overflow: hidden;
+}
+
+.network-panel-header {
+  align-items: center;
+  background: linear-gradient(180deg, #121b27, #0e151f);
+  border-bottom: 1px solid #263040;
+  display: flex;
+  gap: 12px;
+  min-width: 0;
+  padding: 0 16px;
+}
+
+.network-panel-header strong {
+  color: #ecf3ff;
+  font-size: 13px;
+}
+
+.network-panel-header span {
+  color: #94a2b8;
+  font-size: 12px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.network-canvas {
+  min-height: 0;
+  position: relative;
+}
+
+.network-canvas .flow-kit {
+  height: 100%;
+  overflow: hidden;
+}
+
+.network-canvas .flow-kit-viewport {
+  background: #0b1119;
+}
+
+.network-canvas .flow-kit-grid-background {
+  background-size: 28px 28px !important;
+}
+
+.network-canvas .flow-kit-node-wrapper {
+  border: 0;
+  color: #e7edf8;
+}
+
+.network-canvas .flow-kit-node-wrapper.selected .network-node {
+  border-color: #8fd0ff;
+  box-shadow: 0 0 0 3px rgba(143, 208, 255, 0.16), 0 18px 34px rgba(0, 0, 0, 0.36);
+}
+
+.network-node {
+  background: linear-gradient(135deg, rgba(25, 34, 48, 0.98), rgba(14, 21, 31, 0.98));
+  border: 1px solid rgba(113, 136, 169, 0.42);
+  border-radius: 8px;
+  box-shadow: 0 16px 32px rgba(0, 0, 0, 0.34), inset 0 0 30px rgba(255, 255, 255, 0.03);
+  display: grid;
+  gap: 3px;
+  grid-template-rows: auto auto auto 1fr;
+  height: 106px;
+  overflow: hidden;
+  padding: 13px 14px 12px 60px;
+  position: relative;
+  width: 178px;
+}
+
+.network-node::before {
+  content: "";
+  inset: 0 auto 0 0;
+  position: absolute;
+  width: 4px;
+}
+
+.network-node-status {
+  border-radius: 50%;
+  box-shadow: 0 0 0 4px rgba(7, 11, 17, .42), 0 0 16px currentColor;
+  height: 9px;
+  right: 14px;
+  position: absolute;
+  top: 14px;
+  width: 9px;
+}
+
+.network-node-icon {
+  align-items: center;
+  background: rgba(7, 12, 20, 0.58);
+  border: 1px solid rgba(207, 225, 255, 0.18);
+  color: #68e8ff;
+  display: inline-flex;
+  height: 34px;
+  justify-content: center;
+  left: 16px;
+  position: absolute;
+  top: 35px;
+  width: 34px;
+}
+
+.network-node-icon,
+.network-node-icon::before,
+.network-node-icon::after,
+.network-node-icon span,
+.network-node-icon span::before,
+.network-node-icon span::after {
+  box-sizing: border-box;
+}
+
+.network-node-icon::before,
+.network-node-icon::after,
+.network-node-icon span::before,
+.network-node-icon span::after {
+  content: "";
+  position: absolute;
+}
+
+.network-node small {
+  color: #8c99ad;
+  font-size: 9px;
+  font-weight: 700;
+  letter-spacing: .08em;
+  line-height: 1;
+  text-transform: uppercase;
+}
+
+.network-node strong {
+  color: #f2f6ff;
+  font-size: 14px;
+  line-height: 1.2;
+}
+
+.network-node span:not(.network-node-status):not(.network-node-icon) {
+  color: #a9b5c8;
+  font-size: 11px;
+}
+
+.network-node em {
+  color: #d9e7ff;
+  font-size: 11px;
+  font-style: normal;
+  margin-top: 5px;
+}
+
+.network-node-blue::before,
+.network-node-blue .network-node-status,
+.network-node-blue .network-node-icon {
+  background: #68e8ff;
+}
+
+.network-node-cyan::before,
+.network-node-cyan .network-node-status,
+.network-node-cyan .network-node-icon {
+  background: #42f4d7;
+}
+
+.network-node-green::before,
+.network-node-green .network-node-status,
+.network-node-green .network-node-icon {
+  background: #57df84;
+}
+
+.network-node-orange::before,
+.network-node-orange .network-node-status,
+.network-node-orange .network-node-icon {
+  background: #f6bd4a;
+}
+
+.network-node-purple::before,
+.network-node-purple .network-node-status,
+.network-node-purple .network-node-icon {
+  background: #a477ff;
+}
+
+.network-node-red::before,
+.network-node-red .network-node-status,
+.network-node-red .network-node-icon {
+  background: #ff6767;
+}
+
+.network-node .network-node-icon {
+  background: color-mix(in srgb, currentColor 22%, rgba(7, 12, 20, .92));
+  box-shadow: inset 0 0 18px rgba(255, 255, 255, .08);
+}
+
+.network-node-blue .network-node-icon,
+.network-node-blue .network-node-status {
+  color: #68e8ff;
+}
+
+.network-node-cyan .network-node-icon,
+.network-node-cyan .network-node-status {
+  color: #42f4d7;
+}
+
+.network-node-green .network-node-icon,
+.network-node-green .network-node-status {
+  color: #57df84;
+}
+
+.network-node-orange .network-node-icon,
+.network-node-orange .network-node-status {
+  color: #f6bd4a;
+}
+
+.network-node-purple .network-node-icon,
+.network-node-purple .network-node-status {
+  color: #a477ff;
+}
+
+.network-node-red .network-node-icon,
+.network-node-red .network-node-status {
+  color: #ff6767;
+}
+
+.network-device-client .network-node-icon {
+  border-radius: 5px;
+}
+
+.network-device-client .network-node-icon::before {
+  border: 2px solid currentColor;
+  border-radius: 3px;
+  height: 18px;
+  top: 7px;
+  width: 23px;
+}
+
+.network-device-client .network-node-icon::after {
+  background: currentColor;
+  border-radius: 2px;
+  bottom: 5px;
+  height: 2px;
+  width: 18px;
+}
+
+.network-device-router .network-node-icon {
+  border-radius: 50%;
+}
+
+.network-device-router .network-node-icon::before {
+  border: 2px solid currentColor;
+  border-left-color: transparent;
+  border-right-color: transparent;
+  border-radius: 50%;
+  height: 22px;
+  width: 22px;
+}
+
+.network-device-router .network-node-icon::after {
+  background: currentColor;
+  border-radius: 50%;
+  box-shadow: -8px 0 0 currentColor, 8px 0 0 currentColor, 0 -8px 0 currentColor, 0 8px 0 currentColor;
+  height: 4px;
+  width: 4px;
+}
+
+.network-device-switch .network-node-icon {
+  border-radius: 4px;
+}
+
+.network-device-switch .network-node-icon::before {
+  border: 2px solid currentColor;
+  border-radius: 3px;
+  height: 16px;
+  top: 9px;
+  width: 25px;
+}
+
+.network-device-switch .network-node-icon::after {
+  background: currentColor;
+  border-radius: 1px;
+  box-shadow: 6px 0 0 currentColor, 12px 0 0 currentColor, 18px 0 0 currentColor;
+  height: 3px;
+  left: 8px;
+  top: 16px;
+  width: 3px;
+}
+
+.network-device-vm .network-node-icon {
+  border-radius: 6px;
+}
+
+.network-device-vm .network-node-icon::before,
+.network-device-vm .network-node-icon::after {
+  border: 2px solid currentColor;
+  border-radius: 4px;
+  height: 17px;
+  width: 20px;
+}
+
+.network-device-vm .network-node-icon::before {
+  left: 7px;
+  top: 7px;
+}
+
+.network-device-vm .network-node-icon::after {
+  left: 11px;
+  top: 11px;
+}
+
+.network-device-radio .network-node-icon {
+  border-radius: 50%;
+}
+
+.network-device-radio .network-node-icon span {
+  background: currentColor;
+  border-radius: 3px;
+  bottom: 7px;
+  height: 15px;
+  position: absolute;
+  width: 4px;
+}
+
+.network-device-radio .network-node-icon::before,
+.network-device-radio .network-node-icon::after {
+  border: 2px solid currentColor;
+  border-bottom-color: transparent;
+  border-left-color: transparent;
+  border-radius: 50%;
+  height: 18px;
+  top: 5px;
+  width: 18px;
+}
+
+.network-device-radio .network-node-icon::before {
+  left: 2px;
+  transform: rotate(-45deg);
+}
+
+.network-device-radio .network-node-icon::after {
+  right: 2px;
+  transform: rotate(135deg);
+}
+
+.network-device-firewall .network-node-icon {
+  border-radius: 7px;
+}
+
+.network-device-firewall .network-node-icon::before {
+  background: currentColor;
+  clip-path: polygon(50% 0, 83% 12%, 83% 50%, 50% 88%, 17% 50%, 17% 12%);
+  height: 26px;
+  opacity: .95;
+  width: 24px;
+}
+
+.network-device-firewall .network-node-icon::after {
+  background: rgba(8, 13, 21, .9);
+  height: 19px;
+  top: 8px;
+  transform: rotate(28deg);
+  width: 3px;
+}
+
+.network-device-storage .network-node-icon {
+  border-radius: 6px;
+}
+
+.network-device-storage .network-node-icon::before {
+  border: 2px solid currentColor;
+  border-radius: 50% / 22%;
+  height: 24px;
+  width: 22px;
+}
+
+.network-device-storage .network-node-icon::after {
+  border-top: 2px solid currentColor;
+  bottom: 10px;
+  height: 1px;
+  width: 18px;
+}
+
+.network-canvas .flow-kit-edge-path {
+  fill: none;
+  pointer-events: stroke;
+  stroke: #68e8ff;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  stroke-width: 2.5;
+}
+
+.network-canvas .flow-kit-edge-path.selected {
+  stroke: #ffffff;
+}
+
+.network-canvas .flow-kit-controls {
+  background: rgba(9, 14, 22, 0.92);
+  border: 1px solid rgba(122, 145, 178, 0.48);
+  border-radius: 7px;
+  bottom: 14px;
+  display: flex;
+  gap: 4px;
+  left: 14px;
+  padding: 4px;
+}
+
+.network-canvas .flow-kit-controls > button {
+  align-items: center;
+  background: #182232;
+  border: 1px solid rgba(144, 164, 190, 0.26);
+  border-radius: 5px;
+  color: #edf4ff;
+  cursor: pointer;
+  display: inline-flex;
+  height: 30px;
+  justify-content: center;
+  width: 30px;
+}
+
+.network-canvas .flow-kit-recenter-icon {
+  border-radius: 3px;
+  height: 14px;
+  width: 14px;
+}
+
+.network-canvas .flow-kit-recenter-icon::after {
+  border-radius: 2px;
+  height: 6px;
+  width: 6px;
 }
 
 .bottom-panel {

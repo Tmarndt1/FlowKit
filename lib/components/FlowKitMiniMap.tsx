@@ -6,7 +6,8 @@ import {
     useNodeFlowViewportStore,
 } from "./NodeFlowContext";
 
-type MiniMapPosition = "top-left" | "top-right" | "bottom-left" | "bottom-right";
+/** Corner placement for the built-in minimap. */
+export type MiniMapPosition = "top-left" | "top-right" | "bottom-left" | "bottom-right";
 
 interface MiniMapNode {
     key: string;
@@ -23,15 +24,25 @@ interface MiniMapBounds {
     height: number;
 }
 
-interface IProps {
+/** Props for the built-in minimap overlay. */
+export interface FlowKitMiniMapProps {
+    /** Additional class for the minimap wrapper. */
     className?: string;
+    /** Minimap height in pixels. */
     height?: number;
+    /** Optional class resolver for each minimap node. */
     nodeClassName?: (node: INode<any, any>) => string | undefined;
+    /** Optional style resolver for each minimap node. */
     nodeStyle?: (node: INode<any, any>) => React.CSSProperties | undefined;
+    /** Nodes to show in the minimap. Usually the same nodes passed to FlowKit. */
     nodes: INode<any, any>[];
+    /** Extra canvas-space padding around minimap bounds. */
     padding?: number;
+    /** Corner placement. Defaults to bottom-right. */
     position?: MiniMapPosition;
+    /** Inline styles for the minimap wrapper. */
     style?: React.CSSProperties;
+    /** Minimap width in pixels. */
     width?: number;
 }
 
@@ -70,12 +81,13 @@ function getMiniMapBounds(nodes: MiniMapNode[], padding: number): MiniMapBounds 
 }
 
 function getViewportRect(element: HTMLElement | null): DOMRect | null {
-    const flow = element?.closest(".node-flow");
+    const flow = element?.closest(".flow-kit");
 
-    return flow?.querySelector<HTMLElement>(".node-flow-viewport")?.getBoundingClientRect() ?? null;
+    return flow?.querySelector<HTMLElement>(".flow-kit-viewport")?.getBoundingClientRect() ?? null;
 }
 
-export const FlowKitMiniMap: React.FC<IProps> = (props) => {
+/** Built-in overview minimap that tracks node bounds and viewport position. */
+export const FlowKitMiniMap: React.FC<FlowKitMiniMapProps> = (props) => {
     const width = props.width ?? 180;
     const height = props.height ?? 120;
     const padding = props.padding ?? 48;
@@ -100,8 +112,8 @@ export const FlowKitMiniMap: React.FC<IProps> = (props) => {
 
         updateViewportRect();
 
-        const flow = miniMapRef.current?.closest(".node-flow");
-        const viewport = flow?.querySelector<HTMLElement>(".node-flow-viewport");
+        const flow = miniMapRef.current?.closest(".flow-kit");
+        const viewport = flow?.querySelector<HTMLElement>(".flow-kit-viewport");
         let frameId = window.requestAnimationFrame(updateMeasurements);
 
         if (typeof ResizeObserver === "undefined") {
@@ -161,8 +173,8 @@ export const FlowKitMiniMap: React.FC<IProps> = (props) => {
                 width: (viewportRect.width / scale) * miniScale,
             };
     const className = [
-        "node-flow-mini-map",
-        `node-flow-mini-map-${position}`,
+        "flow-kit-mini-map",
+        `flow-kit-mini-map-${position}`,
         props.className,
     ].filter(Boolean).join(" ");
 
@@ -175,7 +187,7 @@ export const FlowKitMiniMap: React.FC<IProps> = (props) => {
             onPointerDown={(event) => event.stopPropagation()}
         >
             <div
-                className="node-flow-mini-map-content"
+                className="flow-kit-mini-map-content"
                 style={{
                     height: contentHeight,
                     transform: `translate(${contentX}px, ${contentY}px)`,
@@ -187,9 +199,9 @@ export const FlowKitMiniMap: React.FC<IProps> = (props) => {
                     const nodeClassName = sourceNode == null ? undefined : props.nodeClassName?.(sourceNode);
                     const nodeStyle = sourceNode == null ? undefined : props.nodeStyle?.(sourceNode);
                     const className = [
-                        "node-flow-mini-map-node",
+                        "flow-kit-mini-map-node",
                         nodeClassName,
-                        node.key === selectedNodeKey ? "node-flow-mini-map-node-selected" : undefined,
+                        node.key === selectedNodeKey ? "flow-kit-mini-map-node-selected" : undefined,
                     ].filter(Boolean).join(" ");
 
                     return (
@@ -207,7 +219,7 @@ export const FlowKitMiniMap: React.FC<IProps> = (props) => {
                 })}
             </div>
             {viewportStyle != null && (
-                <div className="node-flow-mini-map-viewport" style={viewportStyle} />
+                <div className="flow-kit-mini-map-viewport" style={viewportStyle} />
             )}
         </div>
     );

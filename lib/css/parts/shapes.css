@@ -1,4 +1,4 @@
-.node-flow-shape {
+.flow-kit-shape {
     color: inherit;
     height: 100%;
     min-height: 72px;
@@ -8,17 +8,17 @@
     width: 100%;
 }
 
-.node-flow-shape-surface {
-    background: var(--node-flow-shape-bg, rgb(35, 41, 54));
-    border: var(--node-flow-shape-border-width, 1px) solid var(--node-flow-shape-border, rgba(255, 255, 255, .18));
-    box-shadow: var(--node-flow-shape-shadow, 0 10px 24px rgba(0, 0, 0, .28));
+.flow-kit-shape-surface {
+    background: var(--flow-kit-shape-bg, rgb(35, 41, 54));
+    border: var(--flow-kit-shape-border-width, 1px) solid var(--flow-kit-shape-border, rgba(255, 255, 255, .18));
+    box-shadow: var(--flow-kit-shape-shadow, 0 10px 24px rgba(0, 0, 0, .28));
     box-sizing: border-box;
     inset: 0;
     pointer-events: none;
     position: absolute;
 }
 
-.node-flow-shape-content {
+.flow-kit-shape-content {
     box-sizing: border-box;
     height: 100%;
     overflow: hidden;
@@ -27,8 +27,8 @@
     z-index: 1;
 }
 
-.node-flow-node-selected .node-flow-shape::after {
-    border: 1px solid var(--node-flow-shape-selection-border, rgba(220, 240, 255, .9));
+.flow-kit-node-selected .flow-kit-shape::after {
+    border: 1px solid var(--flow-kit-shape-selection-border, rgba(220, 240, 255, .9));
     box-sizing: border-box;
     content: "";
     inset: -6px;
@@ -37,40 +37,40 @@
     z-index: 3;
 }
 
-.node-flow-shape:not(.node-flow-shape-show-endpoints) .node-flow-endpoint {
+.flow-kit-shape:not(.flow-kit-shape-show-endpoints) .flow-kit-endpoint {
     opacity: 0;
     pointer-events: none;
 }
 
-.node-flow-shape-square .node-flow-shape-surface {
-    border-radius: var(--node-flow-shape-radius, 8px);
+.flow-kit-shape-square .flow-kit-shape-surface {
+    border-radius: var(--flow-kit-shape-radius, 8px);
 }
 
-.node-flow-shape-circle .node-flow-shape-surface {
+.flow-kit-shape-circle .flow-kit-shape-surface {
     border-radius: 999px;
 }
 
-.node-flow-shape-triangle .node-flow-shape-surface {
+.flow-kit-shape-triangle .flow-kit-shape-surface {
     clip-path: polygon(50% 0, 100% 100%, 0 100%);
 }
 
-.node-flow-shape-triangle .node-flow-shape-surface::before {
+.flow-kit-shape-triangle .flow-kit-shape-surface::before {
     display: none;
 }
 
-.node-flow-shape-diamond .node-flow-shape-surface {
+.flow-kit-shape-diamond .flow-kit-shape-surface {
     clip-path: polygon(50% 0, 100% 50%, 50% 100%, 0 50%);
 }
 
-.node-flow-shape-diamond .node-flow-shape-surface::before {
+.flow-kit-shape-diamond .flow-kit-shape-surface::before {
     display: none;
 }
 
-.node-flow-shape-arrow-rectangle .node-flow-shape-surface {
+.flow-kit-shape-arrow-rectangle .flow-kit-shape-surface {
     clip-path: polygon(0 0, calc(100% - 28px) 0, 100% 50%, calc(100% - 28px) 100%, 0 100%, 18px 50%);
 }
 
-.node-flow-shape-arrow-rectangle .node-flow-shape-surface::before {
+.flow-kit-shape-arrow-rectangle .flow-kit-shape-surface::before {
     clip-path: polygon(0 0, 24px 50%, 0 100%);
     inset: 0 auto 0 0;
     width: 24px;

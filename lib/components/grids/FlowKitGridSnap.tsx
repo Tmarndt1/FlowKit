@@ -1,13 +1,18 @@
 import * as React from "react";
 import { useNodeFlowSnapStore } from "../NodeFlowContext";
 
-interface IProps {
+/** Props for configuring node/container snapping while this component is mounted. */
+export interface FlowKitGridSnapProps {
+    /** Include containers in snap behavior where supported. */
     containers?: boolean;
+    /** Enable snapping. Defaults to true. */
     enabled?: boolean;
+    /** Snap interval in canvas units. */
     size?: number;
 }
 
-export const FlowKitGridSnap: React.FC<IProps> = (props) => {
+/** Non-visual component that configures drag snapping for nodes and containers. */
+export const FlowKitGridSnap: React.FC<FlowKitGridSnapProps> = (props) => {
     const setSnapOptions = useNodeFlowSnapStore((state) => state.setSnapOptions);
 
     React.useEffect(() => {

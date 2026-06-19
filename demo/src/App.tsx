@@ -1,9 +1,10 @@
 import * as React from "react";
 import { Position } from "../../lib/enums/Position";
-import { EdgePathType, IConnection, IEdge, INode, NodeTypes } from "../../lib/index";
+import { EdgeCollapseMode, EdgePathType, IConnection, IEdge, INode, NodeTypes } from "../../lib/index";
 import { NodeInspector } from "./components/NodeInspector";
 import { NodePalette } from "./components/NodePalette";
-import { TopBar } from "./components/TopBar";
+import { NetworkDiagram } from "./components/NetworkDiagram";
+import { DemoView, TopBar } from "./components/TopBar";
 import { WorkflowCanvas } from "./components/WorkflowCanvas";
 import { WorkflowNode } from "./components/WorkflowNode";
 import {
@@ -60,6 +61,9 @@ export function App() {
   const [executionStatus, setExecutionStatus] = React.useState<"idle" | "success">("idle");
   const [lastRunLabel, setLastRunLabel] = React.useState("Idle");
   const [edgePathType, setEdgePathType] = React.useState<EdgePathType>("smooth-step");
+  const [animatedEdges, setAnimatedEdges] = React.useState(false);
+  const [collapsibleEdges, setCollapsibleEdges] = React.useState(true);
+  const [demoView, setDemoView] = React.useState<DemoView>("workflow");
 
   const selectedNode = React.useMemo(
     () => nodes.find((node) => node.key === selectedKey) ?? nodes.find((node) => node.key === "runtime-multiplier") ?? null,
@@ -99,6 +103,28 @@ export function App() {
 
     setEdges((currentEdges) =>
       currentEdges.filter((edge) => !removedEdges.some((removedEdge) => removedEdge.key === edge.key))
+    );
+  }, []);
+
+  const updateCollapsibleEdges = React.useCallback((enabled: boolean) => {
+    setCollapsibleEdges(enabled);
+
+    if (!enabled) {
+      setEdges((currentEdges) => currentEdges.map((edge) => ({ ...edge, collapsed: false, collapseMode: undefined })));
+    }
+  }, []);
+
+  const onEdgeCollapsedChange = React.useCallback((edgeKey: string, collapsed: boolean, mode: EdgeCollapseMode) => {
+    setEdges((currentEdges) =>
+      currentEdges.map((edge) =>
+        edge.key === edgeKey
+          ? {
+              ...edge,
+              collapsed,
+              collapseMode: collapsed ? mode : undefined,
+            }
+          : edge
+      )
     );
   }, []);
 
@@ -294,37 +320,56 @@ export function App() {
   return (
     <main className="demo-shell">
       <TopBar
+        demoView={demoView}
         edgeCount={edges.length}
         edgePathType={edgePathType}
+        animatedEdges={animatedEdges}
+        collapsibleEdges={collapsibleEdges}
         lastRunLabel={lastRunLabel}
         nodeCount={nodes.length}
+        onAnimatedEdgesChange={setAnimatedEdges}
+        onCollapsibleEdgesChange={updateCollapsibleEdges}
+        onDemoViewChange={setDemoView}
         onEdgePathTypeChange={setEdgePathType}
         onRun={runWorkflow}
         status={executionStatus}
       />
-      <div className="demo-grid">
-        <NodePalette onAddNode={addNode} />
+      <div className={`demo-grid demo-grid-${demoView}`}>
+        {demoView === "workflow" ? <NodePalette onAddNode={addNode} /> : null}
         <div className="workspace-column">
-          <WorkflowCanvas
-            containers={containers}
-            edgePathType={edgePathType}
-            edges={edges}
-            nodes={nodes}
-            nodeTypes={nodeTypes}
-            onConnect={onConnect}
-            onContainersChange={setContainers}
-            onRemove={onRemove}
-            onSelectionChange={setSelectedKey}
-          />
+          {demoView === "workflow" ? (
+            <WorkflowCanvas
+              animatedEdges={animatedEdges}
+              collapsibleEdges={collapsibleEdges}
+              containers={containers}
+              edgePathType={edgePathType}
+              edges={edges}
+              nodes={nodes}
+              nodeTypes={nodeTypes}
+              onConnect={onConnect}
+              onContainersChange={setContainers}
+              onEdgeCollapsedChange={onEdgeCollapsedChange}
+              onRemove={onRemove}
+              onSelectionChange={setSelectedKey}
+            />
+          ) : (
+            <NetworkDiagram
+              animatedEdges={animatedEdges}
+              collapsibleEdges={collapsibleEdges}
+              edgePathType={edgePathType}
+            />
+          )}
         </div>
-        <NodeInspector
-          node={selectedNode}
-          onEndpointChange={updateEndpointData}
-          onNodeDataChange={updateNodeData}
-          onVariableConfigChange={updateVariableConfig}
-          onVariableValueChange={updateRuntimeVariable}
-          runtimeVariables={runtimeVariables}
-        />
+        {demoView === "workflow" ? (
+          <NodeInspector
+            node={selectedNode}
+            onEndpointChange={updateEndpointData}
+            onNodeDataChange={updateNodeData}
+            onVariableConfigChange={updateVariableConfig}
+            onVariableValueChange={updateRuntimeVariable}
+            runtimeVariables={runtimeVariables}
+          />
+        ) : null}
       </div>
     </main>
   );

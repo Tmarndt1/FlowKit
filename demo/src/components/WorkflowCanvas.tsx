@@ -6,6 +6,7 @@ import {
   FlowKitGridSnap,
   FlowKitKeyboardCommands,
   FlowKitMiniMap,
+  EdgeCollapseMode,
   EdgePathType,
   IConnection,
   IEdge,
@@ -24,6 +25,8 @@ const miniMapNodeColors = {
 };
 
 type WorkflowCanvasProps = {
+  animatedEdges: boolean;
+  collapsibleEdges: boolean;
   containers: WorkflowContainer[];
   edgePathType: EdgePathType;
   edges: WorkflowEdge[];
@@ -31,11 +34,14 @@ type WorkflowCanvasProps = {
   nodeTypes: NodeTypes;
   onConnect: (connection: IConnection) => void;
   onContainersChange: (containers: WorkflowContainer[]) => void;
+  onEdgeCollapsedChange: (edgeKey: string, collapsed: boolean, mode: EdgeCollapseMode) => void;
   onRemove: (node: INode<any, any> | null, removedEdges: IEdge<any>[]) => void;
   onSelectionChange: (key: string | null) => void;
 };
 
 export function WorkflowCanvas({
+  animatedEdges,
+  collapsibleEdges,
   containers,
   edgePathType,
   edges,
@@ -43,13 +49,16 @@ export function WorkflowCanvas({
   nodeTypes,
   onConnect,
   onContainersChange,
+  onEdgeCollapsedChange,
   onRemove,
   onSelectionChange,
 }: WorkflowCanvasProps) {
   return (
     <section className="canvas-panel">
       <FlowKit
+        animatedEdges={animatedEdges}
         centerOnLoad
+        collapsibleEdges={collapsibleEdges}
         containers={containers}
         edgePathType={edgePathType}
         edges={edges}
@@ -59,6 +68,7 @@ export function WorkflowCanvas({
         zoomMax={2}
         zoomMin={0.35}
         canConnect={isWorkflowConnectionValid}
+        onEdgeCollapsedChange={({ collapsed, edge, mode }) => onEdgeCollapsedChange(edge.key, collapsed, mode)}
       >
         <FlowKitGrid size={32} color="rgba(125, 151, 188, .12)" />
         <FlowKitControls />
@@ -73,7 +83,7 @@ export function WorkflowCanvas({
           height={122}
           nodes={nodes}
           width={270}
-          nodeClassName={(node) => `node-flow-mini-map-node-${node.data?.category ?? "utility"}`}
+          nodeClassName={(node) => `flow-kit-mini-map-node-${node.data?.category ?? "utility"}`}
           nodeStyle={(node) => miniMapNodeColors[node.data?.category ?? "utility"]}
         />
       </FlowKit>

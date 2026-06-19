@@ -1,18 +1,26 @@
 import * as React from "react";
 
-interface IProps {
+/** Props for the built-in square grid background. */
+export interface FlowKitGridProps {
+    /** Background fill behind grid lines. */
     backgroundColor?: string;
+    /** Additional class for the grid element. */
     className?: string;
+    /** Grid line color. */
     color?: string;
+    /** Overall grid opacity. */
     opacity?: number;
+    /** Grid cell size in pixels. */
     size?: number;
+    /** Inline styles for the grid element. */
     style?: React.CSSProperties;
 }
 
-export const FlowKitGrid: React.FC<IProps> = (props) => {
+/** Non-interactive square grid background for the FlowKit viewport. */
+export const FlowKitGrid: React.FC<FlowKitGridProps> = (props) => {
     const size = props.size ?? 24;
     const color = props.color ?? "rgba(255, 255, 255, .07)";
-    const className = ["node-flow-background", "node-flow-grid-background", props.className]
+    const className = ["flow-kit-background", "flow-kit-grid-background", props.className]
         .filter(Boolean)
         .join(" ");
 

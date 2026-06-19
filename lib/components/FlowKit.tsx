@@ -14,38 +14,26 @@ import {
     createNodeFlowStores,
     NodeFlowStores,
 } from "../stores/NodeFlowStore";
-import { IEndpoint } from "../interfaces/IEndpoint";
+import { getFoldGraphState, IFoldGraphPreview } from "../functions/getFoldGraphState";
+import {
+    CanConnect,
+    FlowKitConfigContext,
+    FlowKitConfigContextValue,
+    IEdgeCollapsedChangeArgs,
+    IEdgeCollapsePreviewChangeArgs
+} from "./FlowKitConfigContext";
 
 export { useNodeFlowSelection } from "./NodeFlowContext";
 export { useNodeFlowSelectionChange } from "./FlowKitEvents";
+export type {
+    CanConnect,
+    ICanConnectArgs,
+    IEdgeCollapsedChangeArgs,
+    IEdgeCollapsePreviewChangeArgs
+} from "./FlowKitConfigContext";
 
 function getTransformValue(x: number, y: number, scale: number): string {
     return `translate(${x}px, ${y}px) scale(${scale})`;
-}
-
-export interface ICanConnectArgs {
-    source: IEndpoint<any>;
-    target: IEndpoint<any>;
-}
-
-export type CanConnect = (args: ICanConnectArgs) => boolean;
-
-interface FlowKitConfigContextValue {
-    canConnect?: CanConnect;
-    edgePathType?: EdgePathType;
-}
-
-const FlowKitConfigContext =
-    React.createContext<FlowKitConfigContextValue | null>(null);
-
-export function useFlowKitConfig(): FlowKitConfigContextValue {
-    const context = React.useContext(FlowKitConfigContext);
-
-    if (context == null) {
-        throw new Error("useFlowKitConfig must be used inside FlowKit.");
-    }
-
-    return context;
 }
 
 function setTransform(
@@ -73,14 +61,14 @@ function getElementFromEventTarget(target: EventTarget | null): Element | null {
 function isInteractiveFlowElement(element: Element | null): boolean {
     return (
         element?.closest(
-            ".node-flow-node, .node-flow-node-wrapper, .node-flow-endpoint, .node-flow-edge, .node-flow-edge-path"
-            + ", .node-flow-node-container-header, .node-flow-node-container-resize"
+            ".flow-kit-node, .flow-kit-node-wrapper, .flow-kit-endpoint, .flow-kit-edge, .flow-kit-edge-path"
+            + ", .flow-kit-node-container-header, .flow-kit-node-container-resize"
         ) != null
     );
 }
 
 function isPointInsideFlowNode(x: number, y: number): boolean {
-    const nodes = document.querySelectorAll<HTMLElement>(".node-flow-node, .node-flow-node-wrapper");
+    const nodes = document.querySelectorAll<HTMLElement>(".flow-kit-node, .flow-kit-node-wrapper");
 
     for (const node of nodes) {
         const rect = node.getBoundingClientRect();
@@ -95,32 +83,55 @@ function isPointInsideFlowNode(x: number, y: number): boolean {
 
 function isPanSurfaceElement(element: Element | null): boolean {
     return (
-        element?.classList.contains("node-flow-viewport") === true ||
-        element?.classList.contains("node-flow-background") === true ||
-        element?.classList.contains("node-flow-content") === true ||
-        element?.classList.contains("node-flow-nodes-container") === true ||
-        element?.classList.contains("node-flow-edges-container") === true
+        element?.classList.contains("flow-kit-viewport") === true ||
+        element?.classList.contains("flow-kit-background") === true ||
+        element?.classList.contains("flow-kit-content") === true ||
+        element?.classList.contains("flow-kit-nodes-container") === true ||
+        element?.classList.contains("flow-kit-edges-container") === true
     );
 }
 
-interface IProps {
+/** Props for the main FlowKit canvas component. */
+export interface FlowKitProps {
+    /** Nodes to render. FlowKit treats this array as controlled application state. */
     nodes: INode<any, any>[];
+    /** Edges to render. FlowKit treats this array as controlled application state. */
     edges: IEdge<any>[];
+    /** Optional group containers rendered behind nodes. */
     containers?: INodeContainer[];
+    /** Custom node renderer map, keyed by node.type. */
     nodeTypes?: NodeTypes;
+    /** Custom edge renderer map, keyed by edge.type. */
     edgeTypes?: EdgeTypes;
+    /** Inline style for the root FlowKit element. */
     style?: React.CSSProperties;
+    /** Maximum zoom scale. */
     zoomMax?: number;
+    /** Minimum zoom scale. */
     zoomMin?: number;
+    /** Centers the initial viewport around rendered content after mount. */
     centerOnLoad?: boolean;
+    /** Enables endpoint proximity snapping while creating connections. */
     proximityConnect?: boolean | ProximityConnectOptions;
+    /** Optional helper components such as grid, controls, events, minimap, and snap. */
     children?: React.ReactNode;
+    /** Extra props passed to custom node renderers by node type. */
     customNodeProps?: NodeComponentProps;
+    /** Enables animated edge paths by default. */
+    animatedEdges?: boolean;
+    /** Optional validator for new endpoint connections. */
     canConnect?: CanConnect
+    /** Enables built-in edge fold controls by default. */
+    collapsibleEdges?: boolean;
+    /** Default built-in edge path algorithm. */
     edgePathType?: EdgePathType;
+    /** Called when a built-in fold control requests collapsed state changes. */
+    onEdgeCollapsedChange?: (args: IEdgeCollapsedChangeArgs) => void;
+    /** Called when a fold menu option is previewed or cleared. */
+    onEdgeCollapsePreviewChange?: (args: IEdgeCollapsePreviewChangeArgs) => void;
 }
 
-export const FlowKit: React.FC<IProps> = (props) => {
+export const FlowKit: React.FC<FlowKitProps> = (props) => {
     const nodeFlowStoresRef = React.useRef<NodeFlowStores | null>(null);
     const viewportRef = React.useRef<HTMLDivElement>(null);
     const contentRef = React.useRef<HTMLDivElement>(null);
@@ -140,6 +151,7 @@ export const FlowKit: React.FC<IProps> = (props) => {
     const initializedViewRef = React.useRef<boolean>(false);
     const propsRef = React.useRef(props);
     const stateRef = React.useRef({ nodes: props.nodes, edges: props.edges });
+    const [collapsePreview, setCollapsePreview] = React.useState<IFoldGraphPreview | null>(null);
 
     if (nodeFlowStoresRef.current == null) {
         nodeFlowStoresRef.current = createNodeFlowStores();
@@ -153,14 +165,37 @@ export const FlowKit: React.FC<IProps> = (props) => {
     propsRef.current = props;
     stateRef.current = { nodes: props.nodes, edges: props.edges };
 
-    const config = React.useMemo(
+    const onEdgeCollapsePreviewChange = React.useCallback((args: IEdgeCollapsePreviewChangeArgs): void => {
+        setCollapsePreview(args.mode == null ? null : args);
+        propsRef.current.onEdgeCollapsePreviewChange?.(args);
+    }, []);
+
+    const config: FlowKitConfigContextValue = React.useMemo(
         () => ({
+            animatedEdges: props.animatedEdges,
+            collapsibleEdges: props.collapsibleEdges,
+            edgePathType: props.edgePathType,
+            onEdgeCollapsedChange: props.onEdgeCollapsedChange,
+            onEdgeCollapsePreviewChange,
             canConnect: props.canConnect,
-            edgePathType: props.edgePathType
         }),
-        [props.canConnect, props.edgePathType]
+        [
+            props.animatedEdges,
+            props.canConnect,
+            props.collapsibleEdges,
+            props.edgePathType,
+            props.onEdgeCollapsedChange,
+            onEdgeCollapsePreviewChange
+        ]
     );
 
+    const foldGraphState = React.useMemo(
+        () => getFoldGraphState(props.nodes, props.edges, props.containers, collapsePreview),
+        [collapsePreview, props.containers, props.edges, props.nodes]
+    );
+
+    // FlowKit owns viewport transforms directly so panning and edge redraws can stay
+    // synchronized without requiring consumers to manage viewport state.
     const updateCanvasTransform = React.useCallback((x: number, y: number, scale: number): void => {
         setTransform(contentRef.current, x, y, scale);
         viewportStore.getState().setOffset({ x, y });
@@ -415,9 +450,9 @@ export const FlowKit: React.FC<IProps> = (props) => {
         <NodeFlowContext.Provider value={stores}>
             <FlowKitConfigContext.Provider value={config}>
                 <FlowKitControlsContext.Provider value={controls}>
-                    <div className="node-flow" style={props.style}>
+                    <div className="flow-kit" style={props.style}>
                         <div
-                            className="node-flow-viewport"
+                            className="flow-kit-viewport"
                             onWheel={(event) => onZoom(event.deltaY > 0)}
                             ref={viewportRef}
                             onMouseDown={onMouseDown}
@@ -426,18 +461,20 @@ export const FlowKit: React.FC<IProps> = (props) => {
                             onPointerMove={onPointerMove}
                         >
                             {props.children}
-                            <div className="node-flow-content" ref={contentRef}>
+                            <div className="flow-kit-content" ref={contentRef}>
                                 <EdgeLayer
                                     ref={edgeLayerRef}
-                                    edges={props.edges}
+                                    edgeStateClassNames={foldGraphState.edgeStateClassNames}
+                                    edges={foldGraphState.visibleEdges}
                                     edgeTypes={props.edgeTypes}
                                     nodes={props.nodes}
                                     proximityConnect={props.proximityConnect}
                                 />
                                 <NodesLayer
                                     ref={nodesLayerRef}
-                                    containers={props.containers}
+                                    containers={foldGraphState.visibleContainers}
                                     customNodeProps={props.customNodeProps}
+                                    nodeStateClassNames={foldGraphState.nodeStateClassNames}
                                     nodeTypes={props.nodeTypes}
                                     nodes={props.nodes}
                                 />

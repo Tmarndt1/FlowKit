@@ -1,20 +1,29 @@
 import * as React from "react";
 
-interface IProps {
+/** Props for the built-in dotted viewport background. */
+export interface FlowKitDotsProps {
+    /** Background fill behind dots. */
     backgroundColor?: string;
+    /** Additional class for the dots element. */
     className?: string;
+    /** Dot color. */
     color?: string;
+    /** Overall dots opacity. */
     opacity?: number;
+    /** Dot radius in pixels. */
     size?: number;
+    /** Distance between dots in pixels. */
     spacing?: number;
+    /** Inline styles for the dots element. */
     style?: React.CSSProperties;
 }
 
-export const FlowKitDots: React.FC<IProps> = (props) => {
+/** Non-interactive dotted background for the FlowKit viewport. */
+export const FlowKitDots: React.FC<FlowKitDotsProps> = (props) => {
     const dotSize = props.size ?? 1.5;
     const spacing = props.spacing ?? 22;
     const color = props.color ?? "rgba(255, 255, 255, .12)";
-    const className = ["node-flow-background", "node-flow-dots-background", props.className]
+    const className = ["flow-kit-background", "flow-kit-dots-background", props.className]
         .filter(Boolean)
         .join(" ");
 

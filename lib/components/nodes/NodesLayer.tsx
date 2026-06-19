@@ -17,13 +17,18 @@ interface LayerBounds {
 interface IProps {
     containers?: INodeContainer[];
     customNodeProps?: NodeComponentProps;
+    nodeStateClassNames?: Map<string, string>;
     nodeTypes?: NodeTypes;
     nodes: INode<any, any>[];
 }
 
+/** Imperative hooks used by FlowKit to measure content and update container membership. */
 export interface NodesLayerHandle {
+    /** Rendered nodes layer element. */
     element: HTMLDivElement | null;
+    /** Returns canvas-space content bounds for recentering. */
     getContentBounds: (scale: number) => LayerBounds | null;
+    /** Recomputes which container, if any, owns a dragged node. */
     updateContainerMembership: (node: INode<any, any>) => void;
 }
 
@@ -34,7 +39,7 @@ function getRenderedContainerBounds(container: INodeContainer): {
     height: number;
 } | null {
     const element = document.querySelector<HTMLElement>(
-        `.node-flow-node-container[data-container-key="${container.key}"]`
+        `.flow-kit-node-container[data-container-key="${container.key}"]`
     );
 
     if (element == null) return null;
@@ -76,7 +81,7 @@ const NodesLayerComponent = React.forwardRef<NodesLayerHandle, IProps>((props, r
         };
         const targetContainer = currentContainers.find((container) => {
             const element = document.querySelector<HTMLElement>(
-                `.node-flow-node-container[data-container-key="${container.key}"]`
+                `.flow-kit-node-container[data-container-key="${container.key}"]`
             );
             const rect = element?.getBoundingClientRect();
 
@@ -166,7 +171,7 @@ const NodesLayerComponent = React.forwardRef<NodesLayerHandle, IProps>((props, r
     }), [getContentBounds, updateContainerMembership]);
 
     return (
-        <div className="node-flow-nodes-container" ref={layerRef}>
+        <div className="flow-kit-nodes-container" ref={layerRef}>
             {containers.map((container) => (
                 <NodeContainer
                     key={container.key}
@@ -180,6 +185,7 @@ const NodesLayerComponent = React.forwardRef<NodesLayerHandle, IProps>((props, r
                         <Node
                             key={node.key}
                             node={node}
+                            stateClassName={props.nodeStateClassNames?.get(node.key)}
                         />
                     );
                 }
@@ -192,6 +198,7 @@ const NodesLayerComponent = React.forwardRef<NodesLayerHandle, IProps>((props, r
                     <Node
                         key={node.key}
                         node={node}
+                        stateClassName={props.nodeStateClassNames?.get(node.key)}
                         customNode={CustomNode}
                         customNodeProps={props.customNodeProps?.[node.type]}
                     />

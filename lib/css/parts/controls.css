@@ -1,4 +1,4 @@
-.node-flow-controls {
+.flow-kit-controls {
     box-shadow: 0 0 2px 1px rgb(20, 20, 20);
     position: absolute;
     z-index: 15;
@@ -7,7 +7,7 @@
     background: rgb(40, 40, 40);
 }
 
-.node-flow-controls > button {
+.flow-kit-controls > button {
     background: gainsboro;
     border: 0;
     border-bottom: 1px solid white;
@@ -21,11 +21,11 @@
     padding: 0;
 }
 
-.node-flow-controls > button:hover {
+.flow-kit-controls > button:hover {
     background: white;
 }
 
-.node-flow-recenter-icon {
+.flow-kit-recenter-icon {
     border: 2px solid currentColor;
     box-sizing: border-box;
     display: inline-block;
@@ -34,7 +34,7 @@
     width: 14px;
 }
 
-.node-flow-recenter-icon::after {
+.flow-kit-recenter-icon::after {
     border: 1px solid currentColor;
     box-sizing: border-box;
     content: "";

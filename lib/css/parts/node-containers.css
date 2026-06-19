@@ -1,4 +1,4 @@
-.node-flow-node-container {
+.flow-kit-node-container {
     border: 1px solid rgba(118, 184, 255, .75);
     border-radius: 6px;
     background: rgba(48, 91, 128, .16);
@@ -15,19 +15,19 @@
     z-index: 40;
 }
 
-.node-flow-node-container-drop-target {
+.flow-kit-node-container-drop-target {
     background: rgba(74, 142, 103, .24);
     border-color: rgba(96, 255, 173, .95);
     box-shadow: inset 0 0 0 1px rgba(96, 255, 173, .42), 0 0 0 2px rgba(96, 255, 173, .14);
 }
 
-.node-flow-node-container-drop-target .node-flow-node-container-header {
+.flow-kit-node-container-drop-target .flow-kit-node-container-header {
     background: rgba(47, 112, 78, .9);
     border-bottom-color: rgba(96, 255, 173, .55);
     color: white;
 }
 
-.node-flow-node-container-header {
+.flow-kit-node-container-header {
     align-items: center;
     background: rgba(40, 76, 107, .86);
     border-bottom: 1px solid rgba(118, 184, 255, .45);
@@ -40,19 +40,19 @@
     touch-action: none;
 }
 
-.node-flow-node-container-resize {
+.flow-kit-node-container-resize {
     pointer-events: all;
     position: absolute;
     touch-action: none;
 }
 
-.node-flow-node-container-resize-east {
+.flow-kit-node-container-resize-east {
     cursor: ew-resize;
     inset: 28px -5px 10px auto;
     width: 10px;
 }
 
-.node-flow-node-container-resize-south {
+.flow-kit-node-container-resize-south {
     bottom: -5px;
     cursor: ns-resize;
     height: 10px;
@@ -60,7 +60,7 @@
     right: 10px;
 }
 
-.node-flow-node-container-resize-southeast {
+.flow-kit-node-container-resize-southeast {
     border-bottom: 2px solid rgba(210, 232, 255, .82);
     border-right: 2px solid rgba(210, 232, 255, .82);
     bottom: 4px;

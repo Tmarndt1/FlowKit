@@ -12,6 +12,7 @@ import {
 
 interface IProps {
     node: INode<any, any>;
+    stateClassName?: string;
     customNode?: React.ComponentClass | React.FunctionComponent;
     customNodeProps?: object;
 }
@@ -22,9 +23,9 @@ function snapValue(value: number, size: number): number {
 
 function clearContainerDropTarget(): void {
     document
-        .querySelectorAll<HTMLElement>(".node-flow-node-container-drop-target")
+        .querySelectorAll<HTMLElement>(".flow-kit-node-container-drop-target")
         .forEach((container) => {
-            container.classList.remove("node-flow-node-container-drop-target");
+            container.classList.remove("flow-kit-node-container-drop-target");
         });
 }
 
@@ -36,7 +37,7 @@ function updateContainerDropTarget(nodeElement: HTMLElement): void {
     };
     let targetContainer: HTMLElement | null = null;
 
-    document.querySelectorAll<HTMLElement>(".node-flow-node-container").forEach((container) => {
+    document.querySelectorAll<HTMLElement>(".flow-kit-node-container").forEach((container) => {
         const rect = container.getBoundingClientRect();
 
         if (
@@ -49,8 +50,8 @@ function updateContainerDropTarget(nodeElement: HTMLElement): void {
         }
     });
 
-    document.querySelectorAll<HTMLElement>(".node-flow-node-container").forEach((container) => {
-        container.classList.toggle("node-flow-node-container-drop-target", container === targetContainer);
+    document.querySelectorAll<HTMLElement>(".flow-kit-node-container").forEach((container) => {
+        container.classList.toggle("flow-kit-node-container-drop-target", container === targetContainer);
     });
 }
 
@@ -123,7 +124,7 @@ const NodeComponent: React.FC<IProps> = (props) => {
             const currentProps = propsRef.current;
             const target = e.target instanceof Element ? e.target : null;
 
-            if (target?.closest(".node-flow-endpoint") != null) return;
+            if (target?.closest(".flow-kit-endpoint") != null) return;
 
             mouseDownRef.current = true;
             setDraggingNodeRef.current(true, currentProps.node);
@@ -191,7 +192,12 @@ const NodeComponent: React.FC<IProps> = (props) => {
     };
 
     if (props.customNode != null) {
-        const className: string = selected ? "node-flow-node-wrapper node-flow-node-selected" : "node-flow-node-wrapper";
+        const className: string = [
+            "flow-kit-node-wrapper",
+            selected ? "selected" : "",
+            props.stateClassName ?? "",
+            props.node.className ?? ""
+        ].filter(Boolean).join(" ");
         const customProps: any = {
             ...props.node,
             selected,
@@ -217,7 +223,12 @@ const NodeComponent: React.FC<IProps> = (props) => {
         );
     }
 
-    const className: string = selected ? "node-flow-node node-flow-node-selected" : "node-flow-node";
+    const className: string = [
+        "flow-kit-node",
+        selected ? "selected" : "",
+        props.stateClassName ?? "",
+        props.node.className ?? ""
+    ].filter(Boolean).join(" ");
 
     return (
         <div
@@ -241,6 +252,7 @@ export const Node = React.memo(
     NodeComponent,
     (prevProps, nextProps) =>
         prevProps.node === nextProps.node &&
+        prevProps.stateClassName === nextProps.stateClassName &&
         prevProps.customNode === nextProps.customNode &&
         prevProps.customNodeProps === nextProps.customNodeProps
 );

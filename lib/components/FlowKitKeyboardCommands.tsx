@@ -5,18 +5,28 @@ import { INode } from "../interfaces/INode";
 import { FlowElement } from "../types/FlowElement";
 import { useNodeFlowSelectionStore } from "./NodeFlowContext";
 
-interface IProps {
+/** Props for built-in keyboard shortcuts scoped to the current FlowKit selection. */
+export interface FlowKitKeyboardCommandsProps {
+    /** Enable Ctrl/Cmd+C behavior. Defaults to true. */
     copy?: boolean;
+    /** Enable Backspace deletion behavior. Defaults to true. */
     deleteSelection?: boolean;
+    /** Current edges, used to discover edges connected to deleted nodes. */
     edges: IEdge<any>[];
+    /** Current nodes, used to validate selected-node deletion. */
     nodes: INode<any, any>[];
+    /** Called after a selected element is copied to the internal clipboard. */
     onCopy?: (element: FlowElement) => any;
+    /** Called when paste is requested and an element exists in the internal clipboard. */
     onPaste?: (element: FlowElement) => any;
+    /** Called when Backspace requests removal of a selected node or edge. */
     onRemove?: (node: INode<any, any> | null, edges: IEdge<any>[]) => any;
+    /** Enable Ctrl/Cmd+V behavior. Defaults to true. */
     paste?: boolean;
 }
 
-export const FlowKitKeyboardCommands: React.FC<IProps> = (props) => {
+/** Non-visual component that wires default copy, paste, and delete shortcuts. */
+export const FlowKitKeyboardCommands: React.FC<FlowKitKeyboardCommandsProps> = (props) => {
     const selectedEdge = useNodeFlowSelectionStore((state) => state.selectedEdge);
     const selectedNode = useNodeFlowSelectionStore((state) => state.selectedNode);
     const copyRef = React.useRef<FlowElement | null>(null);
@@ -69,6 +79,14 @@ export const FlowKitKeyboardCommands: React.FC<IProps> = (props) => {
                         )
                     );
                 });
+                connectedEdges.push(
+                    ...currentProps.edges.filter((edge) =>
+                        edge.sourceNodeId === selectedNode.key ||
+                        edge.targetNodeId === selectedNode.key ||
+                        (edge.anchorMode === "floating" &&
+                            (edge.sourceId === selectedNode.key || edge.targetId === selectedNode.key))
+                    )
+                );
 
                 currentProps.onRemove(selectedNode, connectedEdges);
                 return;

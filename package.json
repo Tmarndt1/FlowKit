@@ -1,7 +1,7 @@
 {
-  "name": "nodeflow",
+  "name": "flowkit",
   "version": "1.0.0",
-  "description": "A React library for building interactive node flow canvases.",
+  "description": "A React library for building interactive node flow.",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
   "scripts": {
