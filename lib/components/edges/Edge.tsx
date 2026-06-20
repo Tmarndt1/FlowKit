@@ -3,6 +3,7 @@ import { getBezier } from "../../functions/getBezier";
 import { getOrthogonal } from "../../functions/getOrthogonal";
 import { getSmoothStep } from "../../functions/getSmoothStep";
 import { EdgeCollapseMode, IEdge } from "../../interfaces/IEdge";
+import { ComputedEdgeRoutingOptions } from "../../functions/edgeRouting";
 import {
     useNodeFlowRenderStore,
     useNodeFlowSelectionStore,
@@ -16,6 +17,7 @@ import { useEdgeFoldMetrics } from "./useEdgeFoldMetrics";
 
 interface IProps {
     edge: IEdge<any>;
+    routing?: ComputedEdgeRoutingOptions;
     stateClassName?: string;
     customEdge?: React.ComponentClass | React.FunctionComponent;
 }
@@ -85,10 +87,10 @@ const EdgeComponent: React.FC<IProps> = (props) =>
         ] as const;
         const nextPath =
             pathType === "smooth-step"
-                ? getSmoothStep(...pathArgs)
+                ? getSmoothStep(...pathArgs, 32, 14, currentProps.routing)
                 : pathType === "step"
-                    ? getOrthogonal(...pathArgs)
-                    : getBezier(...pathArgs);
+                    ? getOrthogonal(...pathArgs, 32, currentProps.routing)
+                    : getBezier(...pathArgs, 80, currentProps.routing);
 
         if (nextPath != null)
         {
@@ -231,7 +233,7 @@ const EdgeComponent: React.FC<IProps> = (props) =>
     React.useEffect(() =>
     {
         draw();
-    }, [containerRect, draw, scale]);
+    }, [containerRect, draw, props.routing, scale]);
 
     React.useEffect(() =>
     {
@@ -374,6 +376,7 @@ export const Edge = React.memo(
     EdgeComponent,
     (prevProps, nextProps) =>
         prevProps.edge === nextProps.edge &&
+        prevProps.routing === nextProps.routing &&
         prevProps.stateClassName === nextProps.stateClassName &&
         prevProps.customEdge === nextProps.customEdge
 );

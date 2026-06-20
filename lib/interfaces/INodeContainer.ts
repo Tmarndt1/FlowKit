@@ -21,6 +21,8 @@ export interface INodeContainer {
     minWidth?: number;
     /** Minimum rendered height. */
     minHeight?: number;
+    /** Recalculate bounds from contained nodes after membership changes. Defaults to true. */
+    resizeToFit?: boolean;
     /** Inline styles applied to the rendered container. */
     style?: React.CSSProperties;
 }

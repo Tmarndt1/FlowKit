@@ -1,5 +1,5 @@
 import * as React from "react";
-import { EdgeCollapseMode, EdgePathType, IEdge } from "../interfaces/IEdge";
+import { EdgeCollapseMode, EdgePathType, EdgeRoutingOptions, IEdge } from "../interfaces/IEdge";
 import { IEndpoint } from "../interfaces/IEndpoint";
 
 /** Arguments passed to canConnect before FlowKit accepts a new connection. */
@@ -41,6 +41,8 @@ export interface FlowKitConfigContextValue {
     collapsibleEdges?: boolean;
     /** Default edge path algorithm. Per-edge pathType overrides this. */
     edgePathType?: EdgePathType;
+    /** Default built-in route shaping. Per-edge routing overrides this. */
+    edgeRouting?: EdgeRoutingOptions;
     /** Controlled callback for persisting edge collapse state. */
     onEdgeCollapsedChange?: (args: IEdgeCollapsedChangeArgs) => void;
     /** Optional callback fired when collapse menu hover preview changes. */

@@ -12,6 +12,14 @@ export type EdgeCollapseMode = "edge" | "downstream" | "upstream" | "both";
 /** Built-in SVG path algorithms supported by default edges and drawn connection previews. */
 export type EdgePathType = "bezier" | "smooth-step" | "step";
 
+/** Built-in route shaping options for default edges. */
+export interface EdgeRoutingOptions {
+    /** Route orthogonal/smooth-step edges around rendered node bounds when possible. */
+    avoidNodes?: boolean;
+    /** Pixel spacing used to fan out multiple edges between the same node pair. */
+    parallelOffset?: number;
+}
+
 /** Describes a connection between two endpoint elements or two node bounds. */
 export interface IEdge<T> {
     /** Stable edge identifier. Also used as the rendered SVG group id. */
@@ -49,6 +57,8 @@ export interface IEdge<T> {
     data?: T;
     /** Overrides the global edgePathType option for this edge. */
     pathType?: EdgePathType;
+    /** Overrides global built-in route shaping for this edge. */
+    routing?: EdgeRoutingOptions;
     /** Explicit source node key for floating edges whose sourceId is still an endpoint id. */
     sourceNodeId?: string;
     /** Inline styles applied to the built-in visible path. */

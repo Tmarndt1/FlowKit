@@ -254,18 +254,21 @@ const networkContainers: INodeContainer[] = [
     label: "Rack A - WAN / Access",
     nodeKeys: ["network-radio", "network-client", "network-router"],
     padding: 24,
+    resizeToFit: false,
   },
   {
     key: "network-rack-core",
     label: "Rack B - Security / Core",
     nodeKeys: ["network-firewall", "network-switch"],
     padding: 24,
+    resizeToFit: false,
   },
   {
     key: "network-rack-compute",
     label: "Rack C - Compute / Storage",
     nodeKeys: ["network-vm-api", "network-vm-worker", "network-storage"],
     padding: 24,
+    resizeToFit: false,
   },
 ];
 
@@ -350,6 +353,7 @@ type NetworkDiagramProps = {
 
 export function NetworkDiagram({ animatedEdges, collapsibleEdges, edgePathType }: NetworkDiagramProps) {
   const [edges, setEdges] = React.useState<NetworkEdge[]>(networkEdges);
+  const [containers, setContainers] = React.useState<INodeContainer[]>(networkContainers);
   const nodeSummary = React.useMemo(() => {
     const counts = { critical: 0, degraded: 0, healthy: 0, unknown: 0 };
 
@@ -413,11 +417,12 @@ export function NetworkDiagram({ animatedEdges, collapsibleEdges, edgePathType }
           centerOnLoad
           collapsibleEdges={collapsibleEdges}
           edgePathType={edgePathType}
+          edgeRouting={{ avoidNodes: true, parallelOffset: 18 }}
           edges={edges.map((edge) => ({
             ...edge,
             label: collapsibleEdges ? undefined : edge.label,
           }))}
-          containers={networkContainers}
+          containers={containers}
           nodes={networkNodes}
           nodeTypes={networkNodeTypes}
           onEdgeCollapsedChange={({ collapsed, edge, mode }) => onEdgeCollapsedChange(edge.key, collapsed, mode)}
@@ -432,7 +437,7 @@ export function NetworkDiagram({ animatedEdges, collapsibleEdges, edgePathType }
             title="Topology Status"
           />
           <FlowKitControls />
-          <FlowKitEvents />
+          <FlowKitEvents onContainersChange={setContainers} />
           <FlowKitGridSnap containers size={20} />
         </FlowKit>
       </div>

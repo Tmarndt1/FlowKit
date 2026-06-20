@@ -27,6 +27,18 @@
     color: white;
 }
 
+.flow-kit-node-container-dragging-out {
+    background: rgba(153, 107, 45, .2);
+    border-color: rgba(255, 190, 92, .95);
+    box-shadow: inset 0 0 0 1px rgba(255, 190, 92, .35), 0 0 0 2px rgba(255, 190, 92, .12);
+}
+
+.flow-kit-node-container-dragging-out .flow-kit-node-container-header {
+    background: rgba(116, 78, 35, .9);
+    border-bottom-color: rgba(255, 190, 92, .5);
+    color: white;
+}
+
 .flow-kit-node-container-header {
     align-items: center;
     background: rgba(40, 76, 107, .86);

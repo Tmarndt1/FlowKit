@@ -2,6 +2,13 @@ import { Position } from "../enums/Position";
 import { IConnectionPoint } from "../interfaces/IConnectionPoint";
 import { IOffset } from "../interfaces/IOffset";
 import { getOffset } from "./getBezier";
+import {
+    avoidObstacles,
+    ComputedEdgeRoutingOptions,
+    offsetInteriorPoints,
+    removeCollinearPoints,
+    removeDuplicatePoints,
+} from "./edgeRouting";
 
 function move(point: IOffset, position: Position, amount: number): IOffset {
     switch (position) {
@@ -50,30 +57,6 @@ function getStepPoints(
     return sourceHorizontal
         ? [{ x: target.x, y: source.y }]
         : [{ x: source.x, y: target.y }];
-}
-
-function removeDuplicates(points: IOffset[]): IOffset[] {
-    return points.filter((point, index) => {
-        if (index === 0) return true;
-
-        const previous = points[index - 1];
-
-        return previous.x !== point.x || previous.y !== point.y;
-    });
-}
-
-function removeCollinear(points: IOffset[]): IOffset[] {
-    return points.filter((point, index) => {
-        const previous = points[index - 1];
-        const next = points[index + 1];
-
-        if (previous == null || next == null) return true;
-
-        return !(
-            (previous.x === point.x && point.x === next.x) ||
-            (previous.y === point.y && point.y === next.y)
-        );
-    });
 }
 
 function getRoutePoints(
@@ -212,16 +195,21 @@ export function getSmoothStep(
     target: IConnectionPoint,
     scale: number,
     offset = 32,
-    radius = 14
+    radius = 14,
+    routing?: ComputedEdgeRoutingOptions
 ): string | null {
     const sourcePoint = getOffset(containerOffset, source.offset, scale, source.buffer ?? 0);
     const targetPoint = getOffset(containerOffset, target.offset, scale, target.buffer ?? 0);
 
     if (sourcePoint == null || targetPoint == null) return null;
 
-    const points = removeCollinear(removeDuplicates(
+    const basePoints = removeCollinearPoints(removeDuplicatePoints(
         getRoutePoints(sourcePoint, targetPoint, source.position, target.position, offset)
     ));
+    const offsetPoints = offsetInteriorPoints(basePoints, routing?.parallelOffset ?? 0);
+    const points = removeCollinearPoints(removeDuplicatePoints(
+        routing?.avoidNodes ? avoidObstacles(offsetPoints, routing.obstacles) : offsetPoints
+    ));
 
-    return toRoundedPath(points, radius);
+    return toRoundedPath(points, routing?.avoidNodes ? Math.max(radius, 22) : radius);
 }

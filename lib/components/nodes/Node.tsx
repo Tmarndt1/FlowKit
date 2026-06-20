@@ -22,40 +22,6 @@ function snapValue(value: number, size: number): number {
     return Math.round(value / size) * size;
 }
 
-function clearContainerDropTarget(): void {
-    document
-        .querySelectorAll<HTMLElement>(".flow-kit-node-container-drop-target")
-        .forEach((container) => {
-            container.classList.remove("flow-kit-node-container-drop-target");
-        });
-}
-
-function updateContainerDropTarget(nodeElement: HTMLElement): void {
-    const nodeRect = nodeElement.getBoundingClientRect();
-    const nodeCenter = {
-        x: nodeRect.left + nodeRect.width / 2,
-        y: nodeRect.top + nodeRect.height / 2,
-    };
-    let targetContainer: HTMLElement | null = null;
-
-    document.querySelectorAll<HTMLElement>(".flow-kit-node-container").forEach((container) => {
-        const rect = container.getBoundingClientRect();
-
-        if (
-            nodeCenter.x >= rect.left &&
-            nodeCenter.x <= rect.right &&
-            nodeCenter.y >= rect.top &&
-            nodeCenter.y <= rect.bottom
-        ) {
-            targetContainer = container;
-        }
-    });
-
-    document.querySelectorAll<HTMLElement>(".flow-kit-node-container").forEach((container) => {
-        container.classList.toggle("flow-kit-node-container-drop-target", container === targetContainer);
-    });
-}
-
 const NodeComponent: React.FC<IProps> = (props) => {
     const { readOnly } = useFlowKitConfig();
     const scale = useNodeFlowViewportStore((state) => state.scale);
@@ -64,6 +30,7 @@ const NodeComponent: React.FC<IProps> = (props) => {
     const selected = useNodeFlowSelectionStore((state) => state.selectedNode?.key === props.node.key);
     const selectNode = useNodeFlowSelectionStore((state) => state.selectNode);
     const notifyEndpointsChanged = useNodeFlowRenderStore((state) => state.notifyEndpointsChanged);
+    const notifyNodeDrag = useNodeFlowInteractionStore((state) => state.notifyNodeDrag);
     const setDraggingNode = useNodeFlowInteractionStore((state) => state.setDraggingNode);
     const nodeRef = React.useRef<HTMLDivElement>(null);
     const cursorPosRef = React.useRef<IOffset>({ x: 0, y: 0 });
@@ -75,12 +42,14 @@ const NodeComponent: React.FC<IProps> = (props) => {
     const scaleRef = React.useRef(scale);
     const snapRef = React.useRef({ enabled: snapEnabled, size: snapSize });
     const notifyEndpointsChangedRef = React.useRef(notifyEndpointsChanged);
+    const notifyNodeDragRef = React.useRef(notifyNodeDrag);
     const setDraggingNodeRef = React.useRef(setDraggingNode);
 
     propsRef.current = props;
     scaleRef.current = scale;
     snapRef.current = { enabled: snapEnabled, size: snapSize };
     notifyEndpointsChangedRef.current = notifyEndpointsChanged;
+    notifyNodeDragRef.current = notifyNodeDrag;
     setDraggingNodeRef.current = setDraggingNode;
 
     const onMouseMove = React.useCallback((e: MouseEvent): void => {
@@ -107,14 +76,13 @@ const NodeComponent: React.FC<IProps> = (props) => {
         currentProps.node.offset.y = Math.round(y);
 
         nodeRef.current.style.transform = `translate(${x}px, ${y}px)`;
-        updateContainerDropTarget(nodeRef.current);
+        notifyNodeDragRef.current();
         notifyEndpointsChangedRef.current(currentProps.node.endpoints);
     }, []);
 
     const onMouseUp = React.useCallback((e: MouseEvent): void => {
         mouseDownRef.current = false;
         setDraggingNodeRef.current(false, null);
-        clearContainerDropTarget();
         e.stopPropagation();
         e.preventDefault();
         document.removeEventListener("mouseup", onMouseUp);
@@ -184,7 +152,6 @@ const NodeComponent: React.FC<IProps> = (props) => {
     React.useEffect(() => {
         return () => {
             setDraggingNodeRef.current(false, null);
-            clearContainerDropTarget();
             document.removeEventListener("mouseup", onMouseUp);
             document.removeEventListener("mousemove", onMouseMove);
         };

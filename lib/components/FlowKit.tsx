@@ -1,5 +1,5 @@
 import * as React from "react";
-import { EdgePathType, IEdge } from "../interfaces/IEdge";
+import { EdgePathType, EdgeRoutingOptions, IEdge } from "../interfaces/IEdge";
 import { INode } from "../interfaces/INode";
 import { INodeContainer } from "../interfaces/INodeContainer";
 import { IOffset } from "../interfaces/IOffset";
@@ -132,6 +132,8 @@ export interface FlowKitProps {
     collapsibleEdges?: boolean;
     /** Default built-in edge path algorithm. */
     edgePathType?: EdgePathType;
+    /** Default built-in route shaping for edges. */
+    edgeRouting?: EdgeRoutingOptions;
     /** Disables graph-editing interactions while preserving pan, zoom, and selection. */
     readOnly?: boolean;
     /** Called when a built-in fold control requests collapsed state changes. */
@@ -196,6 +198,7 @@ const FlowKitComponent = (props: FlowKitProps, ref: React.ForwardedRef<FlowKitHa
             animatedEdges: props.animatedEdges,
             collapsibleEdges: props.collapsibleEdges,
             edgePathType: props.edgePathType,
+            edgeRouting: props.edgeRouting,
             onEdgeCollapsedChange: props.onEdgeCollapsedChange,
             onEdgeCollapsePreviewChange,
             canConnect: props.canConnect,
@@ -206,6 +209,7 @@ const FlowKitComponent = (props: FlowKitProps, ref: React.ForwardedRef<FlowKitHa
             props.canConnect,
             props.collapsibleEdges,
             props.edgePathType,
+            props.edgeRouting,
             props.onEdgeCollapsedChange,
             props.readOnly,
             onEdgeCollapsePreviewChange

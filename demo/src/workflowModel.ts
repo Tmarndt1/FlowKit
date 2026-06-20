@@ -405,6 +405,7 @@ export const initialContainers: WorkflowContainer[] = [
     key: "business-logic",
     label: "Business Logic",
     nodeKeys: ["multiply", "add", "greater-than", "branch", "number-c", "limit"],
+    resizeToFit: false,
   },
 ];
 

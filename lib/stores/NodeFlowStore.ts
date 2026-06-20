@@ -39,10 +39,12 @@ export interface NodeFlowViewportState {
 }
 
 export interface NodeFlowInteractionState {
+    dragUpdateVersion: number;
     draggingNode: boolean;
     draggedNode: INode<any, any> | null;
     sourceEndpoint: SourceEndpoint | null;
     endpointDropRequest: EndpointDropRequest | null;
+    notifyNodeDrag: () => void;
     setDraggingNode: (draggingNode: boolean, node?: INode<any, any> | null) => void;
     setSourceEndpoint: (sourceEndpoint: SourceEndpoint | null) => void;
     dropEndpoint: (targetId: string) => void;
@@ -113,16 +115,24 @@ export function createNodeFlowViewportStore(): NodeFlowViewportStore {
 
 export function createNodeFlowInteractionStore(): NodeFlowInteractionStore {
     return createStore<NodeFlowInteractionState>((set, get) => ({
+        dragUpdateVersion: 0,
         draggingNode: false,
         draggedNode: null,
         sourceEndpoint: null,
         endpointDropRequest: null,
+        notifyNodeDrag: () => {
+            set({ dragUpdateVersion: get().dragUpdateVersion + 1 });
+        },
         setDraggingNode: (draggingNode, node = null) => {
             const draggedNode = draggingNode ? node : null;
 
             if (get().draggingNode === draggingNode && get().draggedNode === draggedNode) return;
 
-            set({ draggingNode, draggedNode });
+            set({
+                draggingNode,
+                draggedNode,
+                dragUpdateVersion: get().dragUpdateVersion + 1,
+            });
         },
         setSourceEndpoint: (sourceEndpoint) => {
             if (get().sourceEndpoint === sourceEndpoint) return;

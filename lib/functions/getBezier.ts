@@ -1,6 +1,7 @@
 import { Position } from "../enums/Position";
 import { IOffset } from "../interfaces/IOffset";
 import { IConnectionPoint } from "../interfaces/IConnectionPoint";
+import { ComputedEdgeRoutingOptions, EdgeRoutingObstacle } from "./edgeRouting";
 
 export function getOffset(
     containerOffset: IOffset | null | undefined,
@@ -87,12 +88,63 @@ function getHandleLength(
     return clamp(minCurve + crossAxisDistance * 0.22, minCurve, 180);
 }
 
+function lineHitsObstacle(from: IOffset, to: IOffset, obstacle: EdgeRoutingObstacle): boolean {
+    for (let index = 0; index <= 20; index++) {
+        const amount = index / 20;
+        const x = from.x + (to.x - from.x) * amount;
+        const y = from.y + (to.y - from.y) * amount;
+
+        if (
+            x >= obstacle.x &&
+            x <= obstacle.x + obstacle.width &&
+            y >= obstacle.y &&
+            y <= obstacle.y + obstacle.height
+        ) {
+            return true;
+        }
+    }
+
+    return false;
+}
+
+function getBezierDetourPoint(sourcePoint: IOffset, targetPoint: IOffset, obstacle: EdgeRoutingObstacle): IOffset {
+    const dx = targetPoint.x - sourcePoint.x;
+    const dy = targetPoint.y - sourcePoint.y;
+    const length = Math.max(1, Math.sqrt(dx * dx + dy * dy));
+    const center = {
+        x: obstacle.x + obstacle.width / 2,
+        y: obstacle.y + obstacle.height / 2
+    };
+    const horizontal = Math.abs(dx) >= Math.abs(dy);
+    const sign = horizontal
+        ? sourcePoint.y <= center.y ? -1 : 1
+        : sourcePoint.x <= center.x ? -1 : 1;
+    const perpendicular = horizontal
+        ? { x: -dy / length, y: dx / length }
+        : { x: dy / length, y: -dx / length };
+    const distance = Math.max(obstacle.width, obstacle.height) / 2 + 40;
+
+    return {
+        x: center.x + perpendicular.x * distance * sign,
+        y: center.y + perpendicular.y * distance * sign
+    };
+}
+
+function getCurvedDetourPath(sourcePoint: IOffset, targetPoint: IOffset, detourPoint: IOffset): string {
+    return `
+        M ${sourcePoint.x},${sourcePoint.y}
+        Q ${detourPoint.x},${detourPoint.y}
+          ${targetPoint.x},${targetPoint.y}
+    `;
+}
+
 export function getBezier(
     containerOffset: IOffset,
     source: IConnectionPoint,
     target: IConnectionPoint,
     scale: number,
-    minCurve = 80
+    minCurve = 80,
+    routing?: ComputedEdgeRoutingOptions
 ): string | null
 {
     const sourcePoint = getOffset(
@@ -112,6 +164,25 @@ export function getBezier(
     if (!sourcePoint || !targetPoint)
     {
         return null;
+    }
+
+    const parallelOffset = routing?.parallelOffset ?? 0;
+
+    const obstacle = routing?.avoidNodes
+        ? routing.obstacles?.find((item) => lineHitsObstacle(sourcePoint, targetPoint, item))
+        : null;
+
+    if (obstacle != null) {
+        const detourPoint = getBezierDetourPoint(sourcePoint, targetPoint, obstacle);
+        const horizontal = Math.abs(targetPoint.x - sourcePoint.x) >= Math.abs(targetPoint.y - sourcePoint.y);
+
+        if (horizontal) {
+            detourPoint.y += parallelOffset;
+        } else {
+            detourPoint.x += parallelOffset;
+        }
+
+        return getCurvedDetourPath(sourcePoint, targetPoint, detourPoint);
     }
 
     const sourceDirection = getDirection(source.position);
@@ -149,6 +220,18 @@ export function getBezier(
         x: targetPoint.x + targetDirection.x * targetCurve,
         y: targetPoint.y + targetDirection.y * targetCurve
     };
+
+    if (parallelOffset !== 0) {
+        const horizontal = Math.abs(dx) >= Math.abs(dy);
+
+        if (horizontal) {
+            sourceControl.y += parallelOffset;
+            targetControl.y += parallelOffset;
+        } else {
+            sourceControl.x += parallelOffset;
+            targetControl.x += parallelOffset;
+        }
+    }
 
     return `
         M ${sourcePoint.x},${sourcePoint.y}

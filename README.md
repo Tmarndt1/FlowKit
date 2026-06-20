@@ -37,11 +37,13 @@ Use it for workflow engines, automation builders, network topology editors, ETL 
 * Floating node-bound connections
 * Selection state
 * Group containers with draggable membership
+* Optional container resize-to-fit behavior
 * State classes for fold preview and hidden nodes
 
 ### Edges
 
 * Bezier, smooth-step, and step paths
+* Built-in route shaping for node avoidance and parallel edge offsets
 * Optional animated flow paths
 * Source, target, or bidirectional arrows
 * Custom edge renderers
@@ -180,6 +182,25 @@ For advanced integrations, `getFoldGraphState` is exported.
 
 ---
 
+## Containers
+
+Containers resize around their assigned nodes by default. Disable that behavior per container when you want a container to keep its current rendered size after nodes are dragged in or out.
+
+```ts
+const containers = [
+  {
+    key: "rack-a",
+    label: "Rack A",
+    nodeKeys: ["router", "switch"],
+    resizeToFit: false,
+  },
+];
+```
+
+When `resizeToFit` is `false`, FlowKit preserves the rendered container position and size during membership changes. Users can still move or manually resize the container unless `readOnly` is enabled.
+
+---
+
 ## Read-Only Mode
 
 Set `readOnly` when the diagram should be inspectable but not editable.
@@ -220,6 +241,44 @@ const edge = {
 ```
 
 Animation is opt-in through either `animatedEdges` on `FlowKit` or `animated` on an individual edge.
+
+---
+
+## Edge Routing
+
+Use `edgeRouting` to shape built-in edge paths when diagrams get dense.
+
+```tsx
+<FlowKit
+  nodes={nodes}
+  edges={edges}
+  edgePathType="smooth-step"
+  edgeRouting={{
+    avoidNodes: true,
+    parallelOffset: 18,
+  }}
+/>
+```
+
+Available options:
+
+* `avoidNodes`: routes edges around rendered node bounds when possible. This is strongest with `smooth-step` and `step` paths, and uses a conservative curved detour for Bezier paths.
+* `parallelOffset`: fans out multiple edges that connect the same source/target node pair.
+
+Override per edge:
+
+```ts
+const edge = {
+  key: "edge-a-b",
+  type: "edge",
+  sourceId: "a",
+  targetId: "b",
+  routing: {
+    avoidNodes: false,
+    parallelOffset: 28,
+  },
+};
+```
 
 ---
 
@@ -304,7 +363,7 @@ npm run dev
 
 ## Status
 
-FlowKit is under active development. Planned areas include undo/redo, copy/paste, multi-select, edge labels, auto-layout, and broader keyboard support.
+FlowKit is under active development. Planned areas include undo/redo, copy/paste, multi-select, auto-layout, bundled edges, self-loops, and broader keyboard support.
 
 ---
 

@@ -1,13 +1,21 @@
 import { Position } from "../enums/Position";
 import { IOffset } from "../interfaces/IOffset";
 import { IConnectionPoint } from "../interfaces/IConnectionPoint";
+import {
+    avoidObstacles,
+    ComputedEdgeRoutingOptions,
+    offsetInteriorPoints,
+    removeCollinearPoints,
+    removeDuplicatePoints,
+} from "./edgeRouting";
 
 export function getOrthogonal(
     containerOffset: IOffset | null | undefined,
     source: IConnectionPoint,
     target: IConnectionPoint,
     scale: number,
-    offset = 32
+    offset = 32,
+    routing?: ComputedEdgeRoutingOptions
 ): string | null
 {
     if (containerOffset == null || scale === 0)
@@ -28,8 +36,12 @@ export function getOrthogonal(
         targetStub,
         targetPoint
     ];
+    const offsetPoints = offsetInteriorPoints(removeDuplicatePoints(points), routing?.parallelOffset ?? 0);
+    const routedPoints = routing?.avoidNodes
+        ? avoidObstacles(offsetPoints, routing.obstacles)
+        : offsetPoints;
 
-    return toPath(removeDuplicates(points));
+    return toPath(removeCollinearPoints(removeDuplicatePoints(routedPoints)));
 }
 
 function normalizePoint(
@@ -111,21 +123,6 @@ function getStepPoints(
 function isHorizontal(position: Position): boolean
 {
     return position === Position.Left || position === Position.Right;
-}
-
-function removeDuplicates(points: IOffset[]): IOffset[]
-{
-    return points.filter((point, index) =>
-    {
-        if (index === 0)
-        {
-            return true;
-        }
-
-        const previous = points[index - 1];
-
-        return previous.x !== point.x || previous.y !== point.y;
-    });
 }
 
 function toPath(points: IOffset[]): string

@@ -113,7 +113,7 @@ const NodesLayerComponent = React.forwardRef<NodesLayerHandle, IProps>((props, r
                 nodeKeys,
             };
 
-            if (nodeKeys.length < 1 && bounds != null) {
+            if ((nodeKeys.length < 1 || container.resizeToFit === false) && bounds != null) {
                 nextContainer.position = { x: bounds.x, y: bounds.y };
                 nextContainer.width = bounds.width;
                 nextContainer.height = bounds.height;
