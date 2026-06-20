@@ -5,6 +5,7 @@ import { NodeInspector } from "./components/NodeInspector";
 import { NodePalette } from "./components/NodePalette";
 import { NetworkDiagram } from "./components/NetworkDiagram";
 import { DemoView, TopBar } from "./components/TopBar";
+import { VolumeUtilizationWorkflow, volumeWorkflowStats } from "./components/VolumeUtilizationWorkflow";
 import { WorkflowCanvas } from "./components/WorkflowCanvas";
 import {
   RuntimeVariable,
@@ -36,6 +37,8 @@ export function App() {
   const [animatedEdges, setAnimatedEdges] = React.useState(false);
   const [collapsibleEdges, setCollapsibleEdges] = React.useState(true);
   const [demoView, setDemoView] = React.useState<DemoView>("workflow");
+  const activeNodeCount = demoView === "utilization" ? volumeWorkflowStats.nodeCount : nodes.length;
+  const activeEdgeCount = demoView === "utilization" ? volumeWorkflowStats.edgeCount : edges.length;
 
   const selectedNode = React.useMemo(
     () => nodes.find((node) => node.key === selectedKey) ?? nodes.find((node) => node.key === "runtime-multiplier") ?? null,
@@ -293,12 +296,12 @@ export function App() {
     <main className="demo-shell">
       <TopBar
         demoView={demoView}
-        edgeCount={edges.length}
+        edgeCount={activeEdgeCount}
         edgePathType={edgePathType}
         animatedEdges={animatedEdges}
         collapsibleEdges={collapsibleEdges}
         lastRunLabel={lastRunLabel}
-        nodeCount={nodes.length}
+        nodeCount={activeNodeCount}
         onAnimatedEdgesChange={setAnimatedEdges}
         onCollapsibleEdgesChange={updateCollapsibleEdges}
         onDemoViewChange={setDemoView}
@@ -324,8 +327,14 @@ export function App() {
               onRemove={onRemove}
               onSelectionChange={setSelectedKey}
             />
-          ) : (
+          ) : demoView === "floating" ? (
             <NetworkDiagram
+              animatedEdges={animatedEdges}
+              collapsibleEdges={collapsibleEdges}
+              edgePathType={edgePathType}
+            />
+          ) : (
+            <VolumeUtilizationWorkflow
               animatedEdges={animatedEdges}
               collapsibleEdges={collapsibleEdges}
               edgePathType={edgePathType}

@@ -253,6 +253,10 @@ button {
   grid-template-columns: minmax(0, 1fr);
 }
 
+.demo-grid-utilization {
+  grid-template-columns: minmax(0, 1fr);
+}
+
 .node-palette,
 .node-inspector {
   background: linear-gradient(180deg, #111821 0%, #0d121a 100%);
@@ -648,6 +652,376 @@ button {
 
 .canvas-panel .flow-kit-node-container-header::before {
   content: none;
+}
+
+.volume-workflow-panel {
+  background:
+    radial-gradient(circle at 52% 28%, rgba(37, 83, 111, 0.2), transparent 44%),
+    #0b1119;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 340px;
+  min-height: 0;
+  overflow: hidden;
+}
+
+.volume-workflow-canvas {
+  min-height: 0;
+  position: relative;
+}
+
+.volume-workflow-canvas .flow-kit {
+  background: #0b1119;
+  border: 0;
+  border-radius: 0;
+  height: 100%;
+  overflow: hidden;
+}
+
+.volume-workflow-canvas .flow-kit-viewport {
+  background-color: #0b1119;
+}
+
+.volume-workflow-canvas .flow-kit-grid-background {
+  background-size: 32px 32px !important;
+}
+
+.volume-workflow-canvas .flow-kit-node-wrapper {
+  border: 0;
+  color: #f2f5fb;
+  transition: box-shadow 160ms ease, opacity 160ms ease;
+}
+
+.volume-workflow-canvas .flow-kit-node-wrapper.selected .workflow-node {
+  border-color: #8fd0ff;
+  box-shadow: 0 0 0 3px rgba(143, 208, 255, 0.18), 0 18px 34px rgba(0, 0, 0, 0.4);
+}
+
+.volume-workflow-canvas .flow-kit-node-wrapper.flow-kit-node-fold-preview {
+  box-shadow: 0 0 0 2px rgba(104, 232, 255, 0.9), 0 0 24px rgba(104, 232, 255, 0.28);
+}
+
+.volume-workflow-canvas .flow-kit-node-wrapper.flow-kit-node-fold-hidden {
+  opacity: 0;
+  pointer-events: none;
+}
+
+.volume-workflow-canvas .flow-kit-endpoint {
+  border: 2px solid #101720;
+  border-radius: 50%;
+  height: 16px;
+  position: absolute;
+  width: 16px;
+  z-index: 4;
+}
+
+.volume-workflow-canvas .flow-kit-edge-path {
+  fill: none;
+  pointer-events: stroke;
+  stroke: #43dc83;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  stroke-width: 3;
+  transition: opacity 160ms ease, stroke 160ms ease;
+}
+
+.volume-workflow-canvas .volume-link-muted .flow-kit-edge-path {
+  opacity: .45;
+  stroke: #7890a8;
+}
+
+.volume-workflow-canvas .volume-link-warning .flow-kit-edge-path {
+  filter: drop-shadow(0 0 8px rgba(255, 190, 64, .18));
+  stroke: #ffbd4a;
+}
+
+.volume-workflow-canvas .volume-link-critical .flow-kit-edge-path {
+  opacity: .8;
+  stroke: #ff6767;
+}
+
+.volume-workflow-canvas .flow-kit-edge-fold-preview .flow-kit-edge-path {
+  stroke: #68e8ff;
+}
+
+.volume-workflow-canvas .flow-kit-edge-label-background {
+  fill: rgba(7, 16, 26, 0.72);
+  stroke: transparent;
+}
+
+.volume-workflow-canvas .flow-kit-edge-label-text {
+  fill: #d6e0ef;
+  font-size: 11px;
+}
+
+.volume-workflow-canvas .flow-kit-node-container {
+  background: rgba(23, 45, 65, 0.18);
+  border: 1px solid rgba(69, 178, 255, 0.5);
+  border-radius: 16px;
+  box-shadow: inset 0 0 0 1px rgba(69, 178, 255, 0.08);
+  overflow: hidden;
+}
+
+.volume-workflow-canvas .flow-kit-node-container-header {
+  background: rgba(45, 86, 120, 0.9);
+  border: 0;
+  border-bottom: 1px solid rgba(103, 164, 208, 0.62);
+  border-radius: 15px 15px 0 0;
+  color: #c7d8e9;
+  cursor: grab;
+  font-size: 13px;
+  font-weight: 600;
+  height: 34px;
+  inset: 0 0 auto;
+  justify-content: flex-start;
+  padding: 0 14px;
+  position: absolute;
+  transform: none;
+  width: 100%;
+  z-index: 2;
+}
+
+.volume-workflow-canvas .flow-kit-node-container[data-container-key="volume-policy"] {
+  border-color: rgba(255, 159, 67, 0.68);
+}
+
+.volume-workflow-canvas .flow-kit-node-container[data-container-key="volume-policy"] .flow-kit-node-container-header {
+  background: rgba(120, 76, 38, 0.92);
+  border-bottom-color: rgba(255, 190, 97, 0.48);
+}
+
+.volume-workflow-canvas .flow-kit-controls {
+  background: #090e16f5;
+  border: 1px solid #7a91b28c;
+  border-radius: 8px;
+  bottom: 28px;
+  box-shadow: 0 16px 36px #00000085, 0 0 0 1px #ffffff0d;
+  display: flex;
+  gap: 4px;
+  height: 48px;
+  justify-content: center;
+  left: 22px;
+  overflow: hidden;
+  padding: 5px;
+}
+
+.volume-workflow-canvas .flow-kit-controls > button {
+  align-items: center;
+  background: linear-gradient(180deg, #263447 0%, #172131 100%);
+  border: 1px solid rgba(144, 164, 190, 0.35);
+  border-radius: 6px;
+  color: #edf4ff;
+  cursor: pointer;
+  display: inline-flex;
+  font-size: 18px;
+  height: 36px;
+  justify-content: center;
+  line-height: 1;
+  min-height: 36px;
+  min-width: 36px;
+  width: 36px;
+}
+
+.volume-workflow-canvas .flow-kit-mini-map {
+  background:
+    linear-gradient(rgba(125, 151, 188, 0.08) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(125, 151, 188, 0.08) 1px, transparent 1px),
+    rgba(12, 17, 25, 0.92);
+  background-size: 16px 16px;
+  border-radius: 8px;
+  bottom: 100px;
+  height: 122px;
+  left: 22px;
+  top: auto;
+  width: 270px;
+}
+
+.volume-workflow-canvas .flow-kit-mini-map-node {
+  border-radius: 3px;
+  opacity: 1;
+}
+
+.volume-workflow-canvas .volume-workflow-legend {
+  --flow-kit-legend-background: rgba(9, 14, 22, .88);
+  --flow-kit-legend-border: rgba(122, 145, 178, .42);
+  --flow-kit-legend-label-color: #b8c5d8;
+  --flow-kit-legend-title-color: #f3f7ff;
+  --flow-kit-legend-value-color: #f3f7ff;
+  backdrop-filter: blur(12px);
+  min-width: 184px;
+}
+
+.volume-workflow-details {
+  background: linear-gradient(180deg, rgba(10, 18, 30, 0.98), rgba(7, 13, 22, 0.98));
+  border-left: 1px solid rgba(79, 106, 141, 0.28);
+  display: grid;
+  gap: 22px;
+  grid-auto-rows: max-content;
+  min-height: 0;
+  overflow: auto;
+  padding: 18px 20px;
+}
+
+.volume-policy-header {
+  align-items: center;
+  display: grid;
+  gap: 12px;
+  grid-template-columns: 44px minmax(0, 1fr) auto;
+}
+
+.volume-policy-header strong,
+.volume-policy-header span {
+  display: block;
+}
+
+.volume-policy-header strong {
+  color: #f4f8ff;
+  font-size: 16px;
+}
+
+.volume-policy-header span {
+  color: #93a1b6;
+  font-size: 12px;
+  margin-top: 3px;
+}
+
+.volume-policy-header em {
+  color: #ffbd4a;
+  font-size: 12px;
+  font-style: normal;
+  font-weight: 700;
+}
+
+.volume-policy-icon {
+  align-items: center;
+  background: rgba(255, 159, 67, 0.16);
+  border: 1px solid rgba(255, 189, 74, 0.36);
+  border-radius: 10px;
+  color: #ffbd4a;
+  display: inline-flex;
+  font-size: 20px;
+  font-weight: 800;
+  height: 42px;
+  justify-content: center;
+  width: 42px;
+}
+
+.volume-workflow-details section {
+  border-top: 1px solid rgba(79, 106, 141, 0.22);
+  display: grid;
+  gap: 14px;
+  padding-top: 20px;
+}
+
+.volume-workflow-details h2 {
+  color: #f2f6ff;
+  font-size: 12px;
+  margin: 0;
+}
+
+.volume-detail-list {
+  display: grid;
+  gap: 12px;
+  margin: 0;
+}
+
+.volume-detail-list div {
+  display: flex;
+  justify-content: space-between;
+}
+
+.volume-detail-list dt,
+.volume-detail-list dd {
+  font-size: 12px;
+  margin: 0;
+}
+
+.volume-detail-list dt {
+  color: #93a1b6;
+}
+
+.volume-detail-list dd {
+  color: #dce7f6;
+}
+
+.volume-threshold-list {
+  display: grid;
+  gap: 10px;
+}
+
+.volume-threshold-row {
+  align-items: center;
+  background: rgba(16, 24, 36, 0.78);
+  border: 1px solid rgba(134, 146, 166, 0.2);
+  border-radius: 8px;
+  display: grid;
+  gap: 10px;
+  grid-template-columns: 9px minmax(0, 1fr) auto;
+  min-height: 38px;
+  padding: 0 10px;
+}
+
+.volume-threshold-row span {
+  border-radius: 50%;
+  height: 8px;
+  width: 8px;
+}
+
+.volume-threshold-row strong,
+.volume-threshold-row em {
+  font-size: 12px;
+}
+
+.volume-threshold-row strong {
+  color: #e7edf8;
+}
+
+.volume-threshold-row em {
+  color: #9faec3;
+  font-style: normal;
+}
+
+.volume-threshold-row.active {
+  background: rgba(255, 189, 74, 0.11);
+  border-color: rgba(255, 189, 74, 0.46);
+}
+
+.volume-threshold-normal span {
+  background: #55dd75;
+}
+
+.volume-threshold-warning span {
+  background: #ffbd4a;
+}
+
+.volume-threshold-critical span {
+  background: #ff6767;
+}
+
+.volume-alert-card {
+  background: rgba(255, 189, 74, 0.1);
+  border: 1px solid rgba(255, 189, 74, 0.34);
+  border-radius: 8px;
+  display: grid;
+  gap: 8px;
+  padding: 13px;
+}
+
+.volume-alert-card strong {
+  color: #fff1cf;
+  font-size: 13px;
+}
+
+.volume-alert-card p {
+  color: #d9e3f1;
+  font-size: 12px;
+  line-height: 1.45;
+  margin: 0;
+}
+
+.volume-alert-card span {
+  color: #ffbd4a;
+  font-size: 11px;
+  font-weight: 700;
 }
 
 .network-panel {
@@ -2462,6 +2836,7 @@ button {
 
 @media (max-width: 1240px) {
   .demo-shell {
+    grid-template-rows: auto minmax(0, 1fr);
     min-height: 1000px;
     overflow: auto;
   }
