@@ -1955,14 +1955,18 @@ button {
 }
 
 .network-canvas .network-link-up .flow-kit-edge-path {
-  stroke: #526a80;
+  filter: drop-shadow(0 0 7px rgba(53, 207, 104, .18));
+  opacity: .86;
+  stroke: #35cf68;
 }
 
 .network-canvas .network-link-degraded .flow-kit-edge-path {
+  opacity: .9;
   stroke: #f2be24;
 }
 
 .network-canvas .network-link-down .flow-kit-edge-path {
+  opacity: .94;
   filter: drop-shadow(0 0 8px rgba(255, 95, 103, .28));
   stroke: #ff5f67;
 }

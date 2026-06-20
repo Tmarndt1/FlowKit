@@ -212,7 +212,7 @@ const networkNodes: NetworkNodeType[] = [
   {
     key: "network-acc-sw-01",
     type: "network-node",
-    offset: { x: 240, y: 765 },
+    offset: { x: 200, y: 765 },
     endpoints: [],
     data: {
       accent: "green",
@@ -232,7 +232,7 @@ const networkNodes: NetworkNodeType[] = [
   {
     key: "network-acc-sw-02",
     type: "network-node",
-    offset: { x: 505, y: 765 },
+    offset: { x: 505, y: 785 },
     endpoints: [],
     data: {
       accent: "green",
@@ -252,7 +252,7 @@ const networkNodes: NetworkNodeType[] = [
   {
     key: "network-acc-sw-03",
     type: "network-node",
-    offset: { x: 880, y: 765 },
+    offset: { x: 915, y: 785 },
     endpoints: [],
     data: {
       accent: "green",
@@ -272,7 +272,7 @@ const networkNodes: NetworkNodeType[] = [
   {
     key: "network-acc-sw-04",
     type: "network-node",
-    offset: { x: 1145, y: 765 },
+    offset: { x: 1220, y: 765 },
     endpoints: [],
     data: {
       accent: "green",
@@ -292,7 +292,7 @@ const networkNodes: NetworkNodeType[] = [
   {
     key: "network-srv-app-01",
     type: "network-node",
-    offset: { x: 195, y: 980 },
+    offset: { x: 80, y: 1015 },
     endpoints: [],
     data: {
       accent: "purple",
@@ -312,18 +312,18 @@ const networkNodes: NetworkNodeType[] = [
   {
     key: "network-srv-db-01",
     type: "network-node",
-    offset: { x: 385, y: 980 },
+    offset: { x: 315, y: 1015 },
     endpoints: [],
     data: {
       accent: "purple",
       deviceType: "server",
       ip: "10.0.32.31",
       location: "Rack D",
-      metric: "68%",
+      metric: "Disk latency",
       model: "PowerEdge R750",
       role: "Database Server",
-      status: "healthy",
-      statusLabel: "Serving",
+      status: "critical",
+      statusLabel: "Storage alert",
       subtitle: "Server",
       title: "SRV-DB-01",
       vendor: "Dell",
@@ -332,7 +332,7 @@ const networkNodes: NetworkNodeType[] = [
   {
     key: "network-ap-01",
     type: "network-node",
-    offset: { x: 585, y: 980 },
+    offset: { x: 565, y: 1035 },
     endpoints: [],
     data: {
       accent: "yellow",
@@ -352,7 +352,7 @@ const networkNodes: NetworkNodeType[] = [
   {
     key: "network-ap-02",
     type: "network-node",
-    offset: { x: 765, y: 980 },
+    offset: { x: 780, y: 1035 },
     endpoints: [],
     data: {
       accent: "yellow",
@@ -372,7 +372,7 @@ const networkNodes: NetworkNodeType[] = [
   {
     key: "network-srv-web-01",
     type: "network-node",
-    offset: { x: 865, y: 980 },
+    offset: { x: 915, y: 1015 },
     endpoints: [],
     data: {
       accent: "purple",
@@ -392,7 +392,7 @@ const networkNodes: NetworkNodeType[] = [
   {
     key: "network-srv-web-02",
     type: "network-node",
-    offset: { x: 1060, y: 980 },
+    offset: { x: 1145, y: 1015 },
     endpoints: [],
     data: {
       accent: "purple",
@@ -412,18 +412,18 @@ const networkNodes: NetworkNodeType[] = [
   {
     key: "network-phone-01",
     type: "network-node",
-    offset: { x: 1245, y: 980 },
+    offset: { x: 1375, y: 1035 },
     endpoints: [],
     data: {
       accent: "gray",
       deviceType: "phone",
       ip: "10.0.64.18",
       location: "Lobby",
-      metric: "15%",
+      metric: "SIP down",
       model: "8845",
       role: "IP Phone",
-      status: "unknown",
-      statusLabel: "Inventory only",
+      status: "critical",
+      statusLabel: "Offline",
       subtitle: "IP Phone",
       title: "IP-PHONE-01",
       vendor: "Cisco",
@@ -448,11 +448,11 @@ const networkEdges: NetworkEdge[] = [
     type: "edge",
     anchorMode: "floating",
     arrows: "target",
-    className: "network-link-up",
-    label: "10 Gbps 42%",
+    className: "network-link-degraded",
+    label: "10 Gbps 79%",
     sourceId: "network-firewall",
     targetId: "network-core-rtr-01",
-    data: { label: "Firewall transit", latency: "2 ms", status: "up", throughput: "10 Gbps" },
+    data: { label: "Firewall transit", latency: "12 ms", status: "degraded", throughput: "10 Gbps" },
   },
   {
     key: "network-edge-core-left",
@@ -591,11 +591,11 @@ const networkEdges: NetworkEdge[] = [
     type: "edge",
     anchorMode: "floating",
     arrows: "target",
-    className: "network-link-up",
-    label: "1 Gbps 68%",
+    className: "network-link-down",
+    label: "1 Gbps down",
     sourceId: "network-acc-sw-01",
     targetId: "network-srv-db-01",
-    data: { label: "Database server", latency: "1 ms", status: "up", throughput: "1 Gbps" },
+    data: { label: "Database server", latency: "timeout", status: "down", throughput: "0 bps" },
   },
   {
     key: "network-edge-acc02-ap01",
@@ -646,11 +646,11 @@ const networkEdges: NetworkEdge[] = [
     type: "edge",
     anchorMode: "floating",
     arrows: "target",
-    className: "network-link-degraded",
-    label: "100 Mbps 15%",
+    className: "network-link-down",
+    label: "100 Mbps down",
     sourceId: "network-acc-sw-04",
     targetId: "network-phone-01",
-    data: { label: "Voice endpoint", latency: "17 ms", status: "degraded", throughput: "100 Mbps" },
+    data: { label: "Voice endpoint", latency: "timeout", status: "down", throughput: "0 bps" },
   },
 ];
 
