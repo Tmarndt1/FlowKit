@@ -2,6 +2,7 @@ import * as React from "react";
 import { getBezier } from "../../functions/getBezier";
 import { getOrthogonal } from "../../functions/getOrthogonal";
 import { getSmoothStep } from "../../functions/getSmoothStep";
+import { getStraight } from "../../functions/getStraight";
 import { EdgeCollapseMode, IEdge } from "../../interfaces/IEdge";
 import { ComputedEdgeRoutingOptions } from "../../functions/edgeRouting";
 import {
@@ -25,7 +26,6 @@ interface IProps {
 const EdgeComponent: React.FC<IProps> = (props) =>
 {
     const {
-        animatedEdges,
         collapsibleEdges,
         edgePathType,
         onEdgeCollapsedChange,
@@ -90,7 +90,9 @@ const EdgeComponent: React.FC<IProps> = (props) =>
                 ? getSmoothStep(...pathArgs, 32, 14, currentProps.routing)
                 : pathType === "step"
                     ? getOrthogonal(...pathArgs, 32, currentProps.routing)
-                    : getBezier(...pathArgs, 80, currentProps.routing);
+                    : pathType === "straight"
+                        ? getStraight(...pathArgs, currentProps.routing)
+                        : getBezier(...pathArgs, 80, currentProps.routing);
 
         if (nextPath != null)
         {
@@ -273,7 +275,7 @@ const EdgeComponent: React.FC<IProps> = (props) =>
         onClick: onSelect,
         onMouseDownCapture: stopEdgeDrag
     };
-    const animated = props.edge.animated ?? animatedEdges ?? false;
+    const animated = props.edge.animated ?? false;
     const collapsible = !readOnly && (props.edge.collapsible ?? collapsibleEdges ?? false);
     const collapsed = props.edge.collapsed ?? false;
     const collapseMode = props.edge.collapseMode ?? "edge";

@@ -63,6 +63,10 @@ export function WorkflowCanvas({
   onRemove,
   onSelectionChange,
 }: WorkflowCanvasProps) {
+  const displayEdges = edges.map((edge) => ({
+    ...edge,
+    animated: animatedEdges,
+  }));
   const legendItems = nodes.reduce<FlowKitLegendItem[]>((items, node) => {
     const category = node.data?.category ?? "utility";
     const existingItem = items.find((item) => item.key === category);
@@ -87,12 +91,11 @@ export function WorkflowCanvas({
   return (
     <section className="canvas-panel">
       <FlowKit
-        animatedEdges={animatedEdges}
         centerOnLoad
         collapsibleEdges={collapsibleEdges}
         containers={containers}
         edgePathType={edgePathType}
-        edges={edges}
+        edges={displayEdges}
         nodes={nodes}
         nodeTypes={nodeTypes}
         proximityConnect={{ radius: 56 }}

@@ -10,7 +10,7 @@ export type EdgeAnchorMode = "endpoint" | "floating";
 export type EdgeCollapseMode = "edge" | "downstream" | "upstream" | "both";
 
 /** Built-in SVG path algorithms supported by default edges and drawn connection previews. */
-export type EdgePathType = "bezier" | "smooth-step" | "step";
+export type EdgePathType = "bezier" | "smooth-step" | "step" | "straight";
 
 /** Built-in route shaping options for default edges. */
 export interface EdgeRoutingOptions {
@@ -41,7 +41,7 @@ export interface IEdge<T> {
         source?: boolean;
         target?: boolean;
     };
-    /** Overrides the global animatedEdges option for this edge. */
+    /** Enables animated styling for the built-in edge path. */
     animated?: boolean;
     /** Additional class applied to the rendered edge group. */
     className?: string;

@@ -116,6 +116,14 @@ export function TopBar({
           >
             Smooth
           </button>
+          <button
+            aria-pressed={edgePathType === "straight"}
+            className={edgePathType === "straight" ? "active" : undefined}
+            onClick={() => onEdgePathTypeChange("straight")}
+            type="button"
+          >
+            Line
+          </button>
         </div>
       </div>
     </header>

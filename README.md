@@ -42,7 +42,7 @@ Use it for workflow engines, automation builders, network topology editors, ETL 
 
 ### Edges
 
-* Bezier, smooth-step, and step paths
+* Bezier, smooth-step, step, and straight paths
 * Built-in route shaping for node avoidance and parallel edge offsets
 * Optional animated flow paths
 * Source, target, or bidirectional arrows
@@ -225,6 +225,7 @@ Set a default path type on `FlowKit`:
 <FlowKit edgePathType="bezier" />
 <FlowKit edgePathType="smooth-step" />
 <FlowKit edgePathType="step" />
+<FlowKit edgePathType="straight" />
 ```
 
 Override per edge:
@@ -240,7 +241,7 @@ const edge = {
 };
 ```
 
-Animation is opt-in through either `animatedEdges` on `FlowKit` or `animated` on an individual edge.
+Animation is opt-in per edge with `animated: true`.
 
 ---
 

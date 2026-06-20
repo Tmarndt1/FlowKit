@@ -3,6 +3,7 @@ import { EdgeTypes } from "../../types/EdgeTypes";
 import { getBezier } from "../../functions/getBezier";
 import { getOrthogonal } from "../../functions/getOrthogonal";
 import { getSmoothStep } from "../../functions/getSmoothStep";
+import { getStraight } from "../../functions/getStraight";
 import { getEndpointPosition, getOppositePosition } from "../../functions/getEndpointPosition";
 import { EdgeRoutingOptions, IEdge } from "../../interfaces/IEdge";
 import { IEndpoint } from "../../interfaces/IEndpoint";
@@ -325,7 +326,9 @@ export const EdgeLayer = React.forwardRef<EdgeLayerHandle, IProps>((props, ref) 
                 ? getSmoothStep(...pathArgs)
                 : edgePathType === "step"
                     ? getOrthogonal(...pathArgs)
-                    : getBezier(...pathArgs);
+                    : edgePathType === "straight"
+                        ? getStraight(...pathArgs)
+                        : getBezier(...pathArgs);
 
         if (path == null) return;
 

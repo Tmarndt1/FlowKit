@@ -124,8 +124,6 @@ export interface FlowKitProps {
     children?: React.ReactNode;
     /** Extra props passed to custom node renderers by node type. */
     customNodeProps?: NodeComponentProps;
-    /** Enables animated edge paths by default. */
-    animatedEdges?: boolean;
     /** Optional validator for new endpoint connections. */
     canConnect?: CanConnect
     /** Enables built-in edge fold controls by default. */
@@ -195,7 +193,6 @@ const FlowKitComponent = (props: FlowKitProps, ref: React.ForwardedRef<FlowKitHa
 
     const config: FlowKitConfigContextValue = React.useMemo(
         () => ({
-            animatedEdges: props.animatedEdges,
             collapsibleEdges: props.collapsibleEdges,
             edgePathType: props.edgePathType,
             edgeRouting: props.edgeRouting,
@@ -205,7 +202,6 @@ const FlowKitComponent = (props: FlowKitProps, ref: React.ForwardedRef<FlowKitHa
             readOnly: props.readOnly,
         }),
         [
-            props.animatedEdges,
             props.canConnect,
             props.collapsibleEdges,
             props.edgePathType,

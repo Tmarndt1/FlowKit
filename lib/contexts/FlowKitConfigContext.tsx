@@ -33,8 +33,6 @@ export interface IEdgeCollapsePreviewChangeArgs {
 
 /** Shared configuration consumed by FlowKit internals and extension components. */
 export interface FlowKitConfigContextValue {
-    /** Enables animated edge paths by default. Per-edge animated overrides this. */
-    animatedEdges?: boolean;
     /** Optional validator for new endpoint connections. */
     canConnect?: CanConnect;
     /** Enables built-in edge collapse controls by default. Per-edge collapsible overrides this. */
