@@ -366,6 +366,11 @@ button {
   background: #a477ff;
 }
 
+.category-swatch-policy,
+.palette-node-policy .palette-node-icon {
+  background: #ff9f43;
+}
+
 .category-swatch-utility,
 .palette-node-utility .palette-node-icon {
   background: #49d66f;

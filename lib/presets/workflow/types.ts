@@ -3,25 +3,156 @@ import { IEndpoint } from "../../interfaces/IEndpoint";
 import { INode } from "../../interfaces/INode";
 import { INodeContainer } from "../../interfaces/INodeContainer";
 
-export type WorkflowCategory = "input" | "math" | "logic" | "utility" | "output";
+export type WorkflowCategory = "input" | "math" | "logic" | "policy" | "utility" | "output";
 
 export type WorkflowValueType = "number" | "boolean" | "text" | "any";
 
-export type WorkflowNodeData = {
+export type WorkflowThresholdBranch = {
+    id: string;
+    label: string;
+    comparator?: ">" | ">=" | "<" | "<=" | "==" | "!=";
+    threshold?: string;
+    default?: boolean;
+};
+
+export interface WorkflowBaseNodeData {
     category: WorkflowCategory;
-    switchCases?: Array<{ id: string; label: string; expression?: string; default?: boolean }>;
     description: string;
     icon: string;
-    resolvedAt?: string;
-    styleVariant?: "if-else" | "switch-case";
     subtitle?: string;
     title: string;
+}
+
+export interface WorkflowInputNodeData extends WorkflowBaseNodeData {
+    category: "input";
+    resolvedAt?: never;
+    styleVariant?: never;
+    switchCases?: never;
+    thresholdPolicy?: never;
+    value?: string;
+    valueSource?: never;
+    variant?: never;
+    variableKey?: never;
+    variableQuery?: never;
+}
+
+export interface WorkflowVariableNodeData extends WorkflowBaseNodeData {
+    category: "input";
+    resolvedAt?: string;
+    styleVariant?: never;
+    switchCases?: never;
+    thresholdPolicy?: never;
     value?: string;
     valueSource?: string;
-    variant?: "success" | "warning";
-    variableKey?: string;
+    variant?: never;
+    variableKey: string;
     variableQuery?: string;
-};
+}
+
+export interface WorkflowMathNodeData extends WorkflowBaseNodeData {
+    category: "math";
+    resolvedAt?: never;
+    styleVariant?: never;
+    switchCases?: never;
+    thresholdPolicy?: never;
+    value?: never;
+    valueSource?: never;
+    variant?: never;
+    variableKey?: never;
+    variableQuery?: never;
+}
+
+export interface WorkflowLogicNodeData extends WorkflowBaseNodeData {
+    category: "logic";
+    resolvedAt?: never;
+    styleVariant?: never;
+    switchCases?: never;
+    thresholdPolicy?: never;
+    value?: never;
+    valueSource?: never;
+    variant?: never;
+    variableKey?: never;
+    variableQuery?: never;
+}
+
+export interface WorkflowIfElseNodeData extends WorkflowBaseNodeData {
+    category: "logic";
+    resolvedAt?: never;
+    styleVariant: "if-else";
+    switchCases?: never;
+    thresholdPolicy?: never;
+    value?: never;
+    valueSource?: never;
+    variant?: never;
+    variableKey?: never;
+    variableQuery?: never;
+}
+
+export interface WorkflowSwitchNodeData extends WorkflowBaseNodeData {
+    category: "logic";
+    resolvedAt?: never;
+    styleVariant: "switch-case";
+    switchCases: Array<{ id: string; label: string; expression?: string; default?: boolean }>;
+    thresholdPolicy?: never;
+    value?: never;
+    valueSource?: never;
+    variant?: never;
+    variableKey?: never;
+    variableQuery?: never;
+}
+
+export interface WorkflowThresholdPolicyNodeData extends WorkflowBaseNodeData {
+    category: "policy";
+    resolvedAt?: never;
+    styleVariant: "threshold-policy";
+    switchCases?: never;
+    thresholdPolicy: {
+        branches: WorkflowThresholdBranch[];
+        valueKey?: string;
+    };
+    value?: never;
+    valueSource?: never;
+    variant?: never;
+    variableKey?: never;
+    variableQuery?: never;
+}
+
+export interface WorkflowUtilityNodeData extends WorkflowBaseNodeData {
+    category: "utility";
+    resolvedAt?: never;
+    styleVariant?: never;
+    switchCases?: never;
+    thresholdPolicy?: never;
+    value?: never;
+    valueSource?: never;
+    variant?: never;
+    variableKey?: never;
+    variableQuery?: never;
+}
+
+export interface WorkflowOutputNodeData extends WorkflowBaseNodeData {
+    category: "output";
+    resolvedAt?: never;
+    styleVariant?: never;
+    switchCases?: never;
+    thresholdPolicy?: never;
+    value?: never;
+    valueSource?: never;
+    variant?: "success" | "warning";
+    variableKey?: never;
+    variableQuery?: never;
+}
+
+export type WorkflowNodeData =
+    | WorkflowInputNodeData
+    | WorkflowVariableNodeData
+    | WorkflowMathNodeData
+    | WorkflowLogicNodeData
+    | WorkflowIfElseNodeData
+    | WorkflowSwitchNodeData
+    | WorkflowThresholdPolicyNodeData
+    | WorkflowUtilityNodeData
+    | WorkflowOutputNodeData;
 
 export type WorkflowEndpointData = {
     label: string;

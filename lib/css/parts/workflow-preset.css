@@ -65,6 +65,22 @@
     line-height: 1;
 }
 
+.workflow-node-threshold-policy {
+    background: rgba(20, 28, 38, 0.96);
+    border-color: #ff9f43;
+    box-shadow: 0 18px 34px rgba(0, 0, 0, 0.35), inset 0 0 30px rgba(255, 159, 67, 0.14);
+}
+
+.workflow-node-threshold-policy .workflow-node-icon {
+    background: #ff9f43;
+    font-size: 14px;
+    line-height: 1;
+}
+
+.workflow-node-threshold-policy .workflow-node-condition-label {
+    color: #ffbd7a;
+}
+
 .workflow-node-utility .workflow-node-icon {
     background: #49d66f;
 }

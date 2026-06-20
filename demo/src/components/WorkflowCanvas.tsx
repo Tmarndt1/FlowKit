@@ -22,6 +22,7 @@ const miniMapNodeColors = {
   input: { background: "rgba(73, 212, 230, .5)", borderColor: "rgba(73, 212, 230, .9)" },
   math: { background: "rgba(245, 189, 34, .48)", borderColor: "rgba(245, 189, 34, .9)" },
   logic: { background: "rgba(164, 119, 255, .48)", borderColor: "rgba(164, 119, 255, .9)" },
+  policy: { background: "rgba(255, 159, 67, .48)", borderColor: "rgba(255, 159, 67, .92)" },
   utility: { background: "rgba(73, 214, 111, .46)", borderColor: "rgba(73, 214, 111, .9)" },
   output: { background: "rgba(255, 103, 103, .48)", borderColor: "rgba(255, 103, 103, .9)" },
 };
@@ -30,6 +31,7 @@ const workflowLegendColors = {
   input: "#49d4e6",
   math: "#f5bd22",
   logic: "#a477ff",
+  policy: "#ff9f43",
   utility: "#49d66f",
   output: "#ff6767",
 };

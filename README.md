@@ -165,6 +165,7 @@ const nodes = [
   createWorkflowNode("number-input", "number-a", { x: 80, y: 120 }, { value: "10" }),
   createWorkflowNode("logic-if-else", "if-else", { x: 360, y: 120 }),
   createWorkflowNode("logic-switch", "switch-case", { x: 640, y: 120 }),
+  createWorkflowNode("policy-threshold", "threshold", { x: 920, y: 120 }),
 ];
 
 export function Workflow() {
@@ -172,7 +173,7 @@ export function Workflow() {
 }
 ```
 
-The workflow preset includes the standard demo's input, math, logic, utility, and output nodes, including the styled `logic-if-else` and multi-output `logic-switch` nodes.
+The workflow preset includes the standard demo's input, math, logic, policy, utility, and output nodes, including the styled `logic-if-else`, multi-output `logic-switch`, and orange `policy-threshold` nodes.
 
 ### Shapes
 

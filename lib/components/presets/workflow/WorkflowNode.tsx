@@ -27,9 +27,13 @@ export function WorkflowNode(props: WorkflowNodeType & { selected?: boolean }) {
                 </span>
             ) : null}
 
-            {data?.styleVariant === "if-else" || data?.styleVariant === "switch-case" ? (
+            {data?.styleVariant === "if-else" || data?.styleVariant === "switch-case" || data?.styleVariant === "threshold-policy" ? (
                 <span className="workflow-node-condition-label">
-                    {data.styleVariant === "switch-case" ? `${data.switchCases?.length ?? 0} ordered cases` : "conditional branch"}
+                    {data.styleVariant === "switch-case"
+                        ? `${data.switchCases?.length ?? 0} ordered cases`
+                        : data.styleVariant === "threshold-policy"
+                            ? `${data.thresholdPolicy?.branches.length ?? 0} threshold branches`
+                            : "conditional branch"}
                 </span>
             ) : null}
 

@@ -1,9 +1,15 @@
-import { WorkflowCategory, WorkflowPreset } from "./types";
+import { WorkflowCategory, WorkflowPreset, WorkflowThresholdBranch } from "./types";
 
 export const workflowNodeWidth = 150;
 export const workflowNodeBaseHeight = 92;
 export const workflowEndpointStartY = 48;
 export const workflowEndpointGap = 28;
+
+export const defaultThresholdPolicyBranches = [
+    { id: "normal", label: "normal", default: true },
+    { id: "warning", label: "warning", comparator: ">=", threshold: "70" },
+    { id: "critical", label: "critical", comparator: ">=", threshold: "90" },
+] as const satisfies readonly WorkflowThresholdBranch[];
 
 export const workflowPresets: WorkflowPreset[] = [
     {
@@ -205,6 +211,16 @@ export const workflowPresets: WorkflowPreset[] = [
         type: "logic-if-else",
     },
     {
+        category: "policy",
+        description: "Routes a value through threshold branches",
+        icon: "T>",
+        inputs: [{ label: "value", valueType: "number" }],
+        outputs: defaultThresholdPolicyBranches.map((branch) => ({ label: branch.label, valueType: "any" })),
+        styleVariant: "threshold-policy",
+        title: "Threshold Policy",
+        type: "policy-threshold",
+    },
+    {
         category: "utility",
         description: "Formats any value",
         icon: "F",
@@ -276,6 +292,7 @@ export const workflowCategoryLabels: Record<WorkflowCategory, string> = {
     input: "Input",
     math: "Math",
     logic: "Logic",
+    policy: "Policy",
     utility: "Utility",
     output: "Output",
 };

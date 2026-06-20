@@ -8,9 +8,11 @@ export {
     createWorkflowEndpoints,
     createWorkflowNode,
     isWorkflowConnectionValid,
+    updateWorkflowThresholdBranches,
 } from "./createWorkflowNode";
 export {
     workflowCategoryLabels,
+    defaultThresholdPolicyBranches,
     workflowEndpointGap,
     workflowEndpointStartY,
     workflowNodeBaseHeight,
@@ -19,15 +21,26 @@ export {
     workflowPresets,
 } from "./definitions";
 export type {
+    WorkflowBaseNodeData,
     WorkflowCategory,
     WorkflowContainer,
     WorkflowEdge,
     WorkflowEdgeData,
     WorkflowEndpoint,
     WorkflowEndpointData,
+    WorkflowIfElseNodeData,
+    WorkflowInputNodeData,
+    WorkflowLogicNodeData,
+    WorkflowMathNodeData,
     WorkflowNode as WorkflowPresetNode,
     WorkflowNodeData,
+    WorkflowOutputNodeData,
+    WorkflowSwitchNodeData,
+    WorkflowThresholdPolicyNodeData,
     WorkflowPreset,
+    WorkflowThresholdBranch,
+    WorkflowUtilityNodeData,
+    WorkflowVariableNodeData,
     WorkflowValueType,
 } from "./types";
 
@@ -41,6 +54,6 @@ export function groupWorkflowPresets() {
             groups[preset.category].push(preset);
             return groups;
         },
-        { input: [], math: [], logic: [], utility: [], output: [] } as Record<"input" | "math" | "logic" | "utility" | "output", typeof workflowPresets>
+        { input: [], math: [], logic: [], policy: [], utility: [], output: [] } as Record<"input" | "math" | "logic" | "policy" | "utility" | "output", typeof workflowPresets>
     );
 }
