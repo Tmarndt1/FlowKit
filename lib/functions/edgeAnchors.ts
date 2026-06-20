@@ -1,7 +1,7 @@
-import { Position } from "../../enums/Position";
-import { getEndpointPosition } from "../../functions/getEndpointPosition";
-import { IConnectionPoint } from "../../interfaces/IConnectionPoint";
-import { IEdge } from "../../interfaces/IEdge";
+import { Position } from "../enums/Position";
+import { getEndpointPosition } from "./getEndpointPosition";
+import { IConnectionPoint } from "../interfaces/IConnectionPoint";
+import { IEdge } from "../interfaces/IEdge";
 
 /** Pair of concrete source/target anchors resolved from an edge definition. */
 export interface IResolvedEdgeAnchors {

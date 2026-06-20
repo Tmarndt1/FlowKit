@@ -48,6 +48,23 @@
     fill: var(--flow-kit-edge-arrow-color, #67e8f9);
 }
 
+.flow-kit-edge-label {
+    pointer-events: none;
+}
+
+.flow-kit-edge-label-background {
+    fill: var(--flow-kit-edge-label-background, rgba(17, 24, 39, 0.92));
+    rx: 5px;
+    stroke: var(--flow-kit-edge-label-border, rgba(148, 163, 184, 0.36));
+    stroke-width: 1px;
+}
+
+.flow-kit-edge-label-text {
+    fill: var(--flow-kit-edge-label-color, #dbeafe);
+    font-size: var(--flow-kit-edge-label-font-size, 11px);
+    font-weight: 600;
+}
+
 .flow-kit-edge-fold-control {
     cursor: pointer;
     pointer-events: all;

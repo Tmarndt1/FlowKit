@@ -1,5 +1,5 @@
 import * as React from "react";
-import { useNodeFlowSnapStore } from "../NodeFlowContext";
+import { useNodeFlowSnapStore } from "../../contexts/NodeFlowContext";
 
 /** Props for configuring node/container snapping while this component is mounted. */
 export interface FlowKitGridSnapProps {

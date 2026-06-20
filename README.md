@@ -25,6 +25,7 @@ Use it for workflow engines, automation builders, network topology editors, ETL 
 * Pannable and zoomable workspace
 * Grid backgrounds and grid snapping
 * Recenter and zoom controls
+* Read-only mode for non-editable diagrams
 * Minimap with custom node styles
 * Controlled node, edge, and container data
 
@@ -179,6 +180,22 @@ For advanced integrations, `getFoldGraphState` is exported.
 
 ---
 
+## Read-Only Mode
+
+Set `readOnly` when the diagram should be inspectable but not editable.
+
+```tsx
+<FlowKit nodes={nodes} edges={edges} readOnly>
+  <FlowKitGrid />
+  <FlowKitControls />
+  <FlowKitEvents />
+</FlowKit>
+```
+
+Read-only mode preserves pan, zoom, recenter, node/edge selection, minimaps, legends, and labels. It disables node dragging, container dragging/resizing, endpoint connection creation, edge collapse controls, paste, and keyboard deletion.
+
+---
+
 ## Edge Paths And Animation
 
 Set a default path type on `FlowKit`:
@@ -203,6 +220,36 @@ const edge = {
 ```
 
 Animation is opt-in through either `animatedEdges` on `FlowKit` or `animated` on an individual edge.
+
+---
+
+## External Viewport Controls
+
+Use a `FlowKit` ref when controls live outside the canvas, such as topology search results, alert panels, or device tables.
+
+```tsx
+import * as React from "react";
+import { FlowKit, FlowKitHandle } from "flowkit";
+
+export function TopologyView() {
+  const flowRef = React.useRef<FlowKitHandle>(null);
+
+  return (
+    <>
+      <button onClick={() => flowRef.current?.panToNode("router-01")}>
+        Show router
+      </button>
+      <button onClick={() => flowRef.current?.recenter()}>
+        Recenter topology
+      </button>
+
+      <FlowKit ref={flowRef} nodes={nodes} edges={edges} />
+    </>
+  );
+}
+```
+
+The same controls are available to components rendered inside `FlowKit` through `useFlowKitControls()`.
 
 ---
 

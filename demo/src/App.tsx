@@ -60,7 +60,7 @@ export function App() {
   const [selectedKey, setSelectedKey] = React.useState<string | null>("runtime-multiplier");
   const [executionStatus, setExecutionStatus] = React.useState<"idle" | "success">("idle");
   const [lastRunLabel, setLastRunLabel] = React.useState("Idle");
-  const [edgePathType, setEdgePathType] = React.useState<EdgePathType>("smooth-step");
+  const [edgePathType, setEdgePathType] = React.useState<EdgePathType>("bezier");
   const [animatedEdges, setAnimatedEdges] = React.useState(false);
   const [collapsibleEdges, setCollapsibleEdges] = React.useState(true);
   const [demoView, setDemoView] = React.useState<DemoView>("workflow");

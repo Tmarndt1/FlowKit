@@ -8,7 +8,8 @@ import {
     useNodeFlowSelectionStore,
     useNodeFlowSnapStore,
     useNodeFlowViewportStore,
-} from "../NodeFlowContext";
+} from "../../contexts/NodeFlowContext";
+import { useFlowKitConfig } from "../../contexts/FlowKitConfigContext";
 
 interface IProps {
     node: INode<any, any>;
@@ -56,6 +57,7 @@ function updateContainerDropTarget(nodeElement: HTMLElement): void {
 }
 
 const NodeComponent: React.FC<IProps> = (props) => {
+    const { readOnly } = useFlowKitConfig();
     const scale = useNodeFlowViewportStore((state) => state.scale);
     const snapEnabled = useNodeFlowSnapStore((state) => state.enabled);
     const snapSize = useNodeFlowSnapStore((state) => state.size);
@@ -126,6 +128,13 @@ const NodeComponent: React.FC<IProps> = (props) => {
 
             if (target?.closest(".flow-kit-endpoint") != null) return;
 
+            if (readOnly) {
+                selectNode(currentProps.node);
+                e.stopPropagation();
+                e.preventDefault();
+                return;
+            }
+
             mouseDownRef.current = true;
             setDraggingNodeRef.current(true, currentProps.node);
             e.stopPropagation();
@@ -141,7 +150,7 @@ const NodeComponent: React.FC<IProps> = (props) => {
             document.addEventListener("mousemove", onMouseMove);
             selectNode(currentProps.node);
         },
-        [onMouseMove, onMouseUp, selectNode]
+        [onMouseMove, onMouseUp, readOnly, selectNode]
     );
 
     React.useEffect(() => {

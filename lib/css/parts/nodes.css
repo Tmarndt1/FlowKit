@@ -26,3 +26,8 @@
 .flow-kit-node.selected, .flow-kit-node-wrapper.selected {
     border: 1px solid white;
 }
+
+.flow-kit-node-fold-hidden {
+  opacity: 0;
+  pointer-events: none;
+}

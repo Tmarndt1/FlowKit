@@ -7,8 +7,8 @@ import { NodeComponentProps } from "../types/NodeComponentProps";
 import { EdgeTypes } from "../types/EdgeTypes";
 import { NodeTypes } from "../types/NodeTypes";
 import { EdgeLayer, EdgeLayerHandle, ProximityConnectOptions } from "./edges/EdgeLayer";
-import { FlowKitControlsContext } from "./FlowKitControls";
-import { NodeFlowContext } from "./NodeFlowContext";
+import { FlowKitControlsContext, PanToNodeOptions } from "./FlowKitControls";
+import { NodeFlowContext } from "../contexts/NodeFlowContext";
 import { NodesLayer, NodesLayerHandle } from "./nodes/NodesLayer";
 import {
     createNodeFlowStores,
@@ -21,16 +21,16 @@ import {
     FlowKitConfigContextValue,
     IEdgeCollapsedChangeArgs,
     IEdgeCollapsePreviewChangeArgs
-} from "./FlowKitConfigContext";
+} from "../contexts/FlowKitConfigContext";
 
-export { useNodeFlowSelection } from "./NodeFlowContext";
+export { useNodeFlowSelection } from "../contexts/NodeFlowContext";
 export { useNodeFlowSelectionChange } from "./FlowKitEvents";
 export type {
     CanConnect,
     ICanConnectArgs,
     IEdgeCollapsedChangeArgs,
     IEdgeCollapsePreviewChangeArgs
-} from "./FlowKitConfigContext";
+} from "../contexts/FlowKitConfigContext";
 
 function getTransformValue(x: number, y: number, scale: number): string {
     return `translate(${x}px, ${y}px) scale(${scale})`;
@@ -91,6 +91,13 @@ function isPanSurfaceElement(element: Element | null): boolean {
     );
 }
 
+function clampScale(scale: number, props: FlowKitProps): number {
+    const minScale = props.zoomMin ?? 0;
+    const maxScale = props.zoomMax ?? Number.POSITIVE_INFINITY;
+
+    return Math.max(minScale, Math.min(maxScale, scale));
+}
+
 /** Props for the main FlowKit canvas component. */
 export interface FlowKitProps {
     /** Nodes to render. FlowKit treats this array as controlled application state. */
@@ -125,13 +132,27 @@ export interface FlowKitProps {
     collapsibleEdges?: boolean;
     /** Default built-in edge path algorithm. */
     edgePathType?: EdgePathType;
+    /** Disables graph-editing interactions while preserving pan, zoom, and selection. */
+    readOnly?: boolean;
     /** Called when a built-in fold control requests collapsed state changes. */
     onEdgeCollapsedChange?: (args: IEdgeCollapsedChangeArgs) => void;
     /** Called when a fold menu option is previewed or cleared. */
     onEdgeCollapsePreviewChange?: (args: IEdgeCollapsePreviewChangeArgs) => void;
 }
 
-export const FlowKit: React.FC<FlowKitProps> = (props) => {
+/** Imperative API exposed by FlowKit refs for external controls and topology panels. */
+export interface FlowKitHandle {
+    /** Fits all rendered nodes in view and centers the viewport around them. */
+    recenter: () => void;
+    /** Centers the viewport around a node by key. Returns false when the node cannot be found. */
+    panToNode: (nodeKey: string, options?: PanToNodeOptions) => boolean;
+    /** Zooms the viewport in one step. */
+    zoomIn: () => void;
+    /** Zooms the viewport out one step. */
+    zoomOut: () => void;
+}
+
+const FlowKitComponent = (props: FlowKitProps, ref: React.ForwardedRef<FlowKitHandle>) => {
     const nodeFlowStoresRef = React.useRef<NodeFlowStores | null>(null);
     const viewportRef = React.useRef<HTMLDivElement>(null);
     const contentRef = React.useRef<HTMLDivElement>(null);
@@ -178,6 +199,7 @@ export const FlowKit: React.FC<FlowKitProps> = (props) => {
             onEdgeCollapsedChange: props.onEdgeCollapsedChange,
             onEdgeCollapsePreviewChange,
             canConnect: props.canConnect,
+            readOnly: props.readOnly,
         }),
         [
             props.animatedEdges,
@@ -185,6 +207,7 @@ export const FlowKit: React.FC<FlowKitProps> = (props) => {
             props.collapsibleEdges,
             props.edgePathType,
             props.onEdgeCollapsedChange,
+            props.readOnly,
             onEdgeCollapsePreviewChange
         ]
     );
@@ -382,13 +405,18 @@ export const FlowKit: React.FC<FlowKitProps> = (props) => {
 
         if (containerRect == null) return;
 
-        const scale = viewportStore.getState().scale;
-        const bounds = nodesLayerRef.current.getContentBounds(scale);
+        const currentScale = viewportStore.getState().scale;
+        const bounds = nodesLayerRef.current.getContentBounds(currentScale);
 
         if (bounds == null) return;
 
         const height: number = bounds.maxBottom - bounds.minTop;
         const width: number = bounds.maxRight - bounds.minLeft;
+        const padding = 72;
+        const availableWidth = Math.max(1, containerRect.width - padding * 2);
+        const availableHeight = Math.max(1, containerRect.height - padding * 2);
+        const fitScale = Math.min(availableWidth / Math.max(width, 1), availableHeight / Math.max(height, 1));
+        const scale = clampScale(Math.min(1, fitScale), propsRef.current);
 
         const cx: number = containerRect.width / 2 - ((bounds.minLeft + width / 2) * scale);
         const cy: number = containerRect.height / 2 - ((bounds.minTop + height / 2) * scale);
@@ -397,6 +425,7 @@ export const FlowKit: React.FC<FlowKitProps> = (props) => {
         yPosRef.current = cy;
         originalPosRef.current = { x: xPosRef.current, y: yPosRef.current };
 
+        viewportStore.getState().setScale(scale);
         updateCanvasTransform(xPosRef.current, yPosRef.current, scale);
 
         viewportStore.getState().setContainerRect(contentRef.current.getBoundingClientRect());
@@ -408,6 +437,44 @@ export const FlowKit: React.FC<FlowKitProps> = (props) => {
                 }
             });
         }, 0);
+    }, [renderStore, updateCanvasTransform, viewportStore]);
+
+    const panToNode = React.useCallback((nodeKey: string, options?: PanToNodeOptions): boolean => {
+        const node = stateRef.current.nodes.find((item) => item.key === nodeKey);
+        const nodeElement = document.getElementById(nodeKey);
+        const viewportRect = viewportRef.current?.getBoundingClientRect();
+
+        if (node == null || nodeElement == null || viewportRect == null || contentRef.current == null) {
+            return false;
+        }
+
+        const currentState = viewportStore.getState();
+        const nextScale = options?.scale ?? currentState.scale;
+
+        if (propsRef.current.zoomMin != null && nextScale < propsRef.current.zoomMin) return false;
+        if (propsRef.current.zoomMax != null && nextScale > propsRef.current.zoomMax) return false;
+
+        currentState.setScale(nextScale);
+
+        const nodeWidth = nodeElement.offsetWidth / nextScale;
+        const nodeHeight = nodeElement.offsetHeight / nextScale;
+
+        xPosRef.current = viewportRect.width / 2 - ((node.offset.x + nodeWidth / 2) * nextScale);
+        yPosRef.current = viewportRect.height / 2 - ((node.offset.y + nodeHeight / 2) * nextScale);
+        originalPosRef.current = { x: xPosRef.current, y: yPosRef.current };
+
+        updateCanvasTransform(xPosRef.current, yPosRef.current, nextScale);
+        currentState.setContainerRect(contentRef.current.getBoundingClientRect());
+
+        window.setTimeout(() => {
+            stateRef.current.edges.forEach((edge: IEdge<any>) => {
+                if (edge.sourceId != null && edge.targetId != null) {
+                    renderStore.getState().requestEdgeRender(edge);
+                }
+            });
+        }, 0);
+
+        return true;
     }, [renderStore, updateCanvasTransform, viewportStore]);
 
     React.useEffect(() => {
@@ -441,10 +508,13 @@ export const FlowKit: React.FC<FlowKitProps> = (props) => {
     }, []);
 
     const controls = React.useMemo(() => ({
+        panToNode,
         recenter,
         zoomIn: () => onZoom(true),
         zoomOut: () => onZoom(false),
-    }), [onZoom, recenter]);
+    }), [onZoom, panToNode, recenter]);
+
+    React.useImperativeHandle(ref, () => controls, [controls]);
 
     return (
         <NodeFlowContext.Provider value={stores}>
@@ -486,3 +556,5 @@ export const FlowKit: React.FC<FlowKitProps> = (props) => {
         </NodeFlowContext.Provider>
     );
 };
+
+export const FlowKit = React.forwardRef<FlowKitHandle, FlowKitProps>(FlowKitComponent);

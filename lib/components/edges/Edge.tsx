@@ -7,11 +7,11 @@ import {
     useNodeFlowRenderStore,
     useNodeFlowSelectionStore,
     useNodeFlowViewportStore
-} from "../NodeFlowContext";
-import { useFlowKitConfig } from "../FlowKitConfigContext";
+} from "../../contexts/NodeFlowContext";
+import { useFlowKitConfig } from "../../contexts/FlowKitConfigContext";
 import { EdgeFoldControl } from "./EdgeFoldControl";
-import { hasSourceArrow, hasTargetArrow } from "./edgeMarkers";
-import { resolveEdgeAnchors } from "./edgeAnchors";
+import { hasSourceArrow, hasTargetArrow } from "../../functions/edgeMarkers";
+import { resolveEdgeAnchors } from "../../functions/edgeAnchors";
 import { useEdgeFoldMetrics } from "./useEdgeFoldMetrics";
 
 interface IProps {
@@ -27,7 +27,8 @@ const EdgeComponent: React.FC<IProps> = (props) =>
         collapsibleEdges,
         edgePathType,
         onEdgeCollapsedChange,
-        onEdgeCollapsePreviewChange
+        onEdgeCollapsePreviewChange,
+        readOnly
     } = useFlowKitConfig();
     
     const containerRect = useNodeFlowViewportStore((state) => state.containerRect);
@@ -271,7 +272,7 @@ const EdgeComponent: React.FC<IProps> = (props) =>
         onMouseDownCapture: stopEdgeDrag
     };
     const animated = props.edge.animated ?? animatedEdges ?? false;
-    const collapsible = props.edge.collapsible ?? collapsibleEdges ?? false;
+    const collapsible = !readOnly && (props.edge.collapsible ?? collapsibleEdges ?? false);
     const collapsed = props.edge.collapsed ?? false;
     const collapseMode = props.edge.collapseMode ?? "edge";
     const directionallyFolded = collapsed && (collapseMode === "downstream" || collapseMode === "upstream");
@@ -340,6 +341,18 @@ const EdgeComponent: React.FC<IProps> = (props) =>
                 markerStart={markerStart}
                 style={visualStyle}
             />
+
+            {props.edge.label != null && !collapsed && pathFoldMetrics != null && (
+                <g
+                    className="flow-kit-edge-label"
+                    transform={`translate(${pathFoldMetrics.midpoint.x}, ${pathFoldMetrics.midpoint.y})`}
+                >
+                    <rect className="flow-kit-edge-label-background" x={-54} y={-14} width={108} height={28} />
+                    <text className="flow-kit-edge-label-text" dominantBaseline="middle" textAnchor="middle">
+                        {props.edge.label}
+                    </text>
+                </g>
+            )}
 
             {collapsible && pathFoldMetrics != null && (
                 <EdgeFoldControl

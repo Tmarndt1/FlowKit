@@ -1,4 +1,4 @@
-import { IEdge } from "../../interfaces/IEdge";
+import { IEdge } from "../interfaces/IEdge";
 
 export function hasSourceArrow(edge: IEdge<any>): boolean {
     if (edge.arrows == null || edge.arrows === "none") return false;

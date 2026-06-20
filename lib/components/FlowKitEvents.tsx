@@ -6,7 +6,7 @@ import {
     useNodeFlowInteractionStore,
     useNodeFlowRenderStore,
     useNodeFlowSelection,
-} from "./NodeFlowContext";
+} from "../contexts/NodeFlowContext";
 
 /** Props for the event bridge component that exposes FlowKit interactions. */
 export interface FlowKitEventsProps {

@@ -1,10 +1,21 @@
 import * as React from "react";
 
 /** Imperative viewport actions exposed to controls rendered inside FlowKit. */
-interface FlowKitControlsContextValue {
+export interface FlowKitControlsContextValue {
+    /** Fits all rendered nodes in view and centers the viewport around them. */
     recenter: () => void;
+    /** Centers the viewport around a node by key. Returns false when the node cannot be found. */
+    panToNode: (nodeKey: string, options?: PanToNodeOptions) => boolean;
+    /** Zooms the viewport in one step. */
     zoomIn: () => void;
+    /** Zooms the viewport out one step. */
     zoomOut: () => void;
+}
+
+/** Options for focusing a node from a control hook or FlowKit ref. */
+export interface PanToNodeOptions {
+    /** Optional scale to apply before centering the node. */
+    scale?: number;
 }
 
 /** Props for the built-in zoom/recenter toolbar. */

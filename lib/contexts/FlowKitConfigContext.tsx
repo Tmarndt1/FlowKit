@@ -45,6 +45,8 @@ export interface FlowKitConfigContextValue {
     onEdgeCollapsedChange?: (args: IEdgeCollapsedChangeArgs) => void;
     /** Optional callback fired when collapse menu hover preview changes. */
     onEdgeCollapsePreviewChange?: (args: IEdgeCollapsePreviewChangeArgs) => void;
+    /** Disables graph-editing interactions while preserving pan, zoom, and selection. */
+    readOnly?: boolean;
 }
 
 export const FlowKitConfigContext =

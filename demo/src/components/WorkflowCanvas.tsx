@@ -5,6 +5,8 @@ import {
   FlowKitGrid,
   FlowKitGridSnap,
   FlowKitKeyboardCommands,
+  FlowKitLegend,
+  FlowKitLegendItem,
   FlowKitMiniMap,
   EdgeCollapseMode,
   EdgePathType,
@@ -14,7 +16,7 @@ import {
   NodeTypes,
 } from "../../../lib/index";
 import { WorkflowContainer, WorkflowEdge, WorkflowNode as WorkflowNodeType } from "../types";
-import { isWorkflowConnectionValid } from "../workflowModel";
+import { categoryLabels, isWorkflowConnectionValid } from "../workflowModel";
 
 const miniMapNodeColors = {
   input: { background: "rgba(73, 212, 230, .5)", borderColor: "rgba(73, 212, 230, .9)" },
@@ -22,6 +24,14 @@ const miniMapNodeColors = {
   logic: { background: "rgba(164, 119, 255, .48)", borderColor: "rgba(164, 119, 255, .9)" },
   utility: { background: "rgba(73, 214, 111, .46)", borderColor: "rgba(73, 214, 111, .9)" },
   output: { background: "rgba(255, 103, 103, .48)", borderColor: "rgba(255, 103, 103, .9)" },
+};
+
+const workflowLegendColors = {
+  input: "#49d4e6",
+  math: "#f5bd22",
+  logic: "#a477ff",
+  utility: "#49d66f",
+  output: "#ff6767",
 };
 
 type WorkflowCanvasProps = {
@@ -53,6 +63,27 @@ export function WorkflowCanvas({
   onRemove,
   onSelectionChange,
 }: WorkflowCanvasProps) {
+  const legendItems = nodes.reduce<FlowKitLegendItem[]>((items, node) => {
+    const category = node.data?.category ?? "utility";
+    const existingItem = items.find((item) => item.key === category);
+
+    if (existingItem != null) {
+      existingItem.value = Number(existingItem.value ?? 0) + 1;
+      return items;
+    }
+
+    return [
+      ...items,
+      {
+        key: category,
+        label: categoryLabels[category],
+        marker: "square",
+        value: 1,
+        color: workflowLegendColors[category],
+      },
+    ];
+  }, []);
+
   return (
     <section className="canvas-panel">
       <FlowKit
@@ -71,6 +102,12 @@ export function WorkflowCanvas({
         onEdgeCollapsedChange={({ collapsed, edge, mode }) => onEdgeCollapsedChange(edge.key, collapsed, mode)}
       >
         <FlowKitGrid size={32} color="rgba(125, 151, 188, .12)" />
+        <FlowKitLegend
+          className="workflow-legend"
+          items={legendItems}
+          position="top-right"
+          title="Workflow Nodes"
+        />
         <FlowKitControls />
         <FlowKitEvents
           onConnect={onConnect}

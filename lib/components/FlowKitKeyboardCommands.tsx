@@ -3,7 +3,8 @@ import { IEdge } from "../interfaces/IEdge";
 import { IEndpoint } from "../interfaces/IEndpoint";
 import { INode } from "../interfaces/INode";
 import { FlowElement } from "../types/FlowElement";
-import { useNodeFlowSelectionStore } from "./NodeFlowContext";
+import { useNodeFlowSelectionStore } from "../contexts/NodeFlowContext";
+import { useFlowKitConfig } from "../contexts/FlowKitConfigContext";
 
 /** Props for built-in keyboard shortcuts scoped to the current FlowKit selection. */
 export interface FlowKitKeyboardCommandsProps {
@@ -27,6 +28,7 @@ export interface FlowKitKeyboardCommandsProps {
 
 /** Non-visual component that wires default copy, paste, and delete shortcuts. */
 export const FlowKitKeyboardCommands: React.FC<FlowKitKeyboardCommandsProps> = (props) => {
+    const { readOnly } = useFlowKitConfig();
     const selectedEdge = useNodeFlowSelectionStore((state) => state.selectedEdge);
     const selectedNode = useNodeFlowSelectionStore((state) => state.selectedNode);
     const copyRef = React.useRef<FlowElement | null>(null);
@@ -42,7 +44,7 @@ export const FlowKitKeyboardCommands: React.FC<FlowKitKeyboardCommandsProps> = (
         const key: number = e.which || e.keyCode;
         const ctrl: boolean = e.ctrlKey ? e.ctrlKey : key === 17 ? true : false;
 
-        if (key === 86 && ctrl && currentProps.paste !== false) {
+        if (!readOnly && key === 86 && ctrl && currentProps.paste !== false) {
             if (currentProps.onPaste != null && copyRef.current != null) {
                 currentProps.onPaste(copyRef.current);
             }
@@ -61,7 +63,7 @@ export const FlowKitKeyboardCommands: React.FC<FlowKitKeyboardCommandsProps> = (
             return;
         }
 
-        if (e.key?.toLocaleLowerCase() === "backspace" && currentProps.deleteSelection !== false) {
+        if (!readOnly && e.key?.toLocaleLowerCase() === "backspace" && currentProps.deleteSelection !== false) {
             if (typeof currentProps.onRemove !== "function") return;
 
             if (currentSelectionState.selectedNode != null) {
@@ -96,7 +98,7 @@ export const FlowKitKeyboardCommands: React.FC<FlowKitKeyboardCommandsProps> = (
                 currentProps.onRemove(null, [currentSelectionState.selectedEdge]);
             }
         }
-    }, []);
+    }, [readOnly]);
 
     React.useEffect(() => {
         document.addEventListener("keydown", onKeyDown);

@@ -1,0 +1,100 @@
+.flow-kit-legend {
+    background: var(--flow-kit-legend-background, rgba(12, 17, 25, 0.9));
+    border: 1px solid var(--flow-kit-legend-border, rgba(122, 145, 178, 0.38));
+    border-radius: 7px;
+    box-shadow: 0 16px 36px rgba(0, 0, 0, 0.28);
+    color: var(--flow-kit-legend-color, #dbeafe);
+    display: grid;
+    gap: 8px;
+    padding: 10px;
+    pointer-events: all;
+    position: absolute;
+    z-index: 8;
+}
+
+.flow-kit-legend-top-left {
+    left: 12px;
+    top: 12px;
+}
+
+.flow-kit-legend-top-right {
+    right: 12px;
+    top: 12px;
+}
+
+.flow-kit-legend-bottom-left {
+    bottom: 12px;
+    left: 12px;
+}
+
+.flow-kit-legend-bottom-right {
+    bottom: 12px;
+    right: 12px;
+}
+
+.flow-kit-legend-title {
+    color: var(--flow-kit-legend-title-color, #f8fbff);
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: .04em;
+    text-transform: uppercase;
+}
+
+.flow-kit-legend-items {
+    display: grid;
+    gap: 6px;
+}
+
+.flow-kit-legend-item {
+    align-items: center;
+    display: grid;
+    gap: 7px;
+    grid-template-columns: 18px minmax(0, 1fr) auto;
+    min-width: 150px;
+}
+
+.flow-kit-legend-marker {
+    color: var(--flow-kit-legend-marker-color, #67e8f9);
+    display: inline-block;
+    justify-self: center;
+}
+
+.flow-kit-legend-marker-dot {
+    background: currentColor;
+    border-radius: 50%;
+    box-shadow: 0 0 12px currentColor;
+    height: 9px;
+    width: 9px;
+}
+
+.flow-kit-legend-marker-square {
+    background: currentColor;
+    border-radius: 2px;
+    height: 10px;
+    width: 10px;
+}
+
+.flow-kit-legend-marker-line {
+    background: currentColor;
+    border-radius: 999px;
+    height: 3px;
+    width: 18px;
+}
+
+.flow-kit-legend-label,
+.flow-kit-legend-value {
+    font-size: 11px;
+    line-height: 1.2;
+}
+
+.flow-kit-legend-label {
+    color: var(--flow-kit-legend-label-color, #c8d3e5);
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.flow-kit-legend-value {
+    color: var(--flow-kit-legend-value-color, #f8fbff);
+    font-variant-numeric: tabular-nums;
+}

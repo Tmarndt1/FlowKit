@@ -4,7 +4,7 @@ import {
     useNodeFlowRenderStore,
     useNodeFlowSelectionStore,
     useNodeFlowViewportStore,
-} from "./NodeFlowContext";
+} from "../contexts/NodeFlowContext";
 
 /** Corner placement for the built-in minimap. */
 export type MiniMapPosition = "top-left" | "top-right" | "bottom-left" | "bottom-right";

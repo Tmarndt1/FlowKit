@@ -5,7 +5,7 @@ import { NodeComponentProps } from "../../types/NodeComponentProps";
 import { NodeTypes } from "../../types/NodeTypes";
 import { Node } from "./Node";
 import { NodeContainer } from "./NodeContainer";
-import { useNodeFlowRenderStore } from "../NodeFlowContext";
+import { useNodeFlowRenderStore } from "../../contexts/NodeFlowContext";
 
 interface LayerBounds {
     minTop: number;

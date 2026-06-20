@@ -8,7 +8,8 @@ import {
     useNodeFlowRenderStore,
     useNodeFlowSnapStore,
     useNodeFlowViewportStore,
-} from "../NodeFlowContext";
+} from "../../contexts/NodeFlowContext";
+import { useFlowKitConfig } from "../../contexts/FlowKitConfigContext";
 
 interface ContainerBounds {
     x: number;
@@ -95,6 +96,7 @@ function getContainerBounds(container: INodeContainer, nodes: INode<any, any>[])
 }
 
 export const NodeContainer: React.FC<IProps> = (props) => {
+    const { readOnly } = useFlowKitConfig();
     const scale = useNodeFlowViewportStore((state) => state.scale);
     const snapContainers = useNodeFlowSnapStore((state) => state.containers);
     const snapEnabled = useNodeFlowSnapStore((state) => state.enabled);
@@ -146,9 +148,7 @@ export const NodeContainer: React.FC<IProps> = (props) => {
             movedEndpoints.push(...node.endpoints);
         });
 
-        if (movedEndpoints.length > 0) {
-            notifyEndpointsChangedRef.current(movedEndpoints);
-        }
+        notifyEndpointsChangedRef.current(movedEndpoints);
     }, []);
 
     const onMouseMove = React.useCallback((e: MouseEvent): void => {
@@ -209,6 +209,12 @@ export const NodeContainer: React.FC<IProps> = (props) => {
     }, [onMouseMove]);
 
     const onMouseDown = React.useCallback((e: React.MouseEvent<HTMLDivElement, MouseEvent>): void => {
+        if (readOnly) {
+            e.stopPropagation();
+            e.preventDefault();
+            return;
+        }
+
         const containedNodeKeys = new Set(propsRef.current.container.nodeKeys);
         const bounds = getContainerBounds(propsRef.current.container, propsRef.current.nodes);
 
@@ -230,11 +236,17 @@ export const NodeContainer: React.FC<IProps> = (props) => {
         e.preventDefault();
         document.addEventListener("mouseup", onMouseUp);
         document.addEventListener("mousemove", onMouseMove);
-    }, [onMouseMove, onMouseUp]);
+    }, [onMouseMove, onMouseUp, readOnly]);
 
     const onResizeMouseDown = React.useCallback(
         (direction: ResizeDirection) =>
             (e: React.MouseEvent<HTMLDivElement, MouseEvent>): void => {
+                if (readOnly) {
+                    e.stopPropagation();
+                    e.preventDefault();
+                    return;
+                }
+
                 const bounds = getContainerBounds(propsRef.current.container, propsRef.current.nodes);
 
                 if (bounds == null) return;
@@ -251,7 +263,7 @@ export const NodeContainer: React.FC<IProps> = (props) => {
                 document.addEventListener("mouseup", onMouseUp);
                 document.addEventListener("mousemove", onMouseMove);
             },
-        [onMouseMove, onMouseUp]
+        [onMouseMove, onMouseUp, readOnly]
     );
 
     React.useEffect(() => {

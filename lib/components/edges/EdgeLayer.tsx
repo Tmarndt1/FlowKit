@@ -10,8 +10,8 @@ import { Edge } from "./Edge";
 import {
     useNodeFlowInteractionStore,
     useNodeFlowViewportStore
-} from "../NodeFlowContext";
-import { useFlowKitConfig } from "../FlowKitConfigContext";
+} from "../../contexts/NodeFlowContext";
+import { useFlowKitConfig } from "../../contexts/FlowKitConfigContext";
 
 /** Imperative hooks used by FlowKit to update in-progress edge drawing. */
 export interface EdgeLayerHandle {
@@ -97,7 +97,7 @@ function getEndpointElementAtPoint(
 }
 
 export const EdgeLayer = React.forwardRef<EdgeLayerHandle, IProps>((props, ref) => {
-    const { canConnect, edgePathType } = useFlowKitConfig();
+    const { canConnect, edgePathType, readOnly } = useFlowKitConfig();
     const containerRect = useNodeFlowViewportStore((state) => state.containerRect);
     const scale = useNodeFlowViewportStore((state) => state.scale);
     const sourceEndpoint = useNodeFlowInteractionStore((state) => state.sourceEndpoint);
@@ -149,6 +149,7 @@ export const EdgeLayer = React.forwardRef<EdgeLayerHandle, IProps>((props, ref) 
     }, []);
 
     const startEdgeAtPoint = React.useCallback((x: number, y: number): void => {
+        if (readOnly) return;
         if (sourceEndpointRef.current != null) return;
 
         const target = getEndpointElementAtPoint(
@@ -168,7 +169,7 @@ export const EdgeLayer = React.forwardRef<EdgeLayerHandle, IProps>((props, ref) 
         setSourceEndpoint({ endpoint, offset });
         sourceEndpointRef.current = { endpoint, offset };
         setDrawnEdgeVisible(true);
-    }, [getEndpointById, setDrawnEdgeVisible, setSourceEndpoint]);
+    }, [getEndpointById, readOnly, setDrawnEdgeVisible, setSourceEndpoint]);
 
     const setProximityTarget = React.useCallback((target: HTMLElement | null): void => {
         if (proximityTargetRef.current === target) return;

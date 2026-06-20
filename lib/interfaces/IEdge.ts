@@ -37,6 +37,8 @@ export interface IEdge<T> {
     animated?: boolean;
     /** Additional class applied to the rendered edge group. */
     className?: string;
+    /** Optional text rendered near the midpoint of the built-in edge path. */
+    label?: string;
     /** Controlled collapse state. Consumers persist this from onEdgeCollapsedChange. */
     collapsed?: boolean;
     /** Controlled collapse mode. Only meaningful when collapsed is true. */

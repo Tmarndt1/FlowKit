@@ -5,8 +5,8 @@ import {
 	NodeFlowContext,
 	useNodeFlowInteractionStore,
 	useNodeFlowSelectionStore,
-} from "../NodeFlowContext";
-import { useFlowKitConfig } from "../FlowKitConfigContext";
+} from "../../contexts/NodeFlowContext";
+import { useFlowKitConfig } from "../../contexts/FlowKitConfigContext";
 
 enum IsValid {
 	None,
