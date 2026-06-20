@@ -13,7 +13,10 @@ import {
   IEdge,
   INode,
   NodeTypes,
+  useNodeFlowSelection,
+  useNodeFlowSelectionChange,
 } from "../../../lib/index";
+import { useFlowKitConfig } from "../../../lib/contexts/FlowKitConfigContext";
 
 type NetworkNodeData = {
   accent: "blue" | "cyan" | "gray" | "green" | "orange" | "purple" | "red" | "yellow";
@@ -944,7 +947,7 @@ export function NetworkDiagram({ animatedEdges, collapsibleEdges, edgePathType }
   const [edges, setEdges] = React.useState<NetworkEdge[]>(networkEdges);
   const [selectedDeviceKey, setSelectedDeviceKey] = React.useState<string | null>("network-core-rtr-01");
   const nodeSummary = React.useMemo(() => {
-    const counts = { critical: 0, degraded: 0, healthy: 0, unknown: 0 };
+  const counts = { critical: 0, degraded: 0, healthy: 0, unknown: 0 };
 
     networkNodes.forEach((node) => {
       counts[node.data?.status ?? "unknown"] += 1;
@@ -1004,6 +1007,8 @@ export function NetworkDiagram({ animatedEdges, collapsibleEdges, edgePathType }
       )
     );
   }, []);
+
+  console.log(selectedDevice)
 
   return (
     <section className="network-panel">

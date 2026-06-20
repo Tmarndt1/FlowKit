@@ -147,6 +147,50 @@ const edge = {
 
 ---
 
+## Presets
+
+FlowKit ships optional preset node libraries for common starting points. The core canvas stays generic; presets provide reusable node definitions, renderers, and creation helpers.
+
+### Workflow
+
+```tsx
+import {
+  FlowKit,
+  createWorkflowNode,
+  workflowNodeTypes,
+  workflowPresets,
+} from "flowkit";
+
+const nodes = [
+  createWorkflowNode("number-input", "number-a", { x: 80, y: 120 }, { value: "10" }),
+  createWorkflowNode("logic-if-else", "if-else", { x: 360, y: 120 }),
+  createWorkflowNode("logic-switch", "switch-case", { x: 640, y: 120 }),
+];
+
+export function Workflow() {
+  return <FlowKit nodes={nodes} edges={[]} nodeTypes={workflowNodeTypes} />;
+}
+```
+
+The workflow preset includes the standard demo's input, math, logic, utility, and output nodes, including the styled `logic-if-else` and multi-output `logic-switch` nodes.
+
+### Shapes
+
+```tsx
+import { FlowKit, createShapeNode, shapeNodeTypes } from "flowkit";
+
+const nodes = [
+  createShapeNode("diamond", "decision", { x: 100, y: 100 }),
+  createShapeNode("square", "task", { x: 320, y: 100 }),
+];
+
+export function Diagram() {
+  return <FlowKit nodes={nodes} edges={[]} nodeTypes={shapeNodeTypes} />;
+}
+```
+
+---
+
 ## Collapsible Edges
 
 Enable built-in folding with `collapsibleEdges`. FlowKit renders a control at the middle of each edge and supports connection-only, downstream, upstream, and both-side collapse modes.

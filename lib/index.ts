@@ -21,7 +21,7 @@ export {
     DiamondNodeShape,
     SquareNodeShape,
     TriangleNodeShape,
-} from "./components/shapes";
+} from "./components/presets/shapes";
 
 export type { IConnection } from "./interfaces/IConnection";
 export type { EdgeAnchorMode, EdgeArrow, EdgeCollapseMode, EdgePathType, EdgeRoutingOptions } from "./interfaces/IEdge";
@@ -37,5 +37,37 @@ export type { FlowKitLegendItem, FlowKitLegendMarker, FlowKitLegendPosition, Flo
 export type { NodeComponentProps } from "./types/NodeComponentProps";
 export type { NodeTypes } from "./types/NodeTypes";
 export type { Nullable } from "./types/Nullable";
-export type { NodeShapeProps } from "./components/shapes";
+export type { NodeShapeProps } from "./components/presets/shapes";
 export type { ProximityConnectOptions } from "./components/edges/EdgeLayer";
+
+export {
+    createWorkflowEdge,
+    createWorkflowEndpoints,
+    createWorkflowNode,
+    groupWorkflowPresets,
+    isWorkflowConnectionValid,
+    workflowCategoryLabels,
+    workflowNodeTypes,
+    workflowPresetByType,
+    workflowPresets,
+    WorkflowNode,
+} from "./presets/workflow";
+export type {
+    WorkflowCategory,
+    WorkflowContainer,
+    WorkflowEdge,
+    WorkflowEdgeData,
+    WorkflowEndpoint,
+    WorkflowEndpointData,
+    WorkflowNodeData,
+    WorkflowPreset,
+    WorkflowPresetNode,
+    WorkflowValueType,
+} from "./presets/workflow";
+export {
+    createShapeNode,
+    shapeNodeTypes,
+    shapePresetByType,
+    shapePresets,
+} from "./presets/shapes";
+export type { ShapeNode, ShapeNodeData, ShapePreset, ShapePresetType } from "./presets/shapes";

@@ -1,12 +1,11 @@
 import * as React from "react";
 import { Position } from "../../lib/enums/Position";
-import { EdgeCollapseMode, EdgePathType, IConnection, IEdge, INode, NodeTypes } from "../../lib/index";
+import { EdgeCollapseMode, EdgePathType, IConnection, IEdge, INode, workflowNodeTypes } from "../../lib/index";
 import { NodeInspector } from "./components/NodeInspector";
 import { NodePalette } from "./components/NodePalette";
 import { NetworkDiagram } from "./components/NetworkDiagram";
 import { DemoView, TopBar } from "./components/TopBar";
 import { WorkflowCanvas } from "./components/WorkflowCanvas";
-import { WorkflowNode } from "./components/WorkflowNode";
 import {
   RuntimeVariable,
   ValueType,
@@ -24,33 +23,6 @@ import {
   initialNodes,
   initialRuntimeVariables,
 } from "./workflowModel";
-
-const nodeTypes: NodeTypes = {
-  "number-input": WorkflowNode,
-  "boolean-input": WorkflowNode,
-  "text-input": WorkflowNode,
-  "constant-input": WorkflowNode,
-  "variable-input": WorkflowNode,
-  "math-add": WorkflowNode,
-  "math-subtract": WorkflowNode,
-  "math-multiply": WorkflowNode,
-  "math-divide": WorkflowNode,
-  "math-round": WorkflowNode,
-  "logic-greater-than": WorkflowNode,
-  "logic-less-than": WorkflowNode,
-  "logic-equal": WorkflowNode,
-  "logic-and": WorkflowNode,
-  "logic-or": WorkflowNode,
-  "logic-not": WorkflowNode,
-  "logic-branch": WorkflowNode,
-  "utility-format": WorkflowNode,
-  "utility-convert": WorkflowNode,
-  "utility-coalesce": WorkflowNode,
-  "utility-delay": WorkflowNode,
-  "result-output": WorkflowNode,
-  "log-output": WorkflowNode,
-  "alert-output": WorkflowNode,
-};
 
 export function App() {
   const [nodes, setNodes] = React.useState<WorkflowNodeType[]>(initialNodes);
@@ -345,7 +317,7 @@ export function App() {
               edgePathType={edgePathType}
               edges={edges}
               nodes={nodes}
-              nodeTypes={nodeTypes}
+              nodeTypes={workflowNodeTypes}
               onConnect={onConnect}
               onContainersChange={setContainers}
               onEdgeCollapsedChange={onEdgeCollapsedChange}

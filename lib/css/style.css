@@ -2,6 +2,7 @@
 @import "./parts/nodes.css";
 @import "./parts/node-containers.css";
 @import "./parts/shapes.css";
+@import "./parts/workflow-preset.css";
 @import "./parts/endpoints.css";
 @import "./parts/controls.css";
 @import "./parts/mini-map.css";
