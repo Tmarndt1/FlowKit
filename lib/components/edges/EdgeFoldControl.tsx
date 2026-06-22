@@ -35,14 +35,29 @@ export const EdgeFoldControl: React.FC<IProps> = ({
     onPreviewMode,
     onToggle,
     pathFoldMetrics,
-    portalPosition,
+    portalPosition
 }) => {
     const hostRef = React.useRef<HTMLDivElement | null>(null);
 
+    const callbacksRef = React.useRef({
+        onChooseMode,
+        onClearPreview,
+        onPreviewMode
+    });
+
     React.useEffect(() => {
+        callbacksRef.current = {
+            onChooseMode,
+            onClearPreview,
+            onPreviewMode
+        };
+    }, [onChooseMode, onClearPreview, onPreviewMode]);
+
+    React.useEffect(() => {
+        hostRef.current?.remove();
+        hostRef.current = null;
+
         if (!menuOpen || collapsed || portalPosition == null || typeof document === "undefined") {
-            hostRef.current?.remove();
-            hostRef.current = null;
             return;
         }
 
@@ -50,22 +65,62 @@ export const EdgeFoldControl: React.FC<IProps> = ({
         const panel = document.createElement("div");
 
         host.className = "flow-kit-edge-fold-menu";
+        host.style.position = "fixed";
         host.style.left = `${portalPosition.x + 16}px`;
         host.style.top = `${portalPosition.y - 74}px`;
+        host.style.zIndex = "2147483647";
+        host.style.pointerEvents = "auto";
+
         panel.className = "flow-kit-edge-fold-menu-panel";
+        panel.style.pointerEvents = "auto";
+
+        const stopBubble = (event: Event): void => {
+            event.stopPropagation();
+        };
+
+        panel.addEventListener("pointerdown", stopBubble);
+        panel.addEventListener("mousedown", stopBubble);
+        panel.addEventListener("mouseup", stopBubble);
+        panel.addEventListener("click", stopBubble);
 
         collapseOptions.forEach((option) => {
             const button = document.createElement("button");
 
             button.type = "button";
             button.textContent = option.label;
-            button.addEventListener("click", (event) => onChooseMode(event, option.mode));
-            button.addEventListener("mouseenter", () => onPreviewMode(option.mode));
-            button.addEventListener("mouseleave", onClearPreview);
-            button.addEventListener("mousemove", () => onPreviewMode(option.mode));
-            button.addEventListener("pointerenter", () => onPreviewMode(option.mode));
-            button.addEventListener("pointerleave", onClearPreview);
-            button.addEventListener("pointermove", () => onPreviewMode(option.mode));
+            button.style.pointerEvents = "auto";
+
+            const chooseMode = (event: PointerEvent | MouseEvent): void => {
+                event.preventDefault();
+                event.stopPropagation();
+
+                callbacksRef.current.onChooseMode(
+                    {
+                        preventDefault: () => event.preventDefault(),
+                        stopPropagation: () => event.stopPropagation()
+                    },
+                    option.mode
+                );
+            };
+
+            const previewMode = (): void => {
+                callbacksRef.current.onPreviewMode(option.mode);
+            };
+
+            const clearPreview = (): void => {
+                callbacksRef.current.onClearPreview();
+            };
+
+            button.addEventListener("pointerdown", chooseMode);
+            button.addEventListener("mousedown", chooseMode);
+            button.addEventListener("click", chooseMode);
+
+            button.addEventListener("pointerenter", previewMode);
+            button.addEventListener("mouseenter", previewMode);
+
+            button.addEventListener("pointerleave", clearPreview);
+            button.addEventListener("mouseleave", clearPreview);
+
             panel.appendChild(button);
         });
 
@@ -75,19 +130,19 @@ export const EdgeFoldControl: React.FC<IProps> = ({
 
         return () => {
             host.remove();
-            if (hostRef.current === host) hostRef.current = null;
+
+            if (hostRef.current === host) {
+                hostRef.current = null;
+            }
         };
     }, [
         collapsed,
         menuOpen,
-        onChooseMode,
-        onClearPreview,
-        onPreviewMode,
-        portalPosition
+        portalPosition?.x,
+        portalPosition?.y
     ]);
 
     return (
-        <>
         <g
             aria-label={collapsed ? "Expand edge" : "Collapse edge"}
             className={`flow-kit-edge-fold-control${collapsed ? " flow-kit-edge-fold-control-folded" : ""}${menuOpen ? " flow-kit-edge-fold-control-open" : ""}`}
@@ -100,6 +155,5 @@ export const EdgeFoldControl: React.FC<IProps> = ({
             <circle r={12} />
             <path d={collapsed ? "M -5 0 L 5 0 M 0 -5 L 0 5" : "M -5 0 L 5 0"} />
         </g>
-        </>
     );
 };
