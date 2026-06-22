@@ -144,7 +144,7 @@ const EdgeComponent: React.FC<IProps> = (props) =>
     }, [clearCollapsePreview, onEdgeCollapsedChange]);
 
     const chooseCollapseMode = React.useCallback((
-        e: React.MouseEvent<HTMLElement, MouseEvent>,
+        e: { stopPropagation: () => void; preventDefault: () => void },
         mode: EdgeCollapseMode
     ): void => {
         e.stopPropagation();
@@ -199,6 +199,7 @@ const EdgeComponent: React.FC<IProps> = (props) =>
 
             if (!(target instanceof globalThis.Node)) return;
             if (edgeGroupRef.current?.contains(target)) return;
+            if (target instanceof Element && target.closest(".flow-kit-edge-fold-menu-panel") != null) return;
 
             setMenuOpen(false);
             clearCollapsePreview();
@@ -306,6 +307,13 @@ const EdgeComponent: React.FC<IProps> = (props) =>
         hasTargetArrow(props.edge) && !(directionallyFolded && collapseMode === "downstream")
             ? "url(#flow-kit-edge-arrow)"
             : undefined;
+    const foldMenuPortalPosition = containerRect != null && pathFoldMetrics != null
+        ? {
+            x: containerRect.left + pathFoldMetrics.midpoint.x * scale,
+            y: containerRect.top + pathFoldMetrics.midpoint.y * scale
+        }
+        : null;
+
     if (props.customEdge)
     {
         const customProps = {
@@ -368,6 +376,7 @@ const EdgeComponent: React.FC<IProps> = (props) =>
                     onPreviewMode={previewCollapseMode}
                     onToggle={toggleCollapsed}
                     pathFoldMetrics={pathFoldMetrics}
+                    portalPosition={foldMenuPortalPosition}
                 />
             )}
         </g>

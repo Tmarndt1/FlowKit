@@ -124,8 +124,6 @@ export interface FlowKitProps {
     children?: React.ReactNode;
     /** Extra props passed to custom node renderers by node type. */
     customNodeProps?: NodeComponentProps;
-    /** Optional validator for new endpoint connections. */
-    canConnect?: CanConnect
     /** Enables built-in edge fold controls by default. */
     collapsibleEdges?: boolean;
     /** Default built-in edge path algorithm. */
@@ -138,6 +136,8 @@ export interface FlowKitProps {
     onEdgeCollapsedChange?: (args: IEdgeCollapsedChangeArgs) => void;
     /** Called when a fold menu option is previewed or cleared. */
     onEdgeCollapsePreviewChange?: (args: IEdgeCollapsePreviewChangeArgs) => void;
+    /** Optional validator for new endpoint connections. */
+    canConnect?: CanConnect
 }
 
 /** Imperative API exposed by FlowKit refs for external controls and topology panels. */

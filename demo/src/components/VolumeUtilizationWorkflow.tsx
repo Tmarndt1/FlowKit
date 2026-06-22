@@ -35,7 +35,7 @@ const metricValues = {
 const volumeLegendItems: FlowKitLegendItem[] = [
   { key: "metric", label: "Runtime variables", marker: "square", value: 2, color: "#49d4e6" },
   { key: "math", label: "Math", marker: "square", value: 3, color: "#f5bd22" },
-  { key: "policy", label: "Threshold policy", marker: "square", value: 1, color: "#ff9f43" },
+  { key: "policy", label: "Decision table", marker: "square", value: 1, color: "#ff9f43" },
   { key: "alert", label: "Alert outputs", marker: "square", value: 3, color: "#ff6767" },
 ];
 
@@ -80,9 +80,9 @@ const initialVolumeNodes: WorkflowNodeType[] = [
   createWorkflowNode("number-input", "percent-scale", { x: 340, y: 505 }, { subtitle: "Scale", value: "100" }),
   createWorkflowNode("math-multiply", "percent-multiply", { x: 590, y: 285 }, { title: "Percent Used" }),
   createWorkflowNode("math-round", "percent-round", { x: 830, y: 285 }, { title: "Round Percent" }),
-  createWorkflowNode("policy-threshold", "volume-threshold", { x: 1080, y: 260 }, {
+  createWorkflowNode("policy-decision-table", "volume-threshold", { x: 1080, y: 260 }, {
     subtitle: ">= 90 critical, >= 75 warning",
-    title: "Volume Threshold",
+    title: "Volume Decision",
   }),
   createWorkflowNode("result-output", "volume-normal", { x: 1360, y: 110 }, {
     subtitle: "Volume normal",
@@ -256,7 +256,7 @@ export function VolumeUtilizationWorkflow({
         </section>
 
         <section>
-          <h2>Threshold Branches</h2>
+          <h2>Decision Rows</h2>
           <div className="volume-threshold-list">
             <div className="volume-threshold-row volume-threshold-normal">
               <span />

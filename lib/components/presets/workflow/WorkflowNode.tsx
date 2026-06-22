@@ -32,7 +32,7 @@ export function WorkflowNode(props: WorkflowNodeType & { selected?: boolean }) {
                     {data.styleVariant === "switch-case"
                         ? `${data.switchCases?.length ?? 0} ordered cases`
                         : data.styleVariant === "threshold-policy"
-                            ? `${data.thresholdPolicy?.branches.length ?? 0} threshold branches`
+                            ? `${data.thresholdPolicy?.branches.length ?? 0} decision rows`
                             : "conditional branch"}
                 </span>
             ) : null}

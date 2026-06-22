@@ -5,11 +5,13 @@ export const workflowNodeBaseHeight = 92;
 export const workflowEndpointStartY = 48;
 export const workflowEndpointGap = 28;
 
-export const defaultThresholdPolicyBranches = [
+export const defaultDecisionTableBranches = [
     { id: "normal", label: "normal", default: true },
     { id: "warning", label: "warning", comparator: ">=", threshold: "70" },
     { id: "critical", label: "critical", comparator: ">=", threshold: "90" },
 ] as const satisfies readonly WorkflowThresholdBranch[];
+
+export const defaultThresholdPolicyBranches = defaultDecisionTableBranches;
 
 export const workflowPresets: WorkflowPreset[] = [
     {
@@ -212,13 +214,13 @@ export const workflowPresets: WorkflowPreset[] = [
     },
     {
         category: "policy",
-        description: "Routes a value through threshold branches",
-        icon: "T>",
+        description: "Routes a value through ordered decision branches",
+        icon: "DT",
         inputs: [{ label: "value", valueType: "number" }],
-        outputs: defaultThresholdPolicyBranches.map((branch) => ({ label: branch.label, valueType: "any" })),
+        outputs: defaultDecisionTableBranches.map((branch) => ({ label: branch.label, valueType: "any" })),
         styleVariant: "threshold-policy",
-        title: "Threshold Policy",
-        type: "policy-threshold",
+        title: "Decision Table",
+        type: "policy-decision-table",
     },
     {
         category: "utility",
@@ -298,3 +300,5 @@ export const workflowCategoryLabels: Record<WorkflowCategory, string> = {
 };
 
 export const workflowPresetByType = new Map(workflowPresets.map((preset) => [preset.type, preset]));
+
+workflowPresetByType.set("policy-threshold", workflowPresetByType.get("policy-decision-table")!);

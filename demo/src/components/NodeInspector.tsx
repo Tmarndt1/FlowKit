@@ -1,9 +1,17 @@
 import * as React from "react";
 import { Position } from "../../../lib/enums/Position";
-import { RuntimeVariable, ValueType, WorkflowEndpointData, WorkflowNode, WorkflowNodeData } from "../types";
+import {
+  RuntimeVariable,
+  ValueType,
+  DecisionBranch,
+  WorkflowEndpointData,
+  WorkflowNode,
+  WorkflowNodeData,
+} from "../types";
 
 type NodeInspectorProps = {
   node: WorkflowNode | null;
+  onDecisionTableBranchesChange: (nodeKey: string, branches: DecisionBranch[]) => void;
   onEndpointChange: (nodeKey: string, endpointId: string, data: Partial<WorkflowEndpointData>) => void;
   onNodeDataChange: (nodeKey: string, data: Partial<WorkflowNodeData>) => void;
   onVariableConfigChange: (nodeKey: string, config: { identifier?: string; name?: string; valueType?: ValueType }) => void;
@@ -15,8 +23,19 @@ type InspectorTab = "config" | "inputs" | "outputs" | "info";
 
 const valueTypes: ValueType[] = ["number", "boolean", "text", "any"];
 
+function getDecisionBranchId(label: string, fallback: number): string {
+  const normalized = label
+    .trim()
+    .toLowerCase()
+    .replace(/[^a-z0-9]+/g, "-")
+    .replace(/^-|-$/g, "");
+
+  return normalized.length > 0 ? normalized : `row-${fallback}`;
+}
+
 export function NodeInspector({
   node,
+  onDecisionTableBranchesChange,
   onEndpointChange,
   onNodeDataChange,
   onVariableConfigChange,
@@ -28,6 +47,8 @@ export function NodeInspector({
   const inputs = node?.endpoints.filter((endpoint) => endpoint.position === Position.Left) ?? [];
   const outputs = node?.endpoints.filter((endpoint) => endpoint.position === Position.Right) ?? [];
   const variable = runtimeVariables.find((item) => item.key === data?.variableKey);
+  const isDecisionTable = data?.styleVariant === "threshold-policy";
+  const decisionBranches = isDecisionTable ? data?.thresholdPolicy?.branches ?? [] : [];
 
   React.useEffect(() => {
     setActiveTab("config");
@@ -48,6 +69,50 @@ export function NodeInspector({
   const updateVariable = (config: { identifier?: string; name?: string; valueType?: ValueType }) => {
     if (nodeKey == null) return;
     onVariableConfigChange(nodeKey, config);
+  };
+
+  const updateDecisionBranches = (branches: DecisionBranch[]) => {
+    if (nodeKey == null) return;
+    onDecisionTableBranchesChange(nodeKey, branches);
+  };
+
+  const addDecisionBranch = () => {
+    const nextNumber = decisionBranches.length + 1;
+    const label = `row ${nextNumber}`;
+    const existingIds = new Set(decisionBranches.map((branch) => branch.id));
+    let id = getDecisionBranchId(label, nextNumber);
+    let suffix = nextNumber;
+
+    while (existingIds.has(id)) {
+      suffix += 1;
+      id = `row-${suffix}`;
+    }
+
+    updateDecisionBranches([
+      ...decisionBranches,
+      {
+        id,
+        label,
+        valueType: "any",
+      },
+    ]);
+  };
+
+  const updateDecisionBranch = (branchId: string, patch: Partial<DecisionBranch>) => {
+    updateDecisionBranches(
+      decisionBranches.map((branch) =>
+        branch.id === branchId
+          ? {
+              ...branch,
+              ...patch,
+            }
+          : branch
+      )
+    );
+  };
+
+  const removeDecisionBranch = (branchId: string) => {
+    updateDecisionBranches(decisionBranches.filter((branch) => branch.id !== branchId));
   };
 
   return (
@@ -174,9 +239,60 @@ export function NodeInspector({
 
       {activeTab === "outputs" ? (
         <section className="inspector-section">
-          <h2>Outputs</h2>
+          <div className="inspector-section-title-row">
+            <h2>{isDecisionTable ? "Decision Rows" : "Outputs"}</h2>
+            {isDecisionTable ? (
+              <button disabled={nodeKey == null} onClick={addDecisionBranch} type="button">
+                Add endpoint
+              </button>
+            ) : null}
+          </div>
           {outputs.length === 0 ? <p className="empty-state">This node has no outputs.</p> : null}
-          {outputs.map((endpoint) => (
+          {isDecisionTable
+            ? decisionBranches.map((branch, index) => {
+                const endpoint = outputs.find((item) => item.id === `${nodeKey}-threshold-${branch.id}`);
+
+                return (
+                  <div className="decision-row-editor" key={branch.id}>
+                    <label className="field">
+                      <span>Endpoint Label</span>
+                      <input
+                        onChange={(event) => updateDecisionBranch(branch.id, { label: event.target.value })}
+                        value={branch.label}
+                      />
+                    </label>
+                    <label className="field">
+                      <span>Type</span>
+                      <select
+                        onChange={(event) => updateDecisionBranch(branch.id, { valueType: event.target.value as ValueType })}
+                        value={branch.valueType ?? endpoint?.data?.valueType ?? "any"}
+                      >
+                        {valueTypes.map((type) => (
+                          <option key={type} value={type}>
+                            {type}
+                          </option>
+                        ))}
+                      </select>
+                    </label>
+                    <label className="field">
+                      <span>Rule</span>
+                      <input
+                        onChange={(event) => updateDecisionBranch(branch.id, { threshold: event.target.value })}
+                        placeholder={branch.default ? "default" : "threshold"}
+                        value={branch.threshold ?? ""}
+                      />
+                    </label>
+                    <button
+                      disabled={decisionBranches.length <= 1}
+                      onClick={() => removeDecisionBranch(branch.id)}
+                      type="button"
+                    >
+                      Remove row {index + 1}
+                    </button>
+                  </div>
+                );
+              })
+            : outputs.map((endpoint) => (
             <label className="field" key={endpoint.id}>
               <span>Output</span>
               <input

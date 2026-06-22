@@ -1,7 +1,7 @@
 import { Position } from "../../enums/Position";
 import { IEndpoint } from "../../interfaces/IEndpoint";
 import {
-    defaultThresholdPolicyBranches,
+    defaultDecisionTableBranches,
     workflowEndpointGap,
     workflowEndpointStartY,
     workflowNodeBaseHeight,
@@ -12,7 +12,7 @@ import { WorkflowEndpointData, WorkflowNode, WorkflowNodeData, WorkflowPreset, W
 
 function getNodeHeight(preset: WorkflowPreset): number {
     const outputCount = preset.styleVariant === "threshold-policy"
-        ? defaultThresholdPolicyBranches.length
+        ? defaultDecisionTableBranches.length
         : preset.outputs.length;
 
     return Math.max(
@@ -29,7 +29,7 @@ function createThresholdOutputEndpoints(
         id: `${nodeKey}-threshold-${branch.id}`,
         offset: { x: workflowNodeWidth, y: workflowEndpointStartY + index * workflowEndpointGap },
         position: Position.Right,
-        data: { label: branch.label, valueType: "any" as const },
+        data: { label: branch.label, valueType: branch.valueType ?? "any" as const },
     }));
 }
 
@@ -50,7 +50,7 @@ export function isWorkflowConnectionValid(connection: {
 
 export function createWorkflowEndpoints(nodeKey: string, preset: WorkflowPreset): WorkflowNode["endpoints"] {
     const outputEndpoints = preset.styleVariant === "threshold-policy"
-        ? createThresholdOutputEndpoints(nodeKey, defaultThresholdPolicyBranches)
+        ? createThresholdOutputEndpoints(nodeKey, defaultDecisionTableBranches)
         : preset.outputs.map((endpoint, index) => ({
             id: `${nodeKey}-out-${index}`,
             offset: { x: workflowNodeWidth, y: workflowEndpointStartY + index * workflowEndpointGap },
@@ -69,7 +69,7 @@ export function createWorkflowEndpoints(nodeKey: string, preset: WorkflowPreset)
     ];
 }
 
-export function updateWorkflowThresholdBranches(
+export function updateWorkflowDecisionTableBranches(
     node: WorkflowNode,
     branches: WorkflowThresholdBranch[]
 ): WorkflowNode {
@@ -94,6 +94,8 @@ export function updateWorkflowThresholdBranches(
         },
     };
 }
+
+export const updateWorkflowThresholdBranches = updateWorkflowDecisionTableBranches;
 
 export function createWorkflowNode(
     presetType: string,
@@ -123,7 +125,7 @@ export function createWorkflowNode(
                 : undefined,
             thresholdPolicy: preset.styleVariant === "threshold-policy"
                 ? {
-                    branches: [...defaultThresholdPolicyBranches],
+                    branches: [...defaultDecisionTableBranches],
                     valueKey: "value",
                 }
                 : undefined,

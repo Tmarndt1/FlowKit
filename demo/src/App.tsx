@@ -1,6 +1,14 @@
 import * as React from "react";
 import { Position } from "../../lib/enums/Position";
-import { EdgeCollapseMode, EdgePathType, IConnection, IEdge, INode, workflowNodeTypes } from "../../lib/index";
+import {
+  EdgeCollapseMode,
+  EdgePathType,
+  IConnection,
+  IEdge,
+  INode,
+  updateWorkflowDecisionTableBranches,
+  workflowNodeTypes,
+} from "../../lib/index";
 import { NodeInspector } from "./components/NodeInspector";
 import { NodePalette } from "./components/NodePalette";
 import { NetworkDiagram } from "./components/NetworkDiagram";
@@ -8,6 +16,7 @@ import { DemoView, TopBar } from "./components/TopBar";
 import { VolumeUtilizationWorkflow, volumeWorkflowStats } from "./components/VolumeUtilizationWorkflow";
 import { WorkflowCanvas } from "./components/WorkflowCanvas";
 import {
+  DecisionBranch,
   RuntimeVariable,
   ValueType,
   WorkflowEdge,
@@ -187,6 +196,26 @@ export function App() {
     []
   );
 
+  const updateDecisionTableBranches = React.useCallback((nodeKey: string, branches: DecisionBranch[]) => {
+    const nextEndpointIds = new Set(branches.map((branch) => `${nodeKey}-threshold-${branch.id}`));
+
+    setNodes((currentNodes) =>
+      currentNodes.map((node) => {
+        if (node.key !== nodeKey || node.data?.styleVariant !== "threshold-policy") return node;
+
+        const nextNode = updateWorkflowDecisionTableBranches(node, branches);
+        return nextNode;
+      })
+    );
+
+    setEdges((currentEdges) =>
+      currentEdges.filter((edge) => {
+        if (!edge.sourceId.startsWith(`${nodeKey}-threshold-`)) return true;
+        return nextEndpointIds.has(edge.sourceId);
+      })
+    );
+  }, []);
+
   const updateVariableConfig = React.useCallback(
     (nodeKey: string, config: { identifier?: string; name?: string; valueType?: ValueType }) => {
       const currentNode = nodes.find((node) => node.key === nodeKey);
@@ -344,6 +373,7 @@ export function App() {
         {demoView === "workflow" ? (
           <NodeInspector
             node={selectedNode}
+            onDecisionTableBranchesChange={updateDecisionTableBranches}
             onEndpointChange={updateEndpointData}
             onNodeDataChange={updateNodeData}
             onVariableConfigChange={updateVariableConfig}

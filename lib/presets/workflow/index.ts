@@ -8,9 +8,11 @@ export {
     createWorkflowEndpoints,
     createWorkflowNode,
     isWorkflowConnectionValid,
+    updateWorkflowDecisionTableBranches,
     updateWorkflowThresholdBranches,
 } from "./createWorkflowNode";
 export {
+    defaultDecisionTableBranches,
     workflowCategoryLabels,
     defaultThresholdPolicyBranches,
     workflowEndpointGap,
@@ -24,6 +26,8 @@ export type {
     WorkflowBaseNodeData,
     WorkflowCategory,
     WorkflowContainer,
+    WorkflowDecisionBranch,
+    WorkflowDecisionTableNodeData,
     WorkflowEdge,
     WorkflowEdgeData,
     WorkflowEndpoint,

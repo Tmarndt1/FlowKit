@@ -97,6 +97,8 @@
 .flow-kit-edge-fold-menu {
     overflow: visible;
     pointer-events: all;
+    position: fixed;
+    z-index: var(--flow-kit-edge-menu-z-index, 1000000);
 }
 
 .flow-kit-edge-fold-menu-panel {

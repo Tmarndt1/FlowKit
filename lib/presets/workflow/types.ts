@@ -13,7 +13,10 @@ export type WorkflowThresholdBranch = {
     comparator?: ">" | ">=" | "<" | "<=" | "==" | "!=";
     threshold?: string;
     default?: boolean;
+    valueType?: WorkflowValueType;
 };
+
+export type WorkflowDecisionBranch = WorkflowThresholdBranch;
 
 export interface WorkflowBaseNodeData {
     category: WorkflowCategory;
@@ -116,6 +119,8 @@ export interface WorkflowThresholdPolicyNodeData extends WorkflowBaseNodeData {
     variableKey?: never;
     variableQuery?: never;
 }
+
+export type WorkflowDecisionTableNodeData = WorkflowThresholdPolicyNodeData;
 
 export interface WorkflowUtilityNodeData extends WorkflowBaseNodeData {
     category: "utility";

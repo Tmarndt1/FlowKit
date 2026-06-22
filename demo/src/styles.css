@@ -717,7 +717,7 @@ button {
 .volume-workflow-canvas .flow-kit-edge-path {
   fill: none;
   pointer-events: stroke;
-  stroke: #43dc83;
+  stroke: #f7fbff;
   stroke-linecap: round;
   stroke-linejoin: round;
   stroke-width: 3;
@@ -725,22 +725,22 @@ button {
 }
 
 .volume-workflow-canvas .volume-link-muted .flow-kit-edge-path {
-  opacity: .45;
-  stroke: #7890a8;
+  opacity: .72;
+  stroke: #f7fbff;
 }
 
 .volume-workflow-canvas .volume-link-warning .flow-kit-edge-path {
-  filter: drop-shadow(0 0 8px rgba(255, 190, 64, .18));
-  stroke: #ffbd4a;
+  filter: drop-shadow(0 0 8px rgba(247, 251, 255, .16));
+  stroke: #f7fbff;
 }
 
 .volume-workflow-canvas .volume-link-critical .flow-kit-edge-path {
-  opacity: .8;
-  stroke: #ff6767;
+  opacity: .9;
+  stroke: #f7fbff;
 }
 
 .volume-workflow-canvas .flow-kit-edge-fold-preview .flow-kit-edge-path {
-  stroke: #68e8ff;
+  stroke: #ffffff;
 }
 
 .volume-workflow-canvas .flow-kit-edge-label-background {
@@ -2725,6 +2725,10 @@ button {
   background: #a477ff;
 }
 
+.inspector-icon-policy {
+  background: #ff9f43;
+}
+
 .inspector-icon-utility {
   background: #49d66f;
 }
@@ -2759,6 +2763,49 @@ button {
   display: grid;
   gap: 12px;
   padding: 16px;
+}
+
+.inspector-section-title-row {
+  align-items: center;
+  display: flex;
+  gap: 10px;
+  justify-content: space-between;
+}
+
+.inspector-section-title-row button,
+.decision-row-editor > button {
+  background: #1b2431;
+  border: 1px solid #273244;
+  border-radius: 5px;
+  color: #dbe2ef;
+  cursor: pointer;
+  font-size: 11px;
+  min-height: 28px;
+  padding: 0 10px;
+}
+
+.inspector-section-title-row button:hover,
+.decision-row-editor > button:hover {
+  background: #243046;
+}
+
+.inspector-section-title-row button:disabled,
+.decision-row-editor > button:disabled {
+  cursor: not-allowed;
+  opacity: .45;
+}
+
+.decision-row-editor {
+  background: rgba(16, 24, 36, 0.72);
+  border: 1px solid rgba(134, 146, 166, 0.2);
+  border-radius: 7px;
+  display: grid;
+  gap: 10px;
+  padding: 10px;
+}
+
+.decision-row-editor + .decision-row-editor {
+  margin-top: 2px;
 }
 
 .field {

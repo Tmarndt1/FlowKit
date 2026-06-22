@@ -1,6 +1,7 @@
 import {
   WorkflowCategory,
   WorkflowContainer,
+  WorkflowDecisionBranch,
   WorkflowEdge,
   WorkflowEndpoint,
   WorkflowEndpointData,
@@ -13,6 +14,7 @@ import {
 export type {
   WorkflowCategory,
   WorkflowContainer,
+  WorkflowDecisionBranch,
   WorkflowEdge,
   WorkflowEndpoint,
   WorkflowEndpointData,
@@ -23,6 +25,7 @@ export type {
 export type WorkflowShape = "arrow-rectangle" | "circle" | "diamond" | "square" | "triangle";
 export type ValueType = WorkflowValueType;
 export type WorkflowNode = WorkflowPresetNode;
+export type DecisionBranch = WorkflowDecisionBranch;
 
 export type ShapeNodeData = {
   description: string;

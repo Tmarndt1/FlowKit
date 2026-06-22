@@ -1,7 +1,3 @@
-g {
-    z-index: 1000000;
-}
-
 .flow-kit {
     border: 1px solid black;
     border-radius: 5px;
@@ -54,5 +50,5 @@ g {
 }
 
 .flow-kit-edges-container {
-    z-index: 3;
+    z-index: 1;
 }

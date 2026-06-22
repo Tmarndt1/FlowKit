@@ -94,6 +94,18 @@
     background: #ff6767;
 }
 
+.workflow-node-output .workflow-node-label {
+    margin-top: 8px;
+    max-width: calc(100% - 62px);
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.workflow-node-output .workflow-node-ports {
+    bottom: 12px;
+}
+
 .workflow-node-title {
     align-items: center;
     display: flex;
