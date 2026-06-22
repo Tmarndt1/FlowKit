@@ -3,3 +3,8 @@ dist
 .vs
 obj
 bin
+
+# Logs
+*.log
+npm-debug.log*
+vite-*.log

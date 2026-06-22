@@ -61,6 +61,25 @@ Use it for workflow engines, automation builders, network topology editors, ETL 
 
 ---
 
+## Installation
+
+```bash
+npm install flowkit
+```
+
+FlowKit lists React 19 as a peer dependency, so make sure `react` is installed in your app.
+
+Import the components you need and FlowKit's stylesheet once at your app entry point:
+
+```tsx
+import { FlowKit } from "flowkit";
+import "flowkit/styles.css";
+```
+
+The default styles are intended as a starting point — override the CSS class hooks (see [Styling](#styling)) to match your design.
+
+---
+
 ## Basic Usage
 
 ```tsx

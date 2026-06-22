@@ -2,14 +2,53 @@
   "name": "flowkit",
   "version": "1.0.0",
   "description": "A React library for building interactive node flow.",
-  "main": "dist/index.js",
-  "types": "dist/index.d.ts",
-  "scripts": {
-    "build": "tsc",
-    "test": "tsc --noEmit"
-  },
   "author": "Travis Arndt",
-  "license": "ISC",
+  "license": "MIT",
+  "type": "module",
+  "main": "./dist/index.cjs",
+  "module": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "sideEffects": [
+    "**/*.css"
+  ],
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js",
+      "require": "./dist/index.cjs"
+    },
+    "./styles.css": "./dist/style.css",
+    "./package.json": "./package.json"
+  },
+  "files": [
+    "dist"
+  ],
+  "scripts": {
+    "build": "tsup",
+    "typecheck": "tsc --noEmit",
+    "test": "tsc --noEmit",
+    "prepublishOnly": "npm run build"
+  },
+  "keywords": [
+    "react",
+    "flow",
+    "node-editor",
+    "workflow",
+    "diagram",
+    "graph",
+    "node-based",
+    "flowchart",
+    "low-code",
+    "network-diagram"
+  ],
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/Tmarndt1/FlowKit.git"
+  },
+  "homepage": "https://github.com/Tmarndt1/FlowKit#readme",
+  "bugs": {
+    "url": "https://github.com/Tmarndt1/FlowKit/issues"
+  },
   "peerDependencies": {
     "react": ">=19"
   },
@@ -17,6 +56,7 @@
     "@types/node": "25.9.3",
     "@types/react": "19.2.17",
     "react": "19.2.7",
+    "tsup": "^8.5.1",
     "typescript": "6.0.3"
   },
   "dependencies": {
