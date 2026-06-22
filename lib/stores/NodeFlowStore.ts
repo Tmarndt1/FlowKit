@@ -51,10 +51,31 @@ export interface NodeFlowInteractionState {
 }
 
 export interface NodeFlowSelectionState {
+    /** Primary (most recently selected) node, or null. Kept for single-selection consumers. */
     selectedNode: INode<any, any> | null;
+    /** Primary (most recently selected) edge, or null. Kept for single-selection consumers. */
     selectedEdge: IEdge<any> | null;
+    /** All currently selected nodes, in selection order. */
+    selectedNodes: INode<any, any>[];
+    /** All currently selected edges, in selection order. */
+    selectedEdges: IEdge<any>[];
+    /** Fast membership lookup for selected node keys. */
+    selectedNodeKeys: Set<string>;
+    /** Fast membership lookup for selected edge keys. */
+    selectedEdgeKeys: Set<string>;
+    /** Replaces the selection with a single node (or clears it when null). */
     selectNode: (node: INode<any, any> | null) => void;
+    /** Replaces the selection with a single edge (or clears it when null). */
     selectEdge: (edge: IEdge<any> | null) => void;
+    /** Adds or removes a node from the current selection without affecting edges. */
+    toggleNode: (node: INode<any, any>) => void;
+    /** Adds or removes an edge from the current selection without affecting nodes. */
+    toggleEdge: (edge: IEdge<any>) => void;
+    /** Replaces the selection with the provided nodes and edges. */
+    setSelection: (nodes: INode<any, any>[], edges?: IEdge<any>[]) => void;
+    /** Merges the provided nodes and edges into the current selection. */
+    addToSelection: (nodes: INode<any, any>[], edges?: IEdge<any>[]) => void;
+    /** Clears all selected nodes and edges. */
     clearSelection: () => void;
 }
 
@@ -155,21 +176,94 @@ export function createNodeFlowInteractionStore(): NodeFlowInteractionStore {
     }));
 }
 
+function buildSelection(
+    nodes: INode<any, any>[],
+    edges: IEdge<any>[]
+): Pick<
+    NodeFlowSelectionState,
+    "selectedNode" | "selectedEdge" | "selectedNodes" | "selectedEdges" | "selectedNodeKeys" | "selectedEdgeKeys"
+> {
+    return {
+        selectedNodes: nodes,
+        selectedEdges: edges,
+        selectedNodeKeys: new Set(nodes.map((node) => node.key)),
+        selectedEdgeKeys: new Set(edges.map((edge) => edge.key)),
+        selectedNode: nodes.length > 0 ? nodes[nodes.length - 1] : null,
+        selectedEdge: edges.length > 0 ? edges[edges.length - 1] : null,
+    };
+}
+
+function mergeByKey<T extends { key: string }>(existing: T[], additions: T[]): T[] {
+    if (additions.length < 1) return existing;
+
+    const byKey = new Map<string, T>();
+
+    for (const item of existing) byKey.set(item.key, item);
+    for (const item of additions) byKey.set(item.key, item);
+
+    return Array.from(byKey.values());
+}
+
 export function createNodeFlowSelectionStore(): NodeFlowSelectionStore {
     return createStore<NodeFlowSelectionState>((set, get) => ({
         selectedNode: null,
         selectedEdge: null,
+        selectedNodes: [],
+        selectedEdges: [],
+        selectedNodeKeys: new Set<string>(),
+        selectedEdgeKeys: new Set<string>(),
         selectNode: (node) => {
-            if (get().selectedNode?.key === node?.key && get().selectedEdge == null) return;
-            set({ selectedNode: node, selectedEdge: null });
+            const current = get();
+
+            if (
+                current.selectedEdges.length === 0 &&
+                current.selectedNodes.length === (node == null ? 0 : 1) &&
+                (node == null || current.selectedNodeKeys.has(node.key))
+            ) return;
+
+            set(buildSelection(node == null ? [] : [node], []));
         },
         selectEdge: (edge) => {
-            if (get().selectedEdge?.key === edge?.key && get().selectedNode == null) return;
-            set({ selectedEdge: edge, selectedNode: null });
+            const current = get();
+
+            if (
+                current.selectedNodes.length === 0 &&
+                current.selectedEdges.length === (edge == null ? 0 : 1) &&
+                (edge == null || current.selectedEdgeKeys.has(edge.key))
+            ) return;
+
+            set(buildSelection([], edge == null ? [] : [edge]));
+        },
+        toggleNode: (node) => {
+            const current = get();
+            const nextNodes = current.selectedNodeKeys.has(node.key)
+                ? current.selectedNodes.filter((selected) => selected.key !== node.key)
+                : [...current.selectedNodes, node];
+
+            set(buildSelection(nextNodes, current.selectedEdges));
+        },
+        toggleEdge: (edge) => {
+            const current = get();
+            const nextEdges = current.selectedEdgeKeys.has(edge.key)
+                ? current.selectedEdges.filter((selected) => selected.key !== edge.key)
+                : [...current.selectedEdges, edge];
+
+            set(buildSelection(current.selectedNodes, nextEdges));
+        },
+        setSelection: (nodes, edges = []) => {
+            set(buildSelection(nodes, edges));
+        },
+        addToSelection: (nodes, edges = []) => {
+            const current = get();
+
+            set(buildSelection(
+                mergeByKey(current.selectedNodes, nodes),
+                mergeByKey(current.selectedEdges, edges)
+            ));
         },
         clearSelection: () => {
-            if (get().selectedNode == null && get().selectedEdge == null) return;
-            set({ selectedNode: null, selectedEdge: null });
+            if (get().selectedNodes.length === 0 && get().selectedEdges.length === 0) return;
+            set(buildSelection([], []));
         },
     }));
 }

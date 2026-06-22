@@ -2,6 +2,8 @@ import * as React from "react";
 import { useStore } from "zustand/react";
 import { StoreApi } from "zustand/vanilla";
 import { FlowElement } from "../types/FlowElement";
+import { IEdge } from "../interfaces/IEdge";
+import { INode } from "../interfaces/INode";
 import {
     NodeFlowInteractionState,
     NodeFlowRenderState,
@@ -48,4 +50,12 @@ export function useNodeFlowSnapStore<T>(selector: (state: NodeFlowSnapState) => 
 
 export function useNodeFlowSelection(): FlowElement | null {
     return useNodeFlowSelectionStore((state) => state.selectedNode ?? state.selectedEdge ?? null);
+}
+
+export function useNodeFlowSelectedNodes(): INode<any, any>[] {
+    return useNodeFlowSelectionStore((state) => state.selectedNodes);
+}
+
+export function useNodeFlowSelectedEdges(): IEdge<any>[] {
+    return useNodeFlowSelectionStore((state) => state.selectedEdges);
 }

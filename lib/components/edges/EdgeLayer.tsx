@@ -106,8 +106,8 @@ function getEdgeNodeKey(edge: IEdge<any>, connectionId: string, nodes: INode<any
 }
 
 function getEdgePairKey(edge: IEdge<any>, nodes: INode<any, any>[]): string {
-    const sourceKey = edge.sourceNodeId ?? getEdgeNodeKey(edge, edge.sourceId, nodes);
-    const targetKey = edge.targetNodeId ?? getEdgeNodeKey(edge, edge.targetId, nodes);
+    const sourceKey = getEdgeNodeKey(edge, edge.sourceId, nodes);
+    const targetKey = getEdgeNodeKey(edge, edge.targetId, nodes);
 
     return [sourceKey, targetKey].sort().join("::");
 }
@@ -147,8 +147,8 @@ function getNodeObstacles(
 ): EdgeRoutingObstacle[] {
     if (containerRect == null || scale === 0) return [];
 
-    const sourceNodeKey = edge.sourceNodeId ?? getEdgeNodeKey(edge, edge.sourceId, nodes);
-    const targetNodeKey = edge.targetNodeId ?? getEdgeNodeKey(edge, edge.targetId, nodes);
+    const sourceNodeKey = getEdgeNodeKey(edge, edge.sourceId, nodes);
+    const targetNodeKey = getEdgeNodeKey(edge, edge.targetId, nodes);
 
     return nodes
         .filter((node) => node.key !== sourceNodeKey && node.key !== targetNodeKey)

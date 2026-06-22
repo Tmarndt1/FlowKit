@@ -47,6 +47,8 @@ export interface FlowKitConfigContextValue {
     onEdgeCollapsePreviewChange?: (args: IEdgeCollapsePreviewChangeArgs) => void;
     /** Disables graph-editing interactions while preserving pan, zoom, and selection. */
     readOnly?: boolean;
+    /** Enables multi-selection via modifier-click and shift-drag marquee. Defaults to true. */
+    multiSelect?: boolean;
 }
 
 export const FlowKitConfigContext =

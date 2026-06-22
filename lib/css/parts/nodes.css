@@ -15,7 +15,7 @@
     will-change: transform;
 }
 
-.flow-kit-node-wrapper {
+.flow-kit-node-custom {
     position: absolute;
     cursor: grab;
     pointer-events: all;
@@ -23,11 +23,12 @@
     will-change: transform;
 }
 
-.flow-kit-node.selected, .flow-kit-node-wrapper.selected {
-    border: 1px solid white;
+.flow-kit-node.flow-kit-selected, .flow-kit-node-custom.flow-kit-selected {
+    border: 1px solid var(--flow-kit-node-selected-color, white);
+    box-shadow: 0 0 0 3px color-mix(in srgb, var(--flow-kit-node-selected-color, white) 25%, transparent);
 }
 
-.flow-kit-node-fold-hidden {
+.flow-kit-node-hidden {
   opacity: 0;
   pointer-events: none;
 }

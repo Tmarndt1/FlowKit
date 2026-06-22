@@ -31,12 +31,14 @@ export const FlowKitKeyboardCommands: React.FC<FlowKitKeyboardCommandsProps> = (
     const { readOnly } = useFlowKitConfig();
     const selectedEdge = useNodeFlowSelectionStore((state) => state.selectedEdge);
     const selectedNode = useNodeFlowSelectionStore((state) => state.selectedNode);
+    const selectedNodes = useNodeFlowSelectionStore((state) => state.selectedNodes);
+    const selectedEdges = useNodeFlowSelectionStore((state) => state.selectedEdges);
     const copyRef = React.useRef<FlowElement | null>(null);
     const propsRef = React.useRef(props);
-    const selectionRef = React.useRef({ selectedEdge, selectedNode });
+    const selectionRef = React.useRef({ selectedEdge, selectedNode, selectedNodes, selectedEdges });
 
     propsRef.current = props;
-    selectionRef.current = { selectedEdge, selectedNode };
+    selectionRef.current = { selectedEdge, selectedNode, selectedNodes, selectedEdges };
 
     const onKeyDown = React.useCallback((e: KeyboardEvent): void => {
         const currentProps = propsRef.current;
@@ -66,36 +68,50 @@ export const FlowKitKeyboardCommands: React.FC<FlowKitKeyboardCommandsProps> = (
         if (!readOnly && e.key?.toLocaleLowerCase() === "backspace" && currentProps.deleteSelection !== false) {
             if (typeof currentProps.onRemove !== "function") return;
 
-            if (currentSelectionState.selectedNode != null) {
-                const selectedNode = currentSelectionState.selectedNode;
-                const index: number = currentProps.nodes.findIndex((x) => x.key === selectedNode.key);
-
-                if (index === -1) return;
-
-                const connectedEdges: IEdge<any>[] = [];
-
-                selectedNode.endpoints?.forEach((endpoint: IEndpoint<any>) => {
-                    connectedEdges.push(
-                        ...currentProps.edges.filter(
-                            (x) => x.sourceId === endpoint.id || x.targetId === endpoint.id
-                        )
-                    );
-                });
-                connectedEdges.push(
-                    ...currentProps.edges.filter((edge) =>
-                        edge.sourceNodeId === selectedNode.key ||
-                        edge.targetNodeId === selectedNode.key ||
-                        (edge.anchorMode === "floating" &&
-                            (edge.sourceId === selectedNode.key || edge.targetId === selectedNode.key))
-                    )
+            if (currentSelectionState.selectedNodes.length > 0) {
+                const nodesToDelete = currentSelectionState.selectedNodes.filter(
+                    (n) => currentProps.nodes.some((x) => x.key === n.key)
                 );
 
-                currentProps.onRemove(selectedNode, connectedEdges);
+                if (nodesToDelete.length === 0) return;
+
+                for (const node of nodesToDelete) {
+                    const connectedEdges: IEdge<any>[] = [];
+                    const seenEdgeKeys = new Set<string>();
+
+                    node.endpoints?.forEach((endpoint: IEndpoint<any>) => {
+                        currentProps.edges
+                            .filter((x) => x.sourceId === endpoint.id || x.targetId === endpoint.id)
+                            .forEach((edge) => {
+                                if (!seenEdgeKeys.has(edge.key)) {
+                                    seenEdgeKeys.add(edge.key);
+                                    connectedEdges.push(edge);
+                                }
+                            });
+                    });
+                    currentProps.edges
+                        .filter(
+                            (edge) =>
+                                edge.anchorMode === "floating" &&
+                                (edge.sourceId === node.key || edge.targetId === node.key)
+                        )
+                        .forEach((edge) => {
+                            if (!seenEdgeKeys.has(edge.key)) {
+                                seenEdgeKeys.add(edge.key);
+                                connectedEdges.push(edge);
+                            }
+                        });
+
+                    currentProps.onRemove(node, connectedEdges);
+                }
+
                 return;
             }
 
-            if (currentSelectionState.selectedEdge != null) {
-                currentProps.onRemove(null, [currentSelectionState.selectedEdge]);
+            if (currentSelectionState.selectedEdges.length > 0) {
+                for (const edge of currentSelectionState.selectedEdges) {
+                    currentProps.onRemove(null, [edge]);
+                }
             }
         }
     }, [readOnly]);

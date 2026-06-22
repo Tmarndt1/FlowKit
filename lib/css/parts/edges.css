@@ -6,17 +6,17 @@
     pointer-events: all;
 }
 
-.flow-kit-edge-path.animated {
+.flow-kit-edge-path.flow-kit-animated {
     stroke-dasharray: 8 4;
     animation: edge-flow 1s linear infinite;
 }
 
-.flow-kit-edge-path.folded {
+.flow-kit-edge-path.flow-kit-folded {
     opacity: 0.18;
     stroke-dasharray: 3 8;
 }
 
-.flow-kit-edge-path.fold-stub {
+.flow-kit-edge-path.flow-kit-fold-stub {
     opacity: 0.78;
 }
 
@@ -24,11 +24,11 @@
     stroke: var(--flow-kit-edge-fold-preview-color, #67e8f9);
 }
 
-.flow-kit-edge-path.selected {
+.flow-kit-edge-path.flow-kit-selected {
     stroke: white;
 }
 
-.flow-kit-edge-measurement-path {
+.flow-kit-edge-measure {
     fill: none;
     opacity: 0;
     pointer-events: none;

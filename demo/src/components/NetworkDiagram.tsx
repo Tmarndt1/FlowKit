@@ -662,9 +662,7 @@ const networkNodeTypes: NodeTypes = {
 };
 
 function getEdgeNodeKey(edge: NetworkEdge, side: "source" | "target") {
-  return side === "source"
-    ? edge.sourceNodeId ?? edge.sourceId
-    : edge.targetNodeId ?? edge.targetId;
+  return side === "source" ? edge.sourceId : edge.targetId;
 }
 
 function getDeviceTypeCounts(nodes: NetworkNodeType[]) {

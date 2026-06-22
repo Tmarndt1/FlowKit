@@ -47,12 +47,8 @@ function getEdgeNodeKeys(edge: IEdge<any>, nodeKeyByConnectionId: Map<string, st
     sourceNodeKey?: string;
     targetNodeKey?: string;
 } {
-    const sourceNodeKey = edge.anchorMode === "floating"
-        ? edge.sourceNodeId ?? nodeKeyByConnectionId.get(edge.sourceId)
-        : nodeKeyByConnectionId.get(edge.sourceId);
-    const targetNodeKey = edge.anchorMode === "floating"
-        ? edge.targetNodeId ?? nodeKeyByConnectionId.get(edge.targetId)
-        : nodeKeyByConnectionId.get(edge.targetId);
+    const sourceNodeKey = nodeKeyByConnectionId.get(edge.sourceId);
+    const targetNodeKey = nodeKeyByConnectionId.get(edge.targetId);
 
     return { sourceNodeKey, targetNodeKey };
 }
@@ -154,7 +150,7 @@ export function getFoldGraphState(
         const previewed = previewNodeKeys.has(node.key);
         const className = joinClassNames(
             previewed && !hidden ? "flow-kit-node-fold-preview" : undefined,
-            hidden ? "flow-kit-node-fold-hidden" : undefined
+            hidden ? "flow-kit-node-hidden" : undefined
         );
 
         if (className.length > 0) nodeStateClassNames.set(node.key, className);

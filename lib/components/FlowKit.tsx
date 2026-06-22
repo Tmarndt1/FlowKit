@@ -61,14 +61,14 @@ function getElementFromEventTarget(target: EventTarget | null): Element | null {
 function isInteractiveFlowElement(element: Element | null): boolean {
     return (
         element?.closest(
-            ".flow-kit-node, .flow-kit-node-wrapper, .flow-kit-endpoint, .flow-kit-edge, .flow-kit-edge-path"
+            ".flow-kit-node, .flow-kit-node-custom, .flow-kit-endpoint, .flow-kit-edge, .flow-kit-edge-path"
             + ", .flow-kit-node-container-header, .flow-kit-node-container-resize"
         ) != null
     );
 }
 
 function isPointInsideFlowNode(x: number, y: number): boolean {
-    const nodes = document.querySelectorAll<HTMLElement>(".flow-kit-node, .flow-kit-node-wrapper");
+    const nodes = document.querySelectorAll<HTMLElement>(".flow-kit-node, .flow-kit-node-custom");
 
     for (const node of nodes) {
         const rect = node.getBoundingClientRect();
@@ -132,6 +132,8 @@ export interface FlowKitProps {
     edgeRouting?: EdgeRoutingOptions;
     /** Disables graph-editing interactions while preserving pan, zoom, and selection. */
     readOnly?: boolean;
+    /** Enables multi-selection via modifier-click and shift-drag marquee. Defaults to true. */
+    multiSelect?: boolean;
     /** Called when a built-in fold control requests collapsed state changes. */
     onEdgeCollapsedChange?: (args: IEdgeCollapsedChangeArgs) => void;
     /** Called when a fold menu option is previewed or cleared. */
@@ -172,7 +174,18 @@ const FlowKitComponent = (props: FlowKitProps, ref: React.ForwardedRef<FlowKitHa
     const initializedViewRef = React.useRef<boolean>(false);
     const propsRef = React.useRef(props);
     const stateRef = React.useRef({ nodes: props.nodes, edges: props.edges });
+    const marqueeActiveRef = React.useRef<boolean>(false);
+    const marqueeStartRef = React.useRef<IOffset>({ x: 0, y: 0 });
+    const marqueeRectRef = React.useRef({ x1: 0, y1: 0, x2: 0, y2: 0 });
+    const marqueeMoveHandlerRef = React.useRef<((e: MouseEvent) => void) | null>(null);
+    const marqueeUpHandlerRef = React.useRef<(() => void) | null>(null);
     const [collapsePreview, setCollapsePreview] = React.useState<IFoldGraphPreview | null>(null);
+    const [selectionBox, setSelectionBox] = React.useState<{
+        left: number;
+        top: number;
+        width: number;
+        height: number;
+    } | null>(null);
 
     if (nodeFlowStoresRef.current == null) {
         nodeFlowStoresRef.current = createNodeFlowStores();
@@ -200,6 +213,7 @@ const FlowKitComponent = (props: FlowKitProps, ref: React.ForwardedRef<FlowKitHa
             onEdgeCollapsePreviewChange,
             canConnect: props.canConnect,
             readOnly: props.readOnly,
+            multiSelect: props.multiSelect,
         }),
         [
             props.canConnect,
@@ -208,6 +222,7 @@ const FlowKitComponent = (props: FlowKitProps, ref: React.ForwardedRef<FlowKitHa
             props.edgeRouting,
             props.onEdgeCollapsedChange,
             props.readOnly,
+            props.multiSelect,
             onEdgeCollapsePreviewChange
         ]
     );
@@ -311,8 +326,78 @@ const FlowKitComponent = (props: FlowKitProps, ref: React.ForwardedRef<FlowKitHa
         stopCanvasPan(true);
     }, [stopCanvasPan]);
 
+    const finishMarquee = React.useCallback((): void => {
+        marqueeActiveRef.current = false;
+        setSelectionBox(null);
+
+        if (marqueeMoveHandlerRef.current != null) {
+            document.removeEventListener("mousemove", marqueeMoveHandlerRef.current);
+        }
+
+        if (marqueeUpHandlerRef.current != null) {
+            document.removeEventListener("mouseup", marqueeUpHandlerRef.current);
+        }
+    }, []);
+
+    const onMarqueeMove = React.useCallback((e: MouseEvent): void => {
+        if (!marqueeActiveRef.current) return;
+
+        const viewportRect = viewportRef.current?.getBoundingClientRect();
+
+        if (viewportRect == null) return;
+
+        const start = marqueeStartRef.current;
+        const x1 = Math.min(start.x, e.clientX);
+        const y1 = Math.min(start.y, e.clientY);
+        const x2 = Math.max(start.x, e.clientX);
+        const y2 = Math.max(start.y, e.clientY);
+
+        marqueeRectRef.current = { x1, y1, x2, y2 };
+        setSelectionBox({
+            left: x1 - viewportRect.left,
+            top: y1 - viewportRect.top,
+            width: x2 - x1,
+            height: y2 - y1,
+        });
+    }, []);
+
+    const onMarqueeUp = React.useCallback((): void => {
+        if (!marqueeActiveRef.current) {
+            finishMarquee();
+            return;
+        }
+
+        const rect = marqueeRectRef.current;
+        const dragged = rect.x2 - rect.x1 > 2 || rect.y2 - rect.y1 > 2;
+
+        // A real drag selects every node whose rendered bounds intersect the box and
+        // merges them into the selection (shift keeps existing selection additive).
+        if (dragged) {
+            const hits = stateRef.current.nodes.filter((node) => {
+                const bounds = document.getElementById(node.key)?.getBoundingClientRect();
+
+                if (bounds == null) return false;
+
+                return (
+                    bounds.left <= rect.x2 &&
+                    bounds.right >= rect.x1 &&
+                    bounds.top <= rect.y2 &&
+                    bounds.bottom >= rect.y1
+                );
+            });
+
+            if (hits.length > 0) {
+                selectionStore.getState().addToSelection(hits, []);
+            }
+        }
+
+        finishMarquee();
+    }, [finishMarquee, selectionStore]);
+
     panMouseMoveHandlerRef.current = onPanMouseMove;
     panMouseUpHandlerRef.current = onPanMouseUp;
+    marqueeMoveHandlerRef.current = onMarqueeMove;
+    marqueeUpHandlerRef.current = onMarqueeUp;
 
     const onMouseDown = React.useCallback((e: React.MouseEvent<HTMLDivElement, MouseEvent>): void => {
         const currentState = interactionStore.getState();
@@ -340,6 +425,25 @@ const FlowKitComponent = (props: FlowKitProps, ref: React.ForwardedRef<FlowKitHa
             return;
         }
 
+        // Shift+drag on the empty canvas draws an additive marquee instead of panning.
+        if (propsRef.current.multiSelect !== false && e.shiftKey) {
+            const viewportRect = viewportRef.current?.getBoundingClientRect();
+
+            marqueeActiveRef.current = true;
+            marqueeStartRef.current = { x: e.clientX, y: e.clientY };
+            marqueeRectRef.current = { x1: e.clientX, y1: e.clientY, x2: e.clientX, y2: e.clientY };
+            setSelectionBox({
+                left: viewportRect == null ? 0 : e.clientX - viewportRect.left,
+                top: viewportRect == null ? 0 : e.clientY - viewportRect.top,
+                width: 0,
+                height: 0,
+            });
+            document.addEventListener("mousemove", onMarqueeMove);
+            document.addEventListener("mouseup", onMarqueeUp);
+            e.preventDefault();
+            return;
+        }
+
         selectionStore.getState().clearSelection();
 
         panStartTokenRef.current += 1;
@@ -350,7 +454,7 @@ const FlowKitComponent = (props: FlowKitProps, ref: React.ForwardedRef<FlowKitHa
         cursorPosRef.current = { x: e.clientX, y: e.clientY };
         document.addEventListener("mouseup", onPanMouseUp);
         document.addEventListener("mousemove", onPanMouseMove);
-    }, [interactionStore, onPanMouseMove, onPanMouseUp, selectionStore, stopCanvasPan]);
+    }, [interactionStore, onMarqueeMove, onMarqueeUp, onPanMouseMove, onPanMouseUp, selectionStore, stopCanvasPan]);
 
     const onMouseUp = React.useCallback(
         (e: React.MouseEvent<HTMLDivElement, MouseEvent>): void => {
@@ -497,6 +601,14 @@ const FlowKitComponent = (props: FlowKitProps, ref: React.ForwardedRef<FlowKitHa
             if (panMouseMoveHandlerRef.current != null) {
                 document.removeEventListener("mousemove", panMouseMoveHandlerRef.current);
             }
+
+            if (marqueeUpHandlerRef.current != null) {
+                document.removeEventListener("mouseup", marqueeUpHandlerRef.current);
+            }
+
+            if (marqueeMoveHandlerRef.current != null) {
+                document.removeEventListener("mousemove", marqueeMoveHandlerRef.current);
+            }
         };
     }, []);
 
@@ -549,6 +661,17 @@ const FlowKitComponent = (props: FlowKitProps, ref: React.ForwardedRef<FlowKitHa
                                     nodes={props.nodes}
                                 />
                             </div>
+                            {selectionBox != null && (
+                                <div
+                                    className="flow-kit-selection-box"
+                                    style={{
+                                        left: selectionBox.left,
+                                        top: selectionBox.top,
+                                        width: selectionBox.width,
+                                        height: selectionBox.height,
+                                    }}
+                                />
+                            )}
                         </div>
                     </div>
                 </FlowKitControlsContext.Provider>

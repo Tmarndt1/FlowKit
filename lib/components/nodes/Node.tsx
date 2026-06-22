@@ -3,6 +3,7 @@ import { INode } from "../../interfaces/INode";
 import { IOffset } from "../../interfaces/IOffset";
 import { Endpoint } from "./Endpoint";
 import {
+    NodeFlowContext,
     useNodeFlowInteractionStore,
     useNodeFlowRenderStore,
     useNodeFlowSelectionStore,
@@ -10,6 +11,13 @@ import {
     useNodeFlowViewportStore,
 } from "../../contexts/NodeFlowContext";
 import { useFlowKitConfig } from "../../contexts/FlowKitConfigContext";
+
+interface DragGroupItem {
+    node: INode<any, any>;
+    element: HTMLElement | null;
+    startX: number;
+    startY: number;
+}
 
 interface IProps {
     node: INode<any, any>;
@@ -23,11 +31,12 @@ function snapValue(value: number, size: number): number {
 }
 
 const NodeComponent: React.FC<IProps> = (props) => {
-    const { readOnly } = useFlowKitConfig();
+    const { readOnly, multiSelect } = useFlowKitConfig();
+    const stores = React.useContext(NodeFlowContext);
     const scale = useNodeFlowViewportStore((state) => state.scale);
     const snapEnabled = useNodeFlowSnapStore((state) => state.enabled);
     const snapSize = useNodeFlowSnapStore((state) => state.size);
-    const selected = useNodeFlowSelectionStore((state) => state.selectedNode?.key === props.node.key);
+    const selected = useNodeFlowSelectionStore((state) => state.selectedNodeKeys.has(props.node.key));
     const selectNode = useNodeFlowSelectionStore((state) => state.selectNode);
     const notifyEndpointsChanged = useNodeFlowRenderStore((state) => state.notifyEndpointsChanged);
     const notifyNodeDrag = useNodeFlowInteractionStore((state) => state.notifyNodeDrag);
@@ -36,11 +45,14 @@ const NodeComponent: React.FC<IProps> = (props) => {
     const cursorPosRef = React.useRef<IOffset>({ x: 0, y: 0 });
     const originalPosRef = React.useRef<IOffset>({ x: 0, y: 0 });
     const mouseDownRef = React.useRef<boolean>(false);
+    const dragGroupRef = React.useRef<DragGroupItem[]>([]);
     const widthRef = React.useRef<number>(0);
     const heightRef = React.useRef<number>(0);
     const propsRef = React.useRef(props);
     const scaleRef = React.useRef(scale);
     const snapRef = React.useRef({ enabled: snapEnabled, size: snapSize });
+    const storesRef = React.useRef(stores);
+    const multiSelectRef = React.useRef(multiSelect);
     const notifyEndpointsChangedRef = React.useRef(notifyEndpointsChanged);
     const notifyNodeDragRef = React.useRef(notifyNodeDrag);
     const setDraggingNodeRef = React.useRef(setDraggingNode);
@@ -48,6 +60,8 @@ const NodeComponent: React.FC<IProps> = (props) => {
     propsRef.current = props;
     scaleRef.current = scale;
     snapRef.current = { enabled: snapEnabled, size: snapSize };
+    storesRef.current = stores;
+    multiSelectRef.current = multiSelect;
     notifyEndpointsChangedRef.current = notifyEndpointsChanged;
     notifyNodeDragRef.current = notifyNodeDrag;
     setDraggingNodeRef.current = setDraggingNode;
@@ -57,27 +71,38 @@ const NodeComponent: React.FC<IProps> = (props) => {
 
         if (nodeRef.current == null) return;
 
-        const currentProps = propsRef.current;
-        let x: number =
-            originalPosRef.current.x +
-            (e.clientX - cursorPosRef.current.x) / scaleRef.current;
-        let y: number =
-            originalPosRef.current.y +
-            (e.clientY - cursorPosRef.current.y) / scaleRef.current;
+        const dx: number = (e.clientX - cursorPosRef.current.x) / scaleRef.current;
+        const dy: number = (e.clientY - cursorPosRef.current.y) / scaleRef.current;
 
-        if (isNaN(x) || isNaN(y)) return;
+        if (isNaN(dx) || isNaN(dy)) return;
 
-        if (snapRef.current.enabled) {
-            x = snapValue(x, snapRef.current.size);
-            y = snapValue(y, snapRef.current.size);
+        const snap = snapRef.current;
+        const group = dragGroupRef.current;
+        const movedEndpoints: typeof propsRef.current.node.endpoints = [];
+
+        // A node drag moves every selected node together, so the whole group is
+        // translated by the same canvas-space delta from where each node started.
+        for (const item of group) {
+            let x: number = item.startX + dx;
+            let y: number = item.startY + dy;
+
+            if (snap.enabled) {
+                x = snapValue(x, snap.size);
+                y = snapValue(y, snap.size);
+            }
+
+            item.node.offset.x = Math.round(x);
+            item.node.offset.y = Math.round(y);
+
+            if (item.element != null) {
+                item.element.style.transform = `translate(${x}px, ${y}px)`;
+            }
+
+            for (const endpoint of item.node.endpoints) movedEndpoints.push(endpoint);
         }
 
-        currentProps.node.offset.x = Math.round(x);
-        currentProps.node.offset.y = Math.round(y);
-
-        nodeRef.current.style.transform = `translate(${x}px, ${y}px)`;
         notifyNodeDragRef.current();
-        notifyEndpointsChangedRef.current(currentProps.node.endpoints);
+        notifyEndpointsChangedRef.current(movedEndpoints);
     }, []);
 
     const onMouseUp = React.useCallback((e: MouseEvent): void => {
@@ -89,6 +114,22 @@ const NodeComponent: React.FC<IProps> = (props) => {
         document.removeEventListener("mousemove", onMouseMove);
     }, [onMouseMove]);
 
+    const buildDragGroup = React.useCallback((node: INode<any, any>): void => {
+        const selectionState = storesRef.current?.selection.getState();
+        const selectedNodes = selectionState?.selectedNodes ?? [];
+        const group =
+            selectedNodes.length > 1 && selectionState?.selectedNodeKeys.has(node.key)
+                ? selectedNodes
+                : [node];
+
+        dragGroupRef.current = group.map((groupNode) => ({
+            node: groupNode,
+            element: document.getElementById(groupNode.key),
+            startX: groupNode.offset.x,
+            startY: groupNode.offset.y,
+        }));
+    }, []);
+
     const onMouseDown = React.useCallback(
         (e: React.MouseEvent<HTMLDivElement, MouseEvent>): void => {
             const currentProps = propsRef.current;
@@ -96,12 +137,34 @@ const NodeComponent: React.FC<IProps> = (props) => {
 
             if (target?.closest(".flow-kit-endpoint") != null) return;
 
-            if (readOnly) {
-                selectNode(currentProps.node);
+            const selectionState = storesRef.current?.selection.getState();
+            const additive =
+                multiSelectRef.current !== false && (e.shiftKey || e.metaKey || e.ctrlKey);
+
+            // Modifier-click toggles a node in or out of the selection without
+            // starting a drag, so users can build up a selection click by click.
+            if (additive) {
+                selectionState?.toggleNode(currentProps.node);
                 e.stopPropagation();
                 e.preventDefault();
                 return;
             }
+
+            const alreadySelected = selectionState?.selectedNodeKeys.has(currentProps.node.key) ?? false;
+
+            // Clicking an unselected node selects only it; clicking a node that is
+            // already part of a multi-selection keeps the group so it can be dragged.
+            if (!alreadySelected) {
+                selectNode(currentProps.node);
+            }
+
+            if (readOnly) {
+                e.stopPropagation();
+                e.preventDefault();
+                return;
+            }
+
+            buildDragGroup(currentProps.node);
 
             mouseDownRef.current = true;
             setDraggingNodeRef.current(true, currentProps.node);
@@ -116,9 +179,8 @@ const NodeComponent: React.FC<IProps> = (props) => {
 
             document.addEventListener("mouseup", onMouseUp);
             document.addEventListener("mousemove", onMouseMove);
-            selectNode(currentProps.node);
         },
-        [onMouseMove, onMouseUp, readOnly, selectNode]
+        [buildDragGroup, onMouseMove, onMouseUp, readOnly, selectNode]
     );
 
     React.useEffect(() => {
@@ -169,8 +231,8 @@ const NodeComponent: React.FC<IProps> = (props) => {
 
     if (props.customNode != null) {
         const className: string = [
-            "flow-kit-node-wrapper",
-            selected ? "selected" : "",
+            "flow-kit-node-custom",
+            selected ? "flow-kit-selected" : "",
             props.stateClassName ?? "",
             props.node.className ?? ""
         ].filter(Boolean).join(" ");
@@ -201,7 +263,7 @@ const NodeComponent: React.FC<IProps> = (props) => {
 
     const className: string = [
         "flow-kit-node",
-        selected ? "selected" : "",
+        selected ? "flow-kit-selected" : "",
         props.stateClassName ?? "",
         props.node.className ?? ""
     ].filter(Boolean).join(" ");

@@ -377,6 +377,38 @@ The same controls are available to components rendered inside `FlowKit` through 
 
 ---
 
+## Selection
+
+FlowKit supports both single and multi-selection out of the box.
+
+* Click a node or edge to select it, replacing the previous selection.
+* Hold `Shift`, `Ctrl`, or `Cmd` and click to add or remove a node or edge from the current selection.
+* Hold `Shift` and drag across empty canvas to draw a marquee box; every node it touches is added to the selection. A plain drag still pans the canvas.
+* Dragging any selected node moves the whole selection together.
+
+Read the current selection from components rendered inside `FlowKit`:
+
+```tsx
+import { useNodeFlowSelectedNodes, useNodeFlowSelectedEdges } from "flowkit";
+
+function SelectionCount() {
+  const nodes = useNodeFlowSelectedNodes();
+  const edges = useNodeFlowSelectedEdges();
+
+  return <span>{nodes.length} nodes, {edges.length} edges selected</span>;
+}
+```
+
+`useNodeFlowSelection()` still returns the most recently selected element for single-selection use cases.
+
+Multi-selection is enabled by default. Set `multiSelect={false}` on `FlowKit` to restrict interactions to single selection:
+
+```tsx
+<FlowKit nodes={nodes} edges={edges} multiSelect={false} />
+```
+
+---
+
 ## Styling
 
 FlowKit ships with default CSS classes and expects applications to override them as needed.
@@ -428,7 +460,7 @@ npm run dev
 
 ## Status
 
-FlowKit is under active development. Planned areas include undo/redo, copy/paste, multi-select, auto-layout, bundled edges, self-loops, and broader keyboard support.
+FlowKit is under active development. Planned areas include undo/redo, copy/paste, auto-layout, bundled edges, self-loops, and broader keyboard support.
 
 ---
 

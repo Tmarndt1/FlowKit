@@ -95,7 +95,7 @@ export const FlowKitMiniMap: React.FC<FlowKitMiniMapProps> = (props) => {
     const offset = useNodeFlowViewportStore((state) => state.offset);
     const scale = useNodeFlowViewportStore((state) => state.scale);
     const endpointUpdateVersion = useNodeFlowRenderStore((state) => state.endpointUpdate?.version ?? 0);
-    const selectedNodeKey = useNodeFlowSelectionStore((state) => state.selectedNode?.key ?? null);
+    const selectedNodeKeys = useNodeFlowSelectionStore((state) => state.selectedNodeKeys);
     const miniMapRef = React.useRef<HTMLDivElement>(null);
     const [viewportRect, setViewportRect] = React.useState<DOMRect | null>(null);
     const [measurementVersion, setMeasurementVersion] = React.useState(0);
@@ -201,7 +201,7 @@ export const FlowKitMiniMap: React.FC<FlowKitMiniMapProps> = (props) => {
                     const className = [
                         "flow-kit-mini-map-node",
                         nodeClassName,
-                        node.key === selectedNodeKey ? "flow-kit-mini-map-node-selected" : undefined,
+                        selectedNodeKeys.has(node.key) ? "flow-kit-mini-map-node-selected" : undefined,
                     ].filter(Boolean).join(" ");
 
                     return (

@@ -52,3 +52,12 @@
 .flow-kit-edges-container {
     z-index: 1;
 }
+
+.flow-kit-selection-box {
+    position: absolute;
+    z-index: 3;
+    pointer-events: none;
+    background: var(--flow-kit-selection-box-background, rgba(103, 232, 249, 0.12));
+    border: 1px solid var(--flow-kit-selection-box-border, rgba(103, 232, 249, 0.9));
+    border-radius: 2px;
+}

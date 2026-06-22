@@ -480,13 +480,13 @@ button {
   min-width: 176px;
 }
 
-.canvas-panel .flow-kit-node-wrapper {
+.canvas-panel .flow-kit-node-custom {
   border: 0;
   border-radius: 7px;
   color: #f2f5fb;
 }
 
-.canvas-panel .flow-kit-node.selected .workflow-node {
+.canvas-panel .flow-kit-node-custom.flow-kit-selected .workflow-node {
   border-color: #8fd0ff;
   box-shadow: 0 0 0 3px rgba(143, 208, 255, 0.18), 0 18px 34px rgba(0, 0, 0, 0.4);
 }
@@ -514,15 +514,15 @@ button {
   stroke: #68e8ff;
 }
 
-.canvas-panel .flow-kit-node-wrapper {
+.canvas-panel .flow-kit-node-custom {
   transition: box-shadow 160ms ease, opacity 160ms ease;
 }
 
-.canvas-panel .flow-kit-node-wrapper.flow-kit-node-fold-preview {
+.canvas-panel .flow-kit-node-custom.flow-kit-node-fold-preview {
   box-shadow: 0 0 0 2px rgba(104, 232, 255, 0.9), 0 0 24px rgba(104, 232, 255, 0.28);
 }
 
-.canvas-panel .flow-kit-node-wrapper.flow-kit-node-fold-hidden {
+.canvas-panel .flow-kit-node-custom.flow-kit-node-hidden {
   opacity: 0;
   pointer-events: none;
 }
@@ -685,22 +685,22 @@ button {
   background-size: 32px 32px !important;
 }
 
-.volume-workflow-canvas .flow-kit-node-wrapper {
+.volume-workflow-canvas .flow-kit-node-custom {
   border: 0;
   color: #f2f5fb;
   transition: box-shadow 160ms ease, opacity 160ms ease;
 }
 
-.volume-workflow-canvas .flow-kit-node-wrapper.selected .workflow-node {
+.volume-workflow-canvas .flow-kit-node-custom.flow-kit-selected .workflow-node {
   border-color: #8fd0ff;
   box-shadow: 0 0 0 3px rgba(143, 208, 255, 0.18), 0 18px 34px rgba(0, 0, 0, 0.4);
 }
 
-.volume-workflow-canvas .flow-kit-node-wrapper.flow-kit-node-fold-preview {
+.volume-workflow-canvas .flow-kit-node-custom.flow-kit-node-fold-preview {
   box-shadow: 0 0 0 2px rgba(104, 232, 255, 0.9), 0 0 24px rgba(104, 232, 255, 0.28);
 }
 
-.volume-workflow-canvas .flow-kit-node-wrapper.flow-kit-node-fold-hidden {
+.volume-workflow-canvas .flow-kit-node-custom.flow-kit-node-hidden {
   opacity: 0;
   pointer-events: none;
 }
@@ -1181,23 +1181,23 @@ button {
   min-width: 188px;
 }
 
-.network-canvas .flow-kit-node-wrapper {
+.network-canvas .flow-kit-node-custom {
   border: 0;
   color: #e7edf8;
 }
 
-.network-canvas .flow-kit-node-wrapper.selected .network-node {
+.network-canvas .flow-kit-node-custom.flow-kit-selected .network-node {
   border-color: #8fd0ff;
   box-shadow: 0 0 0 3px rgba(143, 208, 255, 0.16), 0 18px 34px rgba(0, 0, 0, 0.36);
 }
 
-.network-canvas .flow-kit-node-wrapper.flow-kit-node-fold-preview .network-node {
+.network-canvas .flow-kit-node-custom.flow-kit-node-fold-preview .network-node {
   border-color: #68e8ff;
   box-shadow: 0 0 0 3px rgba(104, 232, 255, 0.24), 0 0 34px rgba(104, 232, 255, 0.18), 0 18px 34px rgba(0, 0, 0, 0.36);
   transform: translateY(-2px);
 }
 
-.network-canvas .flow-kit-node-wrapper.flow-kit-node-fold-preview .network-node::after {
+.network-canvas .flow-kit-node-custom.flow-kit-node-fold-preview .network-node::after {
   border: 1px solid rgba(104, 232, 255, 0.42);
   border-radius: inherit;
   content: "";
@@ -1206,7 +1206,7 @@ button {
   position: absolute;
 }
 
-.network-canvas .flow-kit-node-wrapper.flow-kit-node-fold-hidden {
+.network-canvas .flow-kit-node-custom.flow-kit-node-hidden {
   opacity: 0;
   pointer-events: none;
 }
@@ -1622,7 +1622,7 @@ button {
   animation-duration: 2s;
 }
 
-.network-canvas .flow-kit-edge-path.selected {
+.network-canvas .flow-kit-edge-path.flow-kit-selected {
   stroke: #ffffff;
 }
 
@@ -2056,9 +2056,9 @@ button {
   border-color: rgba(103, 132, 170, 0.26);
 }
 
-.network-canvas .flow-kit-node-wrapper.selected .network-node {
+.network-canvas .flow-kit-node-custom.flow-kit-selected .network-node {
   border-color: #168dff;
-  box-shadow: 0 0 0 2px rgba(22, 141, 255, 0.48), 0 0 28px rgba(22, 141, 255, 0.18), 0 12px 30px rgba(0, 0, 0, 0.36);
+  box-shadow: 0 0 0 3px rgba(22, 141, 255, 0.18), 0 12px 30px rgba(0, 0, 0, 0.36);
 }
 
 .network-node {

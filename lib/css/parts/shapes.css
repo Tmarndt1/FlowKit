@@ -27,7 +27,8 @@
     z-index: 1;
 }
 
-.flow-kit-node-selected .flow-kit-shape::after {
+.flow-kit-node.flow-kit-selected .flow-kit-shape::after,
+.flow-kit-node-custom.flow-kit-selected .flow-kit-shape::after {
     border: 1px solid var(--flow-kit-shape-selection-border, rgba(220, 240, 255, .9));
     box-sizing: border-box;
     content: "";

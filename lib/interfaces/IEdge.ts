@@ -32,8 +32,7 @@ export interface IEdge<T> {
     type: string;
     /**
      * Use "floating" to connect node bounds instead of fixed endpoint elements.
-     * In floating mode, sourceId and targetId may be node keys, or sourceNodeId
-     * and targetNodeId can be supplied explicitly.
+     * In floating mode, sourceId and targetId are node keys.
      */
     anchorMode?: EdgeAnchorMode;
     /** Arrow placement for the built-in edge renderer. */
@@ -59,10 +58,6 @@ export interface IEdge<T> {
     pathType?: EdgePathType;
     /** Overrides global built-in route shaping for this edge. */
     routing?: EdgeRoutingOptions;
-    /** Explicit source node key for floating edges whose sourceId is still an endpoint id. */
-    sourceNodeId?: string;
     /** Inline styles applied to the built-in visible path. */
     style?: React.CSSProperties;
-    /** Explicit target node key for floating edges whose targetId is still an endpoint id. */
-    targetNodeId?: string;
 }

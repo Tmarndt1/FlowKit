@@ -59,8 +59,8 @@ function getFloatingAnchor(rect: DOMRect, toward: { x: number; y: number }): ICo
 // Endpoint edges keep using fixed endpoint elements and their declared positions.
 export function resolveEdgeAnchors(edge: IEdge<any>): IResolvedEdgeAnchors | null {
     if (edge.anchorMode === "floating") {
-        const sourceElement = document.getElementById(edge.sourceNodeId ?? edge.sourceId);
-        const targetElement = document.getElementById(edge.targetNodeId ?? edge.targetId);
+        const sourceElement = document.getElementById(edge.sourceId);
+        const targetElement = document.getElementById(edge.targetId);
 
         if (sourceElement == null || targetElement == null) return null;
 

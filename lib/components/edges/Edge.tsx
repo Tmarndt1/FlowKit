@@ -28,6 +28,7 @@ const EdgeComponent: React.FC<IProps> = (props) =>
     const {
         collapsibleEdges,
         edgePathType,
+        multiSelect,
         onEdgeCollapsedChange,
         onEdgeCollapsePreviewChange,
         readOnly
@@ -35,10 +36,11 @@ const EdgeComponent: React.FC<IProps> = (props) =>
     
     const containerRect = useNodeFlowViewportStore((state) => state.containerRect);
     const scale = useNodeFlowViewportStore((state) => state.scale);
-    const selected = useNodeFlowSelectionStore((state) => state.selectedEdge?.key === props.edge.key);
+    const selected = useNodeFlowSelectionStore((state) => state.selectedEdgeKeys.has(props.edge.key));
     const endpointUpdate = useNodeFlowRenderStore((state) => state.endpointUpdate);
     const edgeRenderRequest = useNodeFlowRenderStore((state) => state.edgeRenderRequest);
     const selectEdge = useNodeFlowSelectionStore((state) => state.selectEdge);
+    const toggleEdge = useNodeFlowSelectionStore((state) => state.toggleEdge);
 
     const propsRef = React.useRef(props);
     const containerRectRef = React.useRef(containerRect);
@@ -111,8 +113,13 @@ const EdgeComponent: React.FC<IProps> = (props) =>
         e.stopPropagation();
         e.preventDefault();
 
+        if (multiSelect !== false && (e.shiftKey || e.metaKey || e.ctrlKey)) {
+            toggleEdge(propsRef.current.edge);
+            return;
+        }
+
         selectEdge(propsRef.current.edge);
-    }, [selectEdge]);
+    }, [multiSelect, selectEdge, toggleEdge]);
 
     const clearCollapsePreview = React.useCallback((): void => {
         onEdgeCollapsePreviewChange?.({
@@ -269,7 +276,7 @@ const EdgeComponent: React.FC<IProps> = (props) =>
         id: props.edge.key,
         className: [
             "flow-kit-edge",
-            selected ? "selected" : "",
+            selected ? "flow-kit-selected" : "",
             props.stateClassName ?? "",
             props.edge.className ?? ""
         ].filter(Boolean).join(" "),
@@ -283,10 +290,10 @@ const EdgeComponent: React.FC<IProps> = (props) =>
     const directionallyFolded = collapsed && (collapseMode === "downstream" || collapseMode === "upstream");
     const visualClassName = [
         "flow-kit-edge-path",
-        selected ? "selected" : "",
-        animated && !collapsed ? "animated" : "",
-        directionallyFolded ? "fold-stub" : "",
-        collapsed && !directionallyFolded ? "folded" : ""
+        selected ? "flow-kit-selected" : "",
+        animated && !collapsed ? "flow-kit-animated" : "",
+        directionallyFolded ? "flow-kit-fold-stub" : "",
+        collapsed && !directionallyFolded ? "flow-kit-folded" : ""
     ].filter(Boolean).join(" ");
     // Directional folds keep the visible half of the original path by trimming
     // the measured SVG path with dash offsets instead of generating a new path.
@@ -336,7 +343,7 @@ const EdgeComponent: React.FC<IProps> = (props) =>
     return (
         <g {...edgeGroupProps} ref={edgeGroupRef}>
             <path
-                className="flow-kit-edge-measurement-path"
+                className="flow-kit-edge-measure"
                 d={path}
                 ref={measurePathRef}
             />
