@@ -89,3 +89,24 @@ export {
     shapePresets,
 } from "./presets/shapes";
 export type { ShapeNode, ShapeNodeData, ShapePreset, ShapePresetType } from "./presets/shapes";
+
+export {
+    hierarchicalLayout,
+    forceLayout,
+    placeConnected,
+    findFreePosition,
+    buildAdjacency,
+    topoRanks,
+    toLayoutNodes,
+    toLayoutEdges,
+    applyLayout,
+} from "./layout";
+export type {
+    LayoutNode,
+    LayoutEdge,
+    LayoutResult,
+    HierarchicalDirection,
+    HierarchicalOptions,
+    ForceOptions,
+    PlacementOptions,
+} from "./layout";
