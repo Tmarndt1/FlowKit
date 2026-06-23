@@ -262,6 +262,46 @@ export const workflowPresets: WorkflowPreset[] = [
         type: "utility-delay",
     },
     {
+        category: "utility",
+        description: "Computes dy/dx — the rate of change of y with respect to x using the current and previous sampled values",
+        icon: "dy/dx",
+        inputs: [
+            { label: "value", valueType: "number" },
+        ],
+        outputs: [
+            { label: "dy/dx", valueType: "number" },
+            { label: "Δy", valueType: "number" },
+            { label: "Δx", valueType: "number" },
+        ],
+        title: "Derivative",
+        type: "utility-derivative",
+    },
+    {
+        category: "utility",
+        description: "Computes the difference between the current value and the value from the previous execution",
+        icon: "Δ",
+        inputs: [{ label: "current", valueType: "number" }],
+        outputs: [
+            { label: "previous", valueType: "number" },
+            { label: "delta", valueType: "number" },
+            { label: "changed", valueType: "boolean" },
+        ],
+        title: "Delta",
+        type: "utility-delta",
+    },
+    {
+        category: "utility",
+        description: "Maintains a running average across executions",
+        icon: "x̄",
+        inputs: [{ label: "value", valueType: "number" }],
+        outputs: [
+            { label: "average", valueType: "number" },
+            { label: "count", valueType: "number" },
+        ],
+        title: "Running Average",
+        type: "utility-running-average",
+    },
+    {
         category: "output",
         description: "Outputs a final result",
         icon: "R",
@@ -289,6 +329,15 @@ export const workflowPresets: WorkflowPreset[] = [
         type: "alert-output",
     },
     // Data / collection
+    {
+        category: "data",
+        description: "Computes the mean of a numeric array",
+        icon: "μ",
+        inputs: [{ label: "array", valueType: "any" }],
+        outputs: [{ label: "mean", valueType: "number" }],
+        title: "Average",
+        type: "array-average",
+    },
     {
         category: "data",
         description: "Provides an array value",

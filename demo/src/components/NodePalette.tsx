@@ -1,3 +1,4 @@
+import { WorkflowNodeIcon } from "../../../lib/components/presets/workflow/WorkflowNodeIcon";
 import { categoryLabels, groupPresets } from "../workflowModel";
 import { WorkflowCategory, WorkflowPreset } from "../types";
 
@@ -33,7 +34,9 @@ export function NodePalette({ onAddNode }: NodePaletteProps) {
                   onClick={() => onAddNode(preset)}
                   type="button"
                 >
-                  <span className="palette-node-icon">{preset.icon}</span>
+                  <span className="palette-node-icon">
+                    <WorkflowNodeIcon nodeType={preset.type} fallback={preset.icon} />
+                  </span>
                   <span>
                     <strong>{preset.title}</strong>
                     <small>{preset.description}</small>

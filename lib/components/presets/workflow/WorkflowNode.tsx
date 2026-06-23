@@ -2,6 +2,7 @@ import * as React from "react";
 import { Position } from "../../../enums/Position";
 import { Endpoint } from "../../../components/nodes/Endpoint";
 import { WorkflowNode as WorkflowNodeType } from "../../../presets/workflow/types";
+import { WorkflowNodeIcon } from "./WorkflowNodeIcon";
 
 /** Default renderer for nodes created from the workflow preset definitions. */
 export function WorkflowNode(props: WorkflowNodeType & { selected?: boolean }) {
@@ -41,7 +42,9 @@ export function WorkflowNode(props: WorkflowNodeType & { selected?: boolean }) {
                 <div className="workflow-node-tooltip">{data.description}</div>
             ) : null}
             <div className="workflow-node-title">
-                <span className="workflow-node-icon">{data?.icon}</span>
+                <span className="workflow-node-icon">
+                    <WorkflowNodeIcon nodeType={props.type} fallback={data?.icon ?? ""} />
+                </span>
                 <strong>{data?.title ?? props.key}</strong>
             </div>
 
