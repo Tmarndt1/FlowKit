@@ -4,6 +4,7 @@ import { INode } from "../interfaces/INode";
 import { INodeContainer } from "../interfaces/INodeContainer";
 import { IOffset } from "../interfaces/IOffset";
 import { NodeComponentProps } from "../types/NodeComponentProps";
+import { ContainerTypes } from "../types/ContainerTypes";
 import { EdgeTypes } from "../types/EdgeTypes";
 import { NodeTypes } from "../types/NodeTypes";
 import { EdgeLayer, EdgeLayerHandle, ProximityConnectOptions } from "./edges/EdgeLayer";
@@ -110,6 +111,8 @@ export interface FlowKitProps {
     nodeTypes?: NodeTypes;
     /** Custom edge renderer map, keyed by edge.type. */
     edgeTypes?: EdgeTypes;
+    /** Custom container renderer map, keyed by container.type. */
+    containerTypes?: ContainerTypes;
     /** Inline style for the root FlowKit element. */
     style?: React.CSSProperties;
     /** Maximum zoom scale. */
@@ -178,11 +181,11 @@ const FlowKitComponent = (props: FlowKitProps, ref: React.ForwardedRef<FlowKitHa
     const panMouseMoveHandlerRef = React.useRef<((e: MouseEvent) => void) | null>(null);
     const panMouseUpHandlerRef = React.useRef<(() => void) | null>(null);
     const initializedViewRef = React.useRef<boolean>(false);
-    const propsRef = React.useRef(props);
-    const stateRef = React.useRef({ nodes: props.nodes, edges: props.edges });
+    const propsRef = React.useRef<FlowKitProps>(props);
+    const stateRef = React.useRef<{ nodes: INode<any, any>[]; edges: IEdge<any>[] }>({ nodes: props.nodes, edges: props.edges });
     const marqueeActiveRef = React.useRef<boolean>(false);
     const marqueeStartRef = React.useRef<IOffset>({ x: 0, y: 0 });
-    const marqueeRectRef = React.useRef({ x1: 0, y1: 0, x2: 0, y2: 0 });
+    const marqueeRectRef = React.useRef<{ x1: number; y1: number; x2: number; y2: number }>({ x1: 0, y1: 0, x2: 0, y2: 0 });
     const marqueeMoveHandlerRef = React.useRef<((e: MouseEvent) => void) | null>(null);
     const marqueeUpHandlerRef = React.useRef<(() => void) | null>(null);
     const [collapsePreview, setCollapsePreview] = React.useState<IFoldGraphPreview | null>(null);
@@ -205,12 +208,12 @@ const FlowKitComponent = (props: FlowKitProps, ref: React.ForwardedRef<FlowKitHa
     propsRef.current = props;
     stateRef.current = { nodes: props.nodes, edges: props.edges };
 
-    const onEdgeCollapsePreviewChange = React.useCallback((args: IEdgeCollapsePreviewChangeArgs): void => {
+    const onEdgeCollapsePreviewChange = React.useCallback<(args: IEdgeCollapsePreviewChangeArgs) => void>((args: IEdgeCollapsePreviewChangeArgs): void => {
         setCollapsePreview(args.mode == null ? null : args);
         propsRef.current.onEdgeCollapsePreviewChange?.(args);
     }, []);
 
-    const config: FlowKitConfigContextValue = React.useMemo(
+    const config: FlowKitConfigContextValue = React.useMemo<FlowKitConfigContextValue>(
         () => ({
             collapsibleEdges: props.collapsibleEdges,
             edgePathType: props.edgePathType,
@@ -233,19 +236,19 @@ const FlowKitComponent = (props: FlowKitProps, ref: React.ForwardedRef<FlowKitHa
         ]
     );
 
-    const foldGraphState = React.useMemo(
+    const foldGraphState = React.useMemo<ReturnType<typeof getFoldGraphState>>(
         () => getFoldGraphState(props.nodes, props.edges, props.containers, collapsePreview),
         [collapsePreview, props.containers, props.edges, props.nodes]
     );
 
     // FlowKit owns viewport transforms directly so panning and edge redraws can stay
     // synchronized without requiring consumers to manage viewport state.
-    const updateCanvasTransform = React.useCallback((x: number, y: number, scale: number): void => {
+    const updateCanvasTransform = React.useCallback<(x: number, y: number, scale: number) => void>((x: number, y: number, scale: number): void => {
         setTransform(contentRef.current, x, y, scale);
         viewportStore.getState().setOffset({ x, y });
     }, [viewportStore]);
 
-    const onZoom = React.useCallback((zoomIn: boolean): void => {
+    const onZoom = React.useCallback<(zoomIn: boolean) => void>((zoomIn: boolean): void => {
         const currentProps = propsRef.current;
         const currentState = viewportStore.getState();
         let scale: number = 1;
@@ -265,7 +268,7 @@ const FlowKitComponent = (props: FlowKitProps, ref: React.ForwardedRef<FlowKitHa
         currentState.setContainerRect(contentRef.current?.getBoundingClientRect());
     }, [updateCanvasTransform, viewportStore]);
 
-    const stopCanvasPan = React.useCallback((commitPosition: boolean): void => {
+    const stopCanvasPan = React.useCallback<(commitPosition: boolean) => void>((commitPosition: boolean): void => {
         const wasPanning = panActiveRef.current;
 
         panStartTokenRef.current += 1;
@@ -291,7 +294,7 @@ const FlowKitComponent = (props: FlowKitProps, ref: React.ForwardedRef<FlowKitHa
         }
     }, [viewportStore]);
 
-    const onPanMouseMove = React.useCallback((e: MouseEvent): void => {
+    const onPanMouseMove = React.useCallback<(e: MouseEvent) => void>((e: MouseEvent): void => {
         if (!mouseDownRef.current) return;
 
         const currentState = interactionStore.getState();
@@ -328,11 +331,11 @@ const FlowKitComponent = (props: FlowKitProps, ref: React.ForwardedRef<FlowKitHa
         updateCanvasTransform(xPosRef.current, yPosRef.current, scale);
     }, [interactionStore, selectionStore, stopCanvasPan, updateCanvasTransform, viewportStore]);
 
-    const onPanMouseUp = React.useCallback((): void => {
+    const onPanMouseUp = React.useCallback<() => void>((): void => {
         stopCanvasPan(true);
     }, [stopCanvasPan]);
 
-    const finishMarquee = React.useCallback((): void => {
+    const finishMarquee = React.useCallback<() => void>((): void => {
         marqueeActiveRef.current = false;
         setSelectionBox(null);
 
@@ -345,7 +348,7 @@ const FlowKitComponent = (props: FlowKitProps, ref: React.ForwardedRef<FlowKitHa
         }
     }, []);
 
-    const onMarqueeMove = React.useCallback((e: MouseEvent): void => {
+    const onMarqueeMove = React.useCallback<(e: MouseEvent) => void>((e: MouseEvent): void => {
         if (!marqueeActiveRef.current) return;
 
         const viewportRect = viewportRef.current?.getBoundingClientRect();
@@ -367,7 +370,7 @@ const FlowKitComponent = (props: FlowKitProps, ref: React.ForwardedRef<FlowKitHa
         });
     }, []);
 
-    const onMarqueeUp = React.useCallback((): void => {
+    const onMarqueeUp = React.useCallback<() => void>((): void => {
         if (!marqueeActiveRef.current) {
             finishMarquee();
             return;
@@ -405,7 +408,7 @@ const FlowKitComponent = (props: FlowKitProps, ref: React.ForwardedRef<FlowKitHa
     marqueeMoveHandlerRef.current = onMarqueeMove;
     marqueeUpHandlerRef.current = onMarqueeUp;
 
-    const onMouseDown = React.useCallback((e: React.MouseEvent<HTMLDivElement, MouseEvent>): void => {
+    const onMouseDown = React.useCallback<(e: React.MouseEvent<HTMLDivElement, MouseEvent>) => void>((e: React.MouseEvent<HTMLDivElement, MouseEvent>): void => {
         const currentState = interactionStore.getState();
 
         if (currentState.draggingNode || currentState.sourceEndpoint != null) {
@@ -462,7 +465,7 @@ const FlowKitComponent = (props: FlowKitProps, ref: React.ForwardedRef<FlowKitHa
         document.addEventListener("mousemove", onPanMouseMove);
     }, [interactionStore, onMarqueeMove, onMarqueeUp, onPanMouseMove, onPanMouseUp, selectionStore, stopCanvasPan]);
 
-    const onMouseUp = React.useCallback(
+    const onMouseUp = React.useCallback<(e: React.MouseEvent<HTMLDivElement, MouseEvent>) => void>(
         (e: React.MouseEvent<HTMLDivElement, MouseEvent>): void => {
             stopCanvasPan(true);
             edgeLayerRef.current?.handlePointerRelease(e.clientX, e.clientY);
@@ -491,7 +494,7 @@ const FlowKitComponent = (props: FlowKitProps, ref: React.ForwardedRef<FlowKitHa
         };
     }, [interactionStore, stopCanvasPan]);
 
-    const onMouseMove = React.useCallback((e: React.MouseEvent<HTMLDivElement, MouseEvent>): void => {
+    const onMouseMove = React.useCallback<(e: React.MouseEvent<HTMLDivElement, MouseEvent>) => void>((e: React.MouseEvent<HTMLDivElement, MouseEvent>): void => {
         const currentState = interactionStore.getState();
 
         if (currentState.sourceEndpoint != null) {
@@ -499,11 +502,11 @@ const FlowKitComponent = (props: FlowKitProps, ref: React.ForwardedRef<FlowKitHa
         }
     }, [interactionStore]);
 
-    const onPointerMove = React.useCallback((e: React.PointerEvent<HTMLDivElement>): void => {
+    const onPointerMove = React.useCallback<(e: React.PointerEvent<HTMLDivElement>) => void>((e: React.PointerEvent<HTMLDivElement>): void => {
         if (!panActiveRef.current) edgeLayerRef.current?.handlePointerMove(e.clientX, e.clientY);
     }, []);
 
-    const recenter = React.useCallback((): void => {
+    const recenter = React.useCallback<() => void>((): void => {
         const currentState = stateRef.current;
 
         if (currentState.nodes.length < 1) return;
@@ -549,7 +552,7 @@ const FlowKitComponent = (props: FlowKitProps, ref: React.ForwardedRef<FlowKitHa
         }, 0);
     }, [renderStore, updateCanvasTransform, viewportStore]);
 
-    const panToNode = React.useCallback((nodeKey: string, options?: PanToNodeOptions): boolean => {
+    const panToNode = React.useCallback<(nodeKey: string, options?: PanToNodeOptions) => boolean>((nodeKey: string, options?: PanToNodeOptions): boolean => {
         const node = stateRef.current.nodes.find((item) => item.key === nodeKey);
         const nodeElement = document.getElementById(nodeKey);
         const viewportRect = viewportRef.current?.getBoundingClientRect();
@@ -625,7 +628,7 @@ const FlowKitComponent = (props: FlowKitProps, ref: React.ForwardedRef<FlowKitHa
         recenter();
     }, []);
 
-    const notifyLayout = React.useCallback((): void => {
+    const notifyLayout = React.useCallback<() => void>((): void => {
         const stores = nodeFlowStoresRef.current;
         if (stores == null) return;
         const nodes = propsRef.current.nodes ?? [];
@@ -633,10 +636,6 @@ const FlowKitComponent = (props: FlowKitProps, ref: React.ForwardedRef<FlowKitHa
         stores.render.getState().notifyEndpointsChanged(endpoints);
     }, []);
 
-    // When node positions change programmatically (e.g. auto-layout), notify all edges
-    // to recompute their paths. useLayoutEffect fires synchronously after every DOM commit
-    // and before passive effects, ensuring node transforms are in the DOM before edges
-    // run their draw() calls in useEffect.
     React.useLayoutEffect(() => {
         const stores = nodeFlowStoresRef.current;
         if (stores == null) return;
@@ -681,6 +680,7 @@ const FlowKitComponent = (props: FlowKitProps, ref: React.ForwardedRef<FlowKitHa
                                 />
                                 <NodesLayer
                                     ref={nodesLayerRef}
+                                    containerTypes={props.containerTypes}
                                     containers={foldGraphState.visibleContainers}
                                     customNodeProps={props.customNodeProps}
                                     nodeStateClassNames={foldGraphState.nodeStateClassNames}

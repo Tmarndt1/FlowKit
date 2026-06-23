@@ -183,11 +183,11 @@ export const EdgeLayer = React.forwardRef<EdgeLayerHandle, IProps>((props, ref) 
     const setSourceEndpoint = useNodeFlowInteractionStore((state) => state.setSourceEndpoint);
     const svgRef = React.useRef<SVGSVGElement>(null);
     const drawnEdgeRef = React.useRef<SVGPathElement>(null);
-    const propsRef = React.useRef(props);
-    const containerRectRef = React.useRef(containerRect);
-    const scaleRef = React.useRef(scale);
-    const sourceEndpointRef = React.useRef(sourceEndpoint);
-    const dropEndpointRef = React.useRef(dropEndpoint);
+    const propsRef = React.useRef<IProps>(props);
+    const containerRectRef = React.useRef<typeof containerRect>(containerRect);
+    const scaleRef = React.useRef<number>(scale);
+    const sourceEndpointRef = React.useRef<typeof sourceEndpoint>(sourceEndpoint);
+    const dropEndpointRef = React.useRef<typeof dropEndpoint>(dropEndpoint);
     const proximityTargetRef = React.useRef<HTMLElement | null>(null);
 
     propsRef.current = props;
@@ -196,7 +196,7 @@ export const EdgeLayer = React.forwardRef<EdgeLayerHandle, IProps>((props, ref) 
     sourceEndpointRef.current = sourceEndpoint;
     dropEndpointRef.current = dropEndpoint;
 
-    const getEndpointById = React.useCallback((endpointId: string): IEndpoint<any> | null => {
+    const getEndpointById = React.useCallback<(endpointId: string) => IEndpoint<any> | null>((endpointId: string): IEndpoint<any> | null => {
         for (const node of propsRef.current.nodes) {
             const endpoint = node.endpoints.find((item) => item.id === endpointId);
 
@@ -206,7 +206,7 @@ export const EdgeLayer = React.forwardRef<EdgeLayerHandle, IProps>((props, ref) 
         return null;
     }, [edgeRouting]);
 
-    const canCreateConnection = React.useCallback((
+    const canCreateConnection = React.useCallback<(source: IEndpoint<any>, target: IEndpoint<any>) => boolean>((
         source: IEndpoint<any>,
         target: IEndpoint<any>
     ): boolean => {
@@ -216,7 +216,7 @@ export const EdgeLayer = React.forwardRef<EdgeLayerHandle, IProps>((props, ref) 
         }) !== false;
     }, [canConnect]);
 
-    const setDrawnEdgeVisible = React.useCallback((visible: boolean): void => {
+    const setDrawnEdgeVisible = React.useCallback<(visible: boolean) => void>((visible: boolean): void => {
         if (drawnEdgeRef.current == null) return;
 
         drawnEdgeRef.current.style.display = visible ? "" : "none";
@@ -226,7 +226,7 @@ export const EdgeLayer = React.forwardRef<EdgeLayerHandle, IProps>((props, ref) 
         }
     }, []);
 
-    const startEdgeAtPoint = React.useCallback((x: number, y: number): void => {
+    const startEdgeAtPoint = React.useCallback<(x: number, y: number) => void>((x: number, y: number): void => {
         if (readOnly) return;
         if (sourceEndpointRef.current != null) return;
 
@@ -249,7 +249,7 @@ export const EdgeLayer = React.forwardRef<EdgeLayerHandle, IProps>((props, ref) 
         setDrawnEdgeVisible(true);
     }, [getEndpointById, readOnly, setDrawnEdgeVisible, setSourceEndpoint]);
 
-    const setProximityTarget = React.useCallback((target: HTMLElement | null): void => {
+    const setProximityTarget = React.useCallback<(target: HTMLElement | null) => void>((target: HTMLElement | null): void => {
         if (proximityTargetRef.current === target) return;
 
         proximityTargetRef.current?.classList.remove("flow-kit-endpoint-proximity-target");
@@ -257,7 +257,7 @@ export const EdgeLayer = React.forwardRef<EdgeLayerHandle, IProps>((props, ref) 
         proximityTargetRef.current = target;
     }, []);
 
-    const getConnectionTarget = React.useCallback((x: number, y: number): HTMLElement | null => {
+    const getConnectionTarget = React.useCallback<(x: number, y: number) => HTMLElement | null>((x: number, y: number): HTMLElement | null => {
         const currentSourceEndpoint = sourceEndpointRef.current;
         const targetElement = getEndpointElementAtPoint(
             x,
@@ -277,7 +277,7 @@ export const EdgeLayer = React.forwardRef<EdgeLayerHandle, IProps>((props, ref) 
             : null;
     }, [getEndpointById, canCreateConnection]);
 
-    const handlePointerMove = React.useCallback((x: number, y: number): void => {
+    const handlePointerMove = React.useCallback<(x: number, y: number) => void>((x: number, y: number): void => {
         const currentSourceEndpoint = sourceEndpointRef.current;
         const currentContainerRect = containerRectRef.current;
 
@@ -336,7 +336,7 @@ export const EdgeLayer = React.forwardRef<EdgeLayerHandle, IProps>((props, ref) 
         drawnEdgeRef.current.setAttribute("d", path);
     }, [edgePathType, getConnectionTarget, setDrawnEdgeVisible, setProximityTarget]);
 
-    const handlePointerRelease = React.useCallback((x: number, y: number): void => {
+    const handlePointerRelease = React.useCallback<(x: number, y: number) => void>((x: number, y: number): void => {
         const currentSourceEndpoint = sourceEndpointRef.current;
 
         if (currentSourceEndpoint == null) return;
@@ -395,13 +395,13 @@ export const EdgeLayer = React.forwardRef<EdgeLayerHandle, IProps>((props, ref) 
         setProximityTarget(null);
     }, [setProximityTarget]);
 
-    React.useImperativeHandle(ref, () => ({
+    React.useImperativeHandle<EdgeLayerHandle, EdgeLayerHandle>(ref, () => ({
         element: svgRef.current,
         handlePointerMove,
         handlePointerRelease,
     }), [handlePointerMove, handlePointerRelease]);
 
-    const getEdges = React.useCallback((): React.ReactElement[] => {
+    const getEdges = React.useCallback<() => React.ReactElement[]>((): React.ReactElement[] => {
         const array: React.ReactElement[] = [];
         const currentProps = propsRef.current;
         const parallelOffsets = getParallelEdgeOffsets(

@@ -41,6 +41,7 @@ const NodeComponent: React.FC<IProps> = (props) => {
     const selected = useNodeFlowSelectionStore((state) => state.selectedNodeKeys.has(props.node.key));
     const selectNode = useNodeFlowSelectionStore((state) => state.selectNode);
     const notifyEndpointsChanged = useNodeFlowRenderStore((state) => state.notifyEndpointsChanged);
+    const requestNodesChange = useNodeFlowRenderStore((state) => state.requestNodesChange);
     const notifyNodeDrag = useNodeFlowInteractionStore((state) => state.notifyNodeDrag);
     const setDraggingNode = useNodeFlowInteractionStore((state) => state.setDraggingNode);
     const nodeRef = React.useRef<HTMLDivElement>(null);
@@ -50,14 +51,15 @@ const NodeComponent: React.FC<IProps> = (props) => {
     const dragGroupRef = React.useRef<DragGroupItem[]>([]);
     const widthRef = React.useRef<number>(0);
     const heightRef = React.useRef<number>(0);
-    const propsRef = React.useRef(props);
-    const scaleRef = React.useRef(scale);
-    const snapRef = React.useRef({ enabled: snapEnabled, size: snapSize });
-    const storesRef = React.useRef(stores);
-    const multiSelectRef = React.useRef(multiSelect);
-    const notifyEndpointsChangedRef = React.useRef(notifyEndpointsChanged);
-    const notifyNodeDragRef = React.useRef(notifyNodeDrag);
-    const setDraggingNodeRef = React.useRef(setDraggingNode);
+    const propsRef = React.useRef<IProps>(props);
+    const scaleRef = React.useRef<number>(scale);
+    const snapRef = React.useRef<{ enabled: boolean; size: number }>({ enabled: snapEnabled, size: snapSize });
+    const storesRef = React.useRef<typeof stores>(stores);
+    const multiSelectRef = React.useRef<boolean | undefined>(multiSelect);
+    const notifyEndpointsChangedRef = React.useRef<typeof notifyEndpointsChanged>(notifyEndpointsChanged);
+    const requestNodesChangeRef = React.useRef<typeof requestNodesChange>(requestNodesChange);
+    const notifyNodeDragRef = React.useRef<typeof notifyNodeDrag>(notifyNodeDrag);
+    const setDraggingNodeRef = React.useRef<typeof setDraggingNode>(setDraggingNode);
 
     propsRef.current = props;
     scaleRef.current = scale;
@@ -65,10 +67,11 @@ const NodeComponent: React.FC<IProps> = (props) => {
     storesRef.current = stores;
     multiSelectRef.current = multiSelect;
     notifyEndpointsChangedRef.current = notifyEndpointsChanged;
+    requestNodesChangeRef.current = requestNodesChange;
     notifyNodeDragRef.current = notifyNodeDrag;
     setDraggingNodeRef.current = setDraggingNode;
 
-    const onMouseMove = React.useCallback((e: MouseEvent): void => {
+    const onMouseMove = React.useCallback<(e: MouseEvent) => void>((e: MouseEvent): void => {
         if (!mouseDownRef.current) return;
 
         if (nodeRef.current == null) return;
@@ -107,16 +110,22 @@ const NodeComponent: React.FC<IProps> = (props) => {
         notifyEndpointsChangedRef.current(movedEndpoints);
     }, []);
 
-    const onMouseUp = React.useCallback((e: MouseEvent): void => {
+    const onMouseUp = React.useCallback<(e: MouseEvent) => void>((e: MouseEvent): void => {
         mouseDownRef.current = false;
         setDraggingNodeRef.current(false, null);
         e.stopPropagation();
         e.preventDefault();
         document.removeEventListener("mouseup", onMouseUp);
         document.removeEventListener("mousemove", onMouseMove);
+        const positionChanges = dragGroupRef.current.map((item) => ({
+            type: "position" as const,
+            key: item.node.key,
+            offset: { x: item.node.offset.x, y: item.node.offset.y },
+        }));
+        if (positionChanges.length > 0) requestNodesChangeRef.current(positionChanges);
     }, [onMouseMove]);
 
-    const buildDragGroup = React.useCallback((node: INode<any, any>): void => {
+    const buildDragGroup = React.useCallback<(node: INode<any, any>) => void>((node: INode<any, any>): void => {
         const selectionState = storesRef.current?.selection.getState();
         const selectedNodes = selectionState?.selectedNodes ?? [];
         const group =
@@ -132,7 +141,7 @@ const NodeComponent: React.FC<IProps> = (props) => {
         }));
     }, []);
 
-    const onMouseDown = React.useCallback(
+    const onMouseDown = React.useCallback<(e: React.MouseEvent<HTMLDivElement, MouseEvent>) => void>(
         (e: React.MouseEvent<HTMLDivElement, MouseEvent>): void => {
             const currentProps = propsRef.current;
             const target = e.target instanceof Element ? e.target : null;
@@ -191,12 +200,18 @@ const NodeComponent: React.FC<IProps> = (props) => {
         if (element == null || typeof ResizeObserver === "undefined") return;
 
         const resizeObserver = new ResizeObserver(() => {
-            if (nodeRef.current?.clientWidth !== widthRef.current) {
-                widthRef.current = nodeRef.current?.clientWidth ?? 0;
+            const newWidth = nodeRef.current?.clientWidth ?? 0;
+            const newHeight = nodeRef.current?.clientHeight ?? 0;
+            if (newWidth !== widthRef.current || newHeight !== heightRef.current) {
+                widthRef.current = newWidth;
+                heightRef.current = newHeight;
                 notifyEndpointsChangedRef.current(propsRef.current.node.endpoints);
-            } else if (nodeRef.current?.clientHeight !== heightRef.current) {
-                heightRef.current = nodeRef.current?.clientHeight ?? 0;
-                notifyEndpointsChangedRef.current(propsRef.current.node.endpoints);
+                requestNodesChangeRef.current([{
+                    type: "dimensions",
+                    key: propsRef.current.node.key,
+                    width: newWidth,
+                    height: newHeight,
+                }]);
             }
         });
 

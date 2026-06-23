@@ -3,7 +3,6 @@ import { Position } from "../../lib/enums/Position";
 import {
   EdgeCollapseMode,
   EdgePathType,
-  IConnection,
   IEdge,
   INode,
   updateWorkflowDecisionTableBranches,
@@ -55,10 +54,10 @@ export function App() {
     [nodes, selectedKey]
   );
 
-  const onConnect = React.useCallback((connection: IConnection) => {
+  const onConnect = React.useCallback((sourceId: string, targetId: string) => {
     setEdges((currentEdges) => {
       const edgeExists = currentEdges.some(
-        (edge) => edge.sourceId === connection.sourceId && edge.targetId === connection.targetId
+        (edge) => edge.sourceId === sourceId && edge.targetId === targetId
       );
 
       if (edgeExists) return currentEdges;
@@ -66,10 +65,10 @@ export function App() {
       return [
         ...currentEdges,
         {
-          key: `edge-${connection.sourceId}-${connection.targetId}`,
+          key: `edge-${sourceId}-${targetId}`,
           type: "edge",
-          sourceId: connection.sourceId,
-          targetId: connection.targetId,
+          sourceId,
+          targetId,
         },
       ];
     });

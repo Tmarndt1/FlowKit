@@ -10,7 +10,6 @@ import {
   FlowKitMiniMap,
   EdgeCollapseMode,
   EdgePathType,
-  IConnection,
   IEdge,
   INode,
   NodeTypes,
@@ -44,7 +43,7 @@ type WorkflowCanvasProps = {
   edges: WorkflowEdge[];
   nodes: WorkflowNodeType[];
   nodeTypes: NodeTypes;
-  onConnect: (connection: IConnection) => void;
+  onConnect: (sourceId: string, targetId: string) => void;
   onContainersChange: (containers: WorkflowContainer[]) => void;
   onEdgeCollapsedChange: (edgeKey: string, collapsed: boolean, mode: EdgeCollapseMode) => void;
   onRemove: (node: INode<any, any> | null, removedEdges: IEdge<any>[]) => void;
@@ -115,9 +114,14 @@ export function WorkflowCanvas({
         />
         <FlowKitControls />
         <FlowKitEvents
-          onConnect={onConnect}
           onContainersChange={onContainersChange}
-          onSelectionChange={(element) => onSelectionChange(element?.key ?? null)}
+          onEdgesChange={(changes) => changes.forEach((change) => {
+            if (change.type === "connect") onConnect(change.sourceId, change.targetId);
+            if (change.type === "select") onSelectionChange(change.selected ? change.key : null);
+          })}
+          onNodesChange={(changes) => changes.forEach((change) => {
+            if (change.type === "select") onSelectionChange(change.selected ? change.key : null);
+          })}
         />
         <FlowKitGridSnap size={28} containers />
         <FlowKitKeyboardCommands edges={edges} nodes={nodes} onRemove={onRemove} />

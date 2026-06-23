@@ -1,6 +1,7 @@
 import * as React from "react";
 import { INode } from "../../interfaces/INode";
 import { INodeContainer } from "../../interfaces/INodeContainer";
+import { ContainerTypes } from "../../types/ContainerTypes";
 import { NodeComponentProps } from "../../types/NodeComponentProps";
 import { NodeTypes } from "../../types/NodeTypes";
 import { Node } from "./Node";
@@ -15,6 +16,7 @@ interface LayerBounds {
 }
 
 interface IProps {
+    containerTypes?: ContainerTypes;
     containers?: INodeContainer[];
     customNodeProps?: NodeComponentProps;
     nodeStateClassNames?: Map<string, string>;
@@ -58,9 +60,9 @@ const NodesLayerComponent = React.forwardRef<NodesLayerHandle, IProps>((props, r
     const layerRef = React.useRef<HTMLDivElement>(null);
     const hasContainerChangeListener = useNodeFlowRenderStore((state) => state.hasContainerChangeListener);
     const requestContainersChange = useNodeFlowRenderStore((state) => state.requestContainersChange);
-    const propsRef = React.useRef(props);
-    const hasContainerChangeListenerRef = React.useRef(hasContainerChangeListener);
-    const requestContainersChangeRef = React.useRef(requestContainersChange);
+    const propsRef = React.useRef<IProps>(props);
+    const hasContainerChangeListenerRef = React.useRef<boolean>(hasContainerChangeListener);
+    const requestContainersChangeRef = React.useRef<typeof requestContainersChange>(requestContainersChange);
     const [, forceContainerRender] = React.useReducer((value: number) => value + 1, 0);
     const containers = props.containers ?? [];
 
@@ -68,7 +70,7 @@ const NodesLayerComponent = React.forwardRef<NodesLayerHandle, IProps>((props, r
     hasContainerChangeListenerRef.current = hasContainerChangeListener;
     requestContainersChangeRef.current = requestContainersChange;
 
-    const updateContainerMembership = React.useCallback((node: INode<any, any>): void => {
+    const updateContainerMembership = React.useCallback<(node: INode<any, any>) => void>((node: INode<any, any>): void => {
         const currentContainers = propsRef.current.containers ?? [];
 
         if (currentContainers.length < 1) return;
@@ -115,8 +117,7 @@ const NodesLayerComponent = React.forwardRef<NodesLayerHandle, IProps>((props, r
 
             if ((nodeKeys.length < 1 || container.resizeToFit === false) && bounds != null) {
                 nextContainer.position = { x: bounds.x, y: bounds.y };
-                nextContainer.width = bounds.width;
-                nextContainer.height = bounds.height;
+                nextContainer.style = { ...nextContainer.style, width: bounds.width, height: bounds.height };
             }
 
             return nextContainer;
@@ -132,7 +133,25 @@ const NodesLayerComponent = React.forwardRef<NodesLayerHandle, IProps>((props, r
         forceContainerRender();
     }, []);
 
-    const getContentBounds = React.useCallback((scale: number): LayerBounds | null => {
+    const onResizeEnd = React.useCallback<(containerKey: string) => void>((containerKey: string): void => {
+        const currentContainers = propsRef.current.containers ?? [];
+        const nextContainers = currentContainers.map((container) => {
+            if (container.key !== containerKey) return container;
+            const bounds = getRenderedContainerBounds(container);
+            if (bounds == null) return container;
+            return {
+                ...container,
+                position: { x: bounds.x, y: bounds.y },
+                style: { ...container.style, width: bounds.width, height: bounds.height },
+            };
+        });
+        requestContainersChangeRef.current(nextContainers);
+        if (hasContainerChangeListenerRef.current) return;
+        currentContainers.splice(0, currentContainers.length, ...nextContainers);
+        forceContainerRender();
+    }, []);
+
+    const getContentBounds = React.useCallback<(scale: number) => LayerBounds | null>((scale: number): LayerBounds | null => {
         let minTop: number = Number.POSITIVE_INFINITY;
         let minLeft: number = Number.POSITIVE_INFINITY;
         let maxRight: number = Number.NEGATIVE_INFINITY;
@@ -164,7 +183,7 @@ const NodesLayerComponent = React.forwardRef<NodesLayerHandle, IProps>((props, r
         return { minTop, minLeft, maxRight, maxBottom };
     }, []);
 
-    React.useImperativeHandle(ref, () => ({
+    React.useImperativeHandle<NodesLayerHandle, NodesLayerHandle>(ref, () => ({
         element: layerRef.current,
         getContentBounds,
         updateContainerMembership,
@@ -176,7 +195,9 @@ const NodesLayerComponent = React.forwardRef<NodesLayerHandle, IProps>((props, r
                 <NodeContainer
                     key={container.key}
                     container={container}
+                    customContainer={container.type != null ? props.containerTypes?.[container.type] : undefined}
                     nodes={props.nodes}
+                    onResizeEnd={onResizeEnd}
                 />
             ))}
             {props.nodes.map((node) => {

@@ -22,7 +22,9 @@ interface ContainerBounds {
 
 interface IProps {
     container: INodeContainer;
+    customContainer?: React.ComponentClass | React.FunctionComponent<any>;
     nodes: INode<any, any>[];
+    onResizeEnd?: (containerKey: string) => void;
 }
 
 type ResizeDirection = "east" | "south" | "southeast";
@@ -46,16 +48,55 @@ function getNodeBounds(node: INode<any, any>): ContainerBounds {
     };
 }
 
-function getContainerBounds(container: INodeContainer, nodes: INode<any, any>[]): ContainerBounds | null {
+function getStyleDimension(value: React.CSSProperties[keyof React.CSSProperties]): number | undefined {
+    return typeof value === "number" ? value : undefined;
+}
+
+// Returns the minimum width/height needed to fully enclose contained nodes,
+// regardless of resizeToFit. Used to enforce a hard floor during user resize.
+function getNodeContentSize(container: INodeContainer, nodes: INode<any, any>[]): { contentWidth: number; contentHeight: number } {
     const containedNodes = nodes.filter((node) => container.nodeKeys.includes(node.key));
     const padding = container.padding ?? 24;
 
-    if (container.resizeToFit === false && container.position != null && container.width != null && container.height != null) {
+    if (containedNodes.length === 0) {
+        return { contentWidth: padding * 2, contentHeight: padding * 2 + 28 };
+    }
+
+    let left = Number.POSITIVE_INFINITY;
+    let top = Number.POSITIVE_INFINITY;
+    let right = Number.NEGATIVE_INFINITY;
+    let bottom = Number.NEGATIVE_INFINITY;
+
+    containedNodes.forEach((node) => {
+        const b = getNodeBounds(node);
+        left = Math.min(left, b.x);
+        top = Math.min(top, b.y);
+        right = Math.max(right, b.x + b.width);
+        bottom = Math.max(bottom, b.y + b.height);
+    });
+
+    if (!isFinite(left)) return { contentWidth: padding * 2, contentHeight: padding * 2 + 28 };
+
+    return {
+        contentWidth: right - left + padding * 2,
+        contentHeight: bottom - top + padding * 2 + 28,
+    };
+}
+
+function getContainerBounds(container: INodeContainer, nodes: INode<any, any>[]): ContainerBounds | null {
+    const containedNodes = nodes.filter((node) => container.nodeKeys.includes(node.key));
+    const padding = container.padding ?? 24;
+    const styleWidth = getStyleDimension(container.style?.width);
+    const styleHeight = getStyleDimension(container.style?.height);
+    const styleMinWidth = getStyleDimension(container.style?.minWidth);
+    const styleMinHeight = getStyleDimension(container.style?.minHeight);
+
+    if (container.resizeToFit === false && container.position != null && styleWidth != null && styleHeight != null) {
         return {
             x: container.position.x,
             y: container.position.y,
-            width: Math.max(container.width, container.minWidth ?? 80),
-            height: Math.max(container.height, container.minHeight ?? 44),
+            width: Math.max(styleWidth, styleMinWidth ?? 80),
+            height: Math.max(styleHeight, styleMinHeight ?? 44),
             contentWidth: padding * 2,
             contentHeight: padding * 2 + 28,
         };
@@ -64,8 +105,8 @@ function getContainerBounds(container: INodeContainer, nodes: INode<any, any>[])
     if (containedNodes.length < 1) {
         if (container.position == null) return null;
 
-        const width = Math.max(container.width ?? 160, container.minWidth ?? 80);
-        const height = Math.max(container.height ?? 120, container.minHeight ?? 44);
+        const width = Math.max(styleWidth ?? 160, styleMinWidth ?? 80);
+        const height = Math.max(styleHeight ?? 120, styleMinHeight ?? 44);
 
         return {
             x: container.position.x,
@@ -99,8 +140,8 @@ function getContainerBounds(container: INodeContainer, nodes: INode<any, any>[])
     return {
         x: left - padding,
         y: top - padding - 28,
-        width: Math.max(contentWidth, container.width ?? contentWidth, container.minWidth ?? 0),
-        height: Math.max(contentHeight, container.height ?? contentHeight, container.minHeight ?? 0),
+        width: Math.max(contentWidth, styleWidth ?? contentWidth, styleMinWidth ?? 0),
+        height: Math.max(contentHeight, styleHeight ?? contentHeight, styleMinHeight ?? 0),
         contentWidth,
         contentHeight,
     };
@@ -137,8 +178,8 @@ export const NodeContainer: React.FC<IProps> = (props) => {
     const notifyEndpointsChanged = useNodeFlowRenderStore((state) => state.notifyEndpointsChanged);
     const setDraggingNode = useNodeFlowInteractionStore((state) => state.setDraggingNode);
     const containerRef = React.useRef<HTMLDivElement>(null);
-    const propsRef = React.useRef(props);
-    const scaleRef = React.useRef(scale);
+    const propsRef = React.useRef<IProps>(props);
+    const scaleRef = React.useRef<number>(scale);
     const mouseDownRef = React.useRef<boolean>(false);
     const resizingRef = React.useRef<boolean>(false);
     const resizeDirectionRef = React.useRef<ResizeDirection>("southeast");
@@ -146,17 +187,19 @@ export const NodeContainer: React.FC<IProps> = (props) => {
     const frozenDragBoundsRef = React.useRef<ContainerBounds | null>(null);
     const originalNodePositionsRef = React.useRef<Map<string, IOffset>>(new Map());
     const originalBoundsRef = React.useRef<ContainerBounds | null>(null);
-    const notifyEndpointsChangedRef = React.useRef(notifyEndpointsChanged);
-    const snapRef = React.useRef({ containers: snapContainers, enabled: snapEnabled, size: snapSize });
-    const setDraggingNodeRef = React.useRef(setDraggingNode);
+    const notifyEndpointsChangedRef = React.useRef<typeof notifyEndpointsChanged>(notifyEndpointsChanged);
+    const onResizeEndRef = React.useRef<typeof props.onResizeEnd>(props.onResizeEnd);
+    const snapRef = React.useRef<{ containers: boolean; enabled: boolean; size: number }>({ containers: snapContainers, enabled: snapEnabled, size: snapSize });
+    const setDraggingNodeRef = React.useRef<typeof setDraggingNode>(setDraggingNode);
 
     propsRef.current = props;
     scaleRef.current = scale;
     notifyEndpointsChangedRef.current = notifyEndpointsChanged;
+    onResizeEndRef.current = props.onResizeEnd;
     snapRef.current = { containers: snapContainers, enabled: snapEnabled, size: snapSize };
     setDraggingNodeRef.current = setDraggingNode;
 
-    const moveContainedNodes = React.useCallback((dx: number, dy: number): void => {
+    const moveContainedNodes = React.useCallback<(dx: number, dy: number) => void>((dx: number, dy: number): void => {
         const containedNodeKeys = new Set(propsRef.current.container.nodeKeys);
         const movedEndpoints: IEndpoint<any>[] = [];
 
@@ -185,7 +228,7 @@ export const NodeContainer: React.FC<IProps> = (props) => {
         notifyEndpointsChangedRef.current(movedEndpoints);
     }, []);
 
-    const onMouseMove = React.useCallback((e: MouseEvent): void => {
+    const onMouseMove = React.useCallback<(e: MouseEvent) => void>((e: MouseEvent): void => {
         if (!mouseDownRef.current) return;
 
         let dx = (e.clientX - cursorPosRef.current.x) / scaleRef.current;
@@ -196,8 +239,8 @@ export const NodeContainer: React.FC<IProps> = (props) => {
             if (originalBounds == null || containerRef.current == null) return;
 
             const currentContainer = propsRef.current.container;
-            const minWidth = Math.max(originalBounds.contentWidth, currentContainer.minWidth ?? 0);
-            const minHeight = Math.max(originalBounds.contentHeight, currentContainer.minHeight ?? 0);
+            const minWidth = Math.max(originalBounds.contentWidth, getStyleDimension(currentContainer.style?.minWidth) ?? 0);
+            const minHeight = Math.max(originalBounds.contentHeight, getStyleDimension(currentContainer.style?.minHeight) ?? 0);
             const width =
                 resizeDirectionRef.current === "east" || resizeDirectionRef.current === "southeast"
                     ? Math.max(minWidth, Math.round(originalBounds.width + dx))
@@ -207,8 +250,7 @@ export const NodeContainer: React.FC<IProps> = (props) => {
                     ? Math.max(minHeight, Math.round(originalBounds.height + dy))
                     : originalBounds.height;
 
-            currentContainer.width = width;
-            currentContainer.height = height;
+            currentContainer.style = { ...currentContainer.style, width, height };
             containerRef.current.style.width = `${width}px`;
             containerRef.current.style.height = `${height}px`;
             return;
@@ -232,17 +274,19 @@ export const NodeContainer: React.FC<IProps> = (props) => {
         moveContainedNodes(dx, dy);
     }, [moveContainedNodes]);
 
-    const onMouseUp = React.useCallback((e: MouseEvent): void => {
+    const onMouseUp = React.useCallback<(e: MouseEvent) => void>((e: MouseEvent): void => {
         mouseDownRef.current = false;
+        const wasResizing = resizingRef.current;
         resizingRef.current = false;
         setDraggingNodeRef.current(false);
         e.stopPropagation();
         e.preventDefault();
         document.removeEventListener("mouseup", onMouseUp);
         document.removeEventListener("mousemove", onMouseMove);
+        if (wasResizing) onResizeEndRef.current?.(propsRef.current.container.key);
     }, [onMouseMove]);
 
-    const onMouseDown = React.useCallback((e: React.MouseEvent<HTMLDivElement, MouseEvent>): void => {
+    const onMouseDown = React.useCallback<(e: React.MouseEvent<HTMLDivElement, MouseEvent>) => void>((e: React.MouseEvent<HTMLDivElement, MouseEvent>): void => {
         if (readOnly) {
             e.stopPropagation();
             e.preventDefault();
@@ -272,7 +316,7 @@ export const NodeContainer: React.FC<IProps> = (props) => {
         document.addEventListener("mousemove", onMouseMove);
     }, [onMouseMove, onMouseUp, readOnly]);
 
-    const onResizeMouseDown = React.useCallback(
+    const onResizeMouseDown = React.useCallback<(direction: ResizeDirection) => (e: React.MouseEvent<HTMLDivElement, MouseEvent>) => void>(
         (direction: ResizeDirection) =>
             (e: React.MouseEvent<HTMLDivElement, MouseEvent>): void => {
                 if (readOnly) {
@@ -285,8 +329,13 @@ export const NodeContainer: React.FC<IProps> = (props) => {
 
                 if (bounds == null) return;
 
+                // Always measure actual node content so the resize floor accounts for
+                // nodes even when resizeToFit is false (where getContainerBounds only
+                // returns padding as contentWidth/contentHeight).
+                const nodeContentSize = getNodeContentSize(propsRef.current.container, propsRef.current.nodes);
+
                 resizeDirectionRef.current = direction;
-                originalBoundsRef.current = bounds;
+                originalBoundsRef.current = { ...bounds, ...nodeContentSize };
                 cursorPosRef.current = { x: e.clientX, y: e.clientY };
                 mouseDownRef.current = true;
                 resizingRef.current = true;
@@ -341,11 +390,29 @@ export const NodeContainer: React.FC<IProps> = (props) => {
         !isNodeCenterInsideElement(draggedNode.key, containerRef.current);
     const className = [
         "flow-kit-node-container",
+        props.container.className ?? "",
         isDraggingOverContainer ? "flow-kit-node-container-drop-target" : "",
         isDraggingOut ? "flow-kit-node-container-dragging-out" : "",
     ].filter(Boolean).join(" ");
 
     void dragUpdateVersion;
+
+    if (props.customContainer != null) {
+        const customProps = { ...props.container, className, style };
+
+        return (
+            <div
+                className={className}
+                data-container-key={props.container.key}
+                data-node-keys={props.container.nodeKeys.join(" ")}
+                ref={containerRef}
+                style={style}
+                onMouseDownCapture={onMouseDown}
+            >
+                {React.createElement(props.customContainer, customProps)}
+            </div>
+        );
+    }
 
     return (
         <div

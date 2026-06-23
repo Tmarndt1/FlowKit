@@ -34,13 +34,13 @@ export const FlowKitKeyboardCommands: React.FC<FlowKitKeyboardCommandsProps> = (
     const selectedNodes = useNodeFlowSelectionStore((state) => state.selectedNodes);
     const selectedEdges = useNodeFlowSelectionStore((state) => state.selectedEdges);
     const copyRef = React.useRef<FlowElement | null>(null);
-    const propsRef = React.useRef(props);
-    const selectionRef = React.useRef({ selectedEdge, selectedNode, selectedNodes, selectedEdges });
+    const propsRef = React.useRef<FlowKitKeyboardCommandsProps>(props);
+    const selectionRef = React.useRef<{ selectedEdge: typeof selectedEdge; selectedNode: typeof selectedNode; selectedNodes: typeof selectedNodes; selectedEdges: typeof selectedEdges }>({ selectedEdge, selectedNode, selectedNodes, selectedEdges });
 
     propsRef.current = props;
     selectionRef.current = { selectedEdge, selectedNode, selectedNodes, selectedEdges };
 
-    const onKeyDown = React.useCallback((e: KeyboardEvent): void => {
+    const onKeyDown = React.useCallback<(e: KeyboardEvent) => void>((e: KeyboardEvent): void => {
         const currentProps = propsRef.current;
         const currentSelectionState = selectionRef.current;
         const key: number = e.which || e.keyCode;

@@ -39,7 +39,11 @@ export const EdgeFoldControl: React.FC<IProps> = ({
 }) => {
     const hostRef = React.useRef<HTMLDivElement | null>(null);
 
-    const callbacksRef = React.useRef({
+    const callbacksRef = React.useRef<{
+        onChooseMode: IProps["onChooseMode"];
+        onClearPreview: IProps["onClearPreview"];
+        onPreviewMode: IProps["onPreviewMode"];
+    }>({
         onChooseMode,
         onClearPreview,
         onPreviewMode

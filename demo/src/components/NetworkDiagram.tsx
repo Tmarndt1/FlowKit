@@ -1041,7 +1041,9 @@ export function NetworkDiagram({ animatedEdges, collapsibleEdges, edgePathType }
           />
           <FlowKitControls />
           <FlowKitEvents
-            onSelectionChange={(element) => setSelectedDeviceKey(element?.type === "network-node" ? element.key : null)}
+            onNodesChange={(changes) => changes.forEach((change) => {
+              if (change.type === "select") setSelectedDeviceKey(change.selected ? change.key : null);
+            })}
           />
           <FlowKitGridSnap size={20} />
         </FlowKit>

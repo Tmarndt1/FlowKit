@@ -4,6 +4,7 @@ import { IEndpoint } from "../interfaces/IEndpoint";
 import { INode } from "../interfaces/INode";
 import { INodeContainer } from "../interfaces/INodeContainer";
 import { IOffset } from "../interfaces/IOffset";
+import { NodeChange } from "../types/NodeChange";
 import { Nullable } from "../types/Nullable";
 
 export interface EndpointUpdate {
@@ -18,6 +19,11 @@ export interface EdgeRenderRequest {
 
 export interface ContainerChangeRequest {
     containers: INodeContainer[];
+    version: number;
+}
+
+export interface NodesChangeRequest {
+    changes: NodeChange[];
     version: number;
 }
 
@@ -81,11 +87,13 @@ export interface NodeFlowSelectionState {
 
 export interface NodeFlowRenderState {
     containerChangeRequest: ContainerChangeRequest | null;
+    nodesChangeRequest: NodesChangeRequest | null;
     endpointUpdate: EndpointUpdate | null;
     edgeRenderRequest: EdgeRenderRequest | null;
     hasContainerChangeListener: boolean;
     notifyEndpointsChanged: (endpoints: IEndpoint<any>[]) => void;
     requestContainersChange: (containers: INodeContainer[]) => void;
+    requestNodesChange: (changes: NodeChange[]) => void;
     requestEdgeRender: (edge: IEdge<any>) => void;
     setHasContainerChangeListener: (hasContainerChangeListener: boolean) => void;
 }
@@ -271,6 +279,7 @@ export function createNodeFlowSelectionStore(): NodeFlowSelectionStore {
 export function createNodeFlowRenderStore(): NodeFlowRenderStore {
     return createStore<NodeFlowRenderState>((set, get) => ({
         containerChangeRequest: null,
+        nodesChangeRequest: null,
         endpointUpdate: null,
         edgeRenderRequest: null,
         hasContainerChangeListener: false,
@@ -286,6 +295,13 @@ export function createNodeFlowRenderStore(): NodeFlowRenderStore {
                 containerChangeRequest: {
                     containers,
                     version: (get().containerChangeRequest?.version ?? 0) + 1,
+                },
+            }),
+        requestNodesChange: (changes) =>
+            set({
+                nodesChangeRequest: {
+                    changes,
+                    version: (get().nodesChangeRequest?.version ?? 0) + 1,
                 },
             }),
         requestEdgeRender: (edge) =>

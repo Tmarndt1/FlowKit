@@ -98,7 +98,7 @@ export const FlowKitMiniMap: React.FC<FlowKitMiniMapProps> = (props) => {
     const selectedNodeKeys = useNodeFlowSelectionStore((state) => state.selectedNodeKeys);
     const miniMapRef = React.useRef<HTMLDivElement>(null);
     const [viewportRect, setViewportRect] = React.useState<DOMRect | null>(null);
-    const [measurementVersion, setMeasurementVersion] = React.useState(0);
+    const [measurementVersion, setMeasurementVersion] = React.useState<number>(0);
 
     React.useLayoutEffect(() => {
         const updateViewportRect = (): void => {
@@ -152,7 +152,7 @@ export const FlowKitMiniMap: React.FC<FlowKitMiniMapProps> = (props) => {
             }),
         [endpointUpdateVersion, measurementVersion, props.nodes]
     );
-    const bounds = React.useMemo(
+    const bounds = React.useMemo<MiniMapBounds | null>(
         () => getMiniMapBounds(miniMapNodes, padding),
         [miniMapNodes, padding]
     );

@@ -214,7 +214,6 @@ export function VolumeUtilizationWorkflow({
           <FlowKitControls />
           <FlowKitEvents
             onContainersChange={setContainers}
-            onSelectionChange={() => undefined}
           />
           <FlowKitGridSnap size={28} containers />
           <FlowKitMiniMap

@@ -42,9 +42,9 @@ const EdgeComponent: React.FC<IProps> = (props) =>
     const selectEdge = useNodeFlowSelectionStore((state) => state.selectEdge);
     const toggleEdge = useNodeFlowSelectionStore((state) => state.toggleEdge);
 
-    const propsRef = React.useRef(props);
-    const containerRectRef = React.useRef(containerRect);
-    const scaleRef = React.useRef(scale);
+    const propsRef = React.useRef<IProps>(props);
+    const containerRectRef = React.useRef<typeof containerRect>(containerRect);
+    const scaleRef = React.useRef<number>(scale);
     const edgeGroupRef = React.useRef<SVGGElement>(null);
 
     const [path, setPath] = React.useState<string>("");
@@ -55,7 +55,7 @@ const EdgeComponent: React.FC<IProps> = (props) =>
     containerRectRef.current = containerRect;
     scaleRef.current = scale;
 
-    const draw = React.useCallback((): void =>
+    const draw = React.useCallback<() => void>((): void =>
     {
         const currentProps = propsRef.current;
         const currentContainerRect = containerRectRef.current;
@@ -102,13 +102,13 @@ const EdgeComponent: React.FC<IProps> = (props) =>
         }
     }, [edgePathType]);
 
-    const stopEdgeDrag = React.useCallback((e: React.MouseEvent<SVGGElement, MouseEvent>): void =>
+    const stopEdgeDrag = React.useCallback<(e: React.MouseEvent<SVGGElement, MouseEvent>) => void>((e: React.MouseEvent<SVGGElement, MouseEvent>): void =>
     {
         e.stopPropagation();
         e.preventDefault();
     }, []);
 
-    const onSelect = React.useCallback((e: React.MouseEvent<SVGGElement, MouseEvent>): void =>
+    const onSelect = React.useCallback<(e: React.MouseEvent<SVGGElement, MouseEvent>) => void>((e: React.MouseEvent<SVGGElement, MouseEvent>): void =>
     {
         e.stopPropagation();
         e.preventDefault();
@@ -121,14 +121,14 @@ const EdgeComponent: React.FC<IProps> = (props) =>
         selectEdge(propsRef.current.edge);
     }, [multiSelect, selectEdge, toggleEdge]);
 
-    const clearCollapsePreview = React.useCallback((): void => {
+    const clearCollapsePreview = React.useCallback<() => void>((): void => {
         onEdgeCollapsePreviewChange?.({
             edge: propsRef.current.edge,
             mode: null
         });
     }, [onEdgeCollapsePreviewChange]);
 
-    const toggleCollapsed = React.useCallback((e: React.MouseEvent<SVGGElement, MouseEvent>): void => {
+    const toggleCollapsed = React.useCallback<(e: React.MouseEvent<SVGGElement, MouseEvent>) => void>((e: React.MouseEvent<SVGGElement, MouseEvent>): void => {
         e.stopPropagation();
         e.preventDefault();
 
@@ -150,7 +150,10 @@ const EdgeComponent: React.FC<IProps> = (props) =>
         });
     }, [clearCollapsePreview, onEdgeCollapsedChange]);
 
-    const chooseCollapseMode = React.useCallback((
+    const chooseCollapseMode = React.useCallback<(
+        e: { stopPropagation: () => void; preventDefault: () => void },
+        mode: EdgeCollapseMode
+    ) => void>((
         e: { stopPropagation: () => void; preventDefault: () => void },
         mode: EdgeCollapseMode
     ): void => {
@@ -167,14 +170,14 @@ const EdgeComponent: React.FC<IProps> = (props) =>
         });
     }, [clearCollapsePreview, onEdgeCollapsedChange]);
 
-    const previewCollapseMode = React.useCallback((mode: EdgeCollapseMode): void => {
+    const previewCollapseMode = React.useCallback<(mode: EdgeCollapseMode) => void>((mode: EdgeCollapseMode): void => {
         onEdgeCollapsePreviewChange?.({
             edge: propsRef.current.edge,
             mode
         });
     }, [onEdgeCollapsePreviewChange]);
 
-    const onCollapseKeyDown = React.useCallback((e: React.KeyboardEvent<SVGGElement>): void => {
+    const onCollapseKeyDown = React.useCallback<(e: React.KeyboardEvent<SVGGElement>) => void>((e: React.KeyboardEvent<SVGGElement>): void => {
         if (e.key !== "Enter" && e.key !== " ") return;
 
         e.stopPropagation();
