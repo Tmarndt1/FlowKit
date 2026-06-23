@@ -101,6 +101,32 @@ export {
     shapePresets,
 } from "./presets/shapes";
 export type { ShapeNode, ShapeNodeData, ShapePreset, ShapePresetType } from "./presets/shapes";
+export {
+    NetworkNode,
+    createNetworkEdge,
+    createNetworkNode,
+    groupNetworkPresets,
+    isNetworkConnectionValid,
+    networkCategoryLabels,
+    networkNodeHeight,
+    networkNodeTypes,
+    networkNodeWidth,
+    networkPresetByType,
+    networkPresets,
+    setNetworkNodeStatus,
+} from "./presets/networking";
+export type {
+    NetworkCategory,
+    NetworkContainer,
+    NetworkEdge,
+    NetworkEdgeData,
+    NetworkEndpoint,
+    NetworkEndpointData,
+    NetworkNodeData,
+    NetworkPreset,
+    NetworkPresetNode,
+    NetworkStatus,
+} from "./presets/networking";
 
 export {
     hierarchicalLayout,
