@@ -36,7 +36,7 @@
     z-index: 1;
 }
 
-.flow-kit-nodes-container, .flow-kit-edges-container {
+.flow-kit-nodes-container, .flow-kit-edges-container, .flow-kit-containers-layer {
     inset: 0px;
     position: absolute;
     pointer-events: none;
@@ -45,12 +45,16 @@
     overflow: visible;
 }
 
-.flow-kit-nodes-container {
-    z-index: 2;
+.flow-kit-containers-layer {
+    z-index: 1;
 }
 
 .flow-kit-edges-container {
-    z-index: 1;
+    z-index: 2;
+}
+
+.flow-kit-nodes-container {
+    z-index: 3;
 }
 
 .flow-kit-selection-box {

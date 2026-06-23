@@ -232,7 +232,8 @@ const NodesLayerComponent = React.forwardRef<NodesLayerHandle, IProps>((props, r
     }), [getContentBounds, updateContainerMembership]);
 
     return (
-        <div className="flow-kit-nodes-container" ref={layerRef}>
+        <React.Fragment>
+        <div className="flow-kit-containers-layer">
             {containers.map((container) => (
                 <NodeContainer
                     key={container.key}
@@ -243,6 +244,8 @@ const NodesLayerComponent = React.forwardRef<NodesLayerHandle, IProps>((props, r
                     onResizeEnd={onResizeEnd}
                 />
             ))}
+        </div>
+        <div className="flow-kit-nodes-container" ref={layerRef}>
             {props.nodes.map((node) => {
                 if (node.type === "node") {
                     return (
@@ -269,6 +272,7 @@ const NodesLayerComponent = React.forwardRef<NodesLayerHandle, IProps>((props, r
                 );
             })}
         </div>
+        </React.Fragment>
     );
 });
 

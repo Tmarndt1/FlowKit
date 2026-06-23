@@ -12,7 +12,6 @@
     position: absolute;
     top: 0;
     will-change: transform;
-    z-index: 40;
 }
 
 .flow-kit-node-container-drop-target {

@@ -87,6 +87,7 @@ function isPanSurfaceElement(element: Element | null): boolean {
         element?.classList.contains("flow-kit-viewport") === true ||
         element?.classList.contains("flow-kit-background") === true ||
         element?.classList.contains("flow-kit-content") === true ||
+        element?.classList.contains("flow-kit-containers-layer") === true ||
         element?.classList.contains("flow-kit-nodes-container") === true ||
         element?.classList.contains("flow-kit-edges-container") === true
     );

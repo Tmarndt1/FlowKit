@@ -28,6 +28,8 @@ interface MiniMapBounds {
 export interface FlowKitMiniMapProps {
     /** Additional class for the minimap wrapper. */
     className?: string;
+    /** Allow the minimap to be repositioned by dragging. Defaults to false. */
+    draggable?: boolean;
     /** Minimap height in pixels. */
     height?: number;
     /** Optional class resolver for each minimap node. */
@@ -92,6 +94,7 @@ export const FlowKitMiniMap: React.FC<FlowKitMiniMapProps> = (props) => {
     const height = props.height ?? 120;
     const padding = props.padding ?? 48;
     const position = props.position ?? "bottom-right";
+    const draggable = props.draggable === true;
     const offset = useNodeFlowViewportStore((state) => state.offset);
     const scale = useNodeFlowViewportStore((state) => state.scale);
     const endpointUpdateVersion = useNodeFlowRenderStore((state) => state.endpointUpdate?.version ?? 0);
@@ -99,6 +102,9 @@ export const FlowKitMiniMap: React.FC<FlowKitMiniMapProps> = (props) => {
     const miniMapRef = React.useRef<HTMLDivElement>(null);
     const [viewportRect, setViewportRect] = React.useState<DOMRect | null>(null);
     const [measurementVersion, setMeasurementVersion] = React.useState<number>(0);
+    const [dragOffset, setDragOffset] = React.useState<{ x: number; y: number }>({ x: 0, y: 0 });
+    const [isDragging, setIsDragging] = React.useState(false);
+    const dragStartRef = React.useRef<{ mouseX: number; mouseY: number; offsetX: number; offsetY: number } | null>(null);
 
     React.useLayoutEffect(() => {
         const updateViewportRect = (): void => {
@@ -175,16 +181,50 @@ export const FlowKitMiniMap: React.FC<FlowKitMiniMapProps> = (props) => {
     const className = [
         "flow-kit-mini-map",
         `flow-kit-mini-map-${position}`,
+        isDragging ? "flow-kit-mini-map-dragging" : undefined,
         props.className,
     ].filter(Boolean).join(" ");
+
+    const onPointerDown = (e: React.PointerEvent<HTMLDivElement>): void => {
+        e.stopPropagation();
+        if (!draggable) return;
+        dragStartRef.current = { mouseX: e.clientX, mouseY: e.clientY, offsetX: dragOffset.x, offsetY: dragOffset.y };
+        setIsDragging(true);
+        e.currentTarget.setPointerCapture(e.pointerId);
+    };
+
+    const onPointerMove = (e: React.PointerEvent<HTMLDivElement>): void => {
+        if (dragStartRef.current == null) return;
+        setDragOffset({
+            x: dragStartRef.current.offsetX + (e.clientX - dragStartRef.current.mouseX),
+            y: dragStartRef.current.offsetY + (e.clientY - dragStartRef.current.mouseY),
+        });
+    };
+
+    const onPointerUp = (e: React.PointerEvent<HTMLDivElement>): void => {
+        dragStartRef.current = null;
+        setIsDragging(false);
+        e.currentTarget.releasePointerCapture(e.pointerId);
+    };
+
+    const dragStyle: React.CSSProperties = dragOffset.x !== 0 || dragOffset.y !== 0
+        ? { transform: `translate(${dragOffset.x}px, ${dragOffset.y}px)` }
+        : {};
 
     return (
         <div
             className={className}
             ref={miniMapRef}
-            style={{ width, height, ...props.style }}
-            onMouseDown={(event) => event.stopPropagation()}
-            onPointerDown={(event) => event.stopPropagation()}
+            style={{
+                cursor: draggable ? (isDragging ? "grabbing" : "grab") : undefined,
+                width,
+                height,
+                ...props.style,
+                ...dragStyle,
+            }}
+            onPointerDown={onPointerDown}
+            onPointerMove={onPointerMove}
+            onPointerUp={onPointerUp}
         >
             <div
                 className="flow-kit-mini-map-content"
