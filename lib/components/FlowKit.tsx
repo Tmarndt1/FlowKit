@@ -148,6 +148,12 @@ export interface FlowKitHandle {
     recenter: () => void;
     /** Centers the viewport around a node by key. Returns false when the node cannot be found. */
     panToNode: (nodeKey: string, options?: PanToNodeOptions) => boolean;
+    /**
+     * Notifies all edges that node positions have changed programmatically (e.g. after
+     * applying an auto-layout algorithm). Call this after updating node offsets so that
+     * edge paths are recomputed from the new DOM positions.
+     */
+    notifyLayout: () => void;
     /** Zooms the viewport in one step. */
     zoomIn: () => void;
     /** Zooms the viewport out one step. */
@@ -619,14 +625,35 @@ const FlowKitComponent = (props: FlowKitProps, ref: React.ForwardedRef<FlowKitHa
         recenter();
     }, []);
 
-    const controls = React.useMemo(() => ({
+    const notifyLayout = React.useCallback((): void => {
+        const stores = nodeFlowStoresRef.current;
+        if (stores == null) return;
+        const nodes = propsRef.current.nodes ?? [];
+        const endpoints = nodes.flatMap((n) => n.endpoints);
+        stores.render.getState().notifyEndpointsChanged(endpoints);
+    }, []);
+
+    // When node positions change programmatically (e.g. auto-layout), notify all edges
+    // to recompute their paths. useLayoutEffect fires synchronously after every DOM commit
+    // and before passive effects, ensuring node transforms are in the DOM before edges
+    // run their draw() calls in useEffect.
+    React.useLayoutEffect(() => {
+        const stores = nodeFlowStoresRef.current;
+        if (stores == null) return;
+        const endpoints = props.nodes.flatMap((n) => n.endpoints);
+        stores.render.getState().notifyEndpointsChanged(endpoints);
+    }, [props.nodes]);
+
+    const controls = React.useMemo<FlowKitHandle>(() => ({
+        notifyLayout,
         panToNode,
         recenter,
         zoomIn: () => onZoom(true),
         zoomOut: () => onZoom(false),
-    }), [onZoom, panToNode, recenter]);
-
-    React.useImperativeHandle(ref, () => controls, [controls]);
+    }), [notifyLayout, onZoom, panToNode, recenter]);
+    
+    // Set forward refs on FlowKitHandle 
+    React.useImperativeHandle<FlowKitHandle, FlowKitHandle>(ref, () => controls, [controls]);
 
     return (
         <NodeFlowContext.Provider value={stores}>

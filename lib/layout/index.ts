@@ -21,8 +21,8 @@ export function toLayoutNodes(nodes: INode<any, any>[]): LayoutNode[] {
         const el = document.getElementById(node.key);
         return {
             key: node.key,
-            x: node.x,
-            y: node.y,
+            x: node.offset.x,
+            y: node.offset.y,
             width: el?.offsetWidth ?? 0,
             height: el?.offsetHeight ?? 0,
         };
@@ -45,6 +45,6 @@ export function applyLayout(
     const resultMap = new Map(results.map((r) => [r.key, r]));
     return nodes.map((node) => {
         const r = resultMap.get(node.key);
-        return r ? { ...node, x: r.x, y: r.y } : node;
+        return r ? { ...node, offset: { x: r.x, y: r.y } } : node;
     });
 }

@@ -1,6 +1,6 @@
 import { EdgePathType } from "../../../lib/index";
 
-export type DemoView = "floating" | "utilization" | "workflow";
+export type DemoView = "floating" | "layout" | "utilization" | "workflow";
 
 type TopBarProps = {
   animatedEdges: boolean;
@@ -70,6 +70,14 @@ export function TopBar({
             type="button"
           >
             Utilization
+          </button>
+          <button
+            aria-pressed={demoView === "layout"}
+            className={demoView === "layout" ? "active" : undefined}
+            onClick={() => onDemoViewChange("layout")}
+            type="button"
+          >
+            Layout
           </button>
         </div>
       </div>

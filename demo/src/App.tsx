@@ -11,6 +11,7 @@ import {
 } from "../../lib/index";
 import { NodeInspector } from "./components/NodeInspector";
 import { NodePalette } from "./components/NodePalette";
+import { AutoLayoutDemo } from "./components/AutoLayoutDemo";
 import { NetworkDiagram } from "./components/NetworkDiagram";
 import { DemoView, TopBar } from "./components/TopBar";
 import { VolumeUtilizationWorkflow, volumeWorkflowStats } from "./components/VolumeUtilizationWorkflow";
@@ -46,8 +47,8 @@ export function App() {
   const [animatedEdges, setAnimatedEdges] = React.useState(false);
   const [collapsibleEdges, setCollapsibleEdges] = React.useState(true);
   const [demoView, setDemoView] = React.useState<DemoView>("workflow");
-  const activeNodeCount = demoView === "utilization" ? volumeWorkflowStats.nodeCount : nodes.length;
-  const activeEdgeCount = demoView === "utilization" ? volumeWorkflowStats.edgeCount : edges.length;
+  const activeNodeCount = demoView === "utilization" ? volumeWorkflowStats.nodeCount : demoView === "layout" ? 10 : nodes.length;
+  const activeEdgeCount = demoView === "utilization" ? volumeWorkflowStats.edgeCount : demoView === "layout" ? 9 : edges.length;
 
   const selectedNode = React.useMemo(
     () => nodes.find((node) => node.key === selectedKey) ?? nodes.find((node) => node.key === "runtime-multiplier") ?? null,
@@ -360,6 +361,11 @@ export function App() {
             <NetworkDiagram
               animatedEdges={animatedEdges}
               collapsibleEdges={collapsibleEdges}
+              edgePathType={edgePathType}
+            />
+          ) : demoView === "layout" ? (
+            <AutoLayoutDemo
+              animatedEdges={animatedEdges}
               edgePathType={edgePathType}
             />
           ) : (

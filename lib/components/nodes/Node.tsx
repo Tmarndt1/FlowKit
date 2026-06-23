@@ -31,6 +31,8 @@ function snapValue(value: number, size: number): number {
 }
 
 const NodeComponent: React.FC<IProps> = (props) => {
+    if (props.node == null) return null;
+
     const { readOnly, multiSelect } = useFlowKitConfig();
     const stores = React.useContext(NodeFlowContext);
     const scale = useNodeFlowViewportStore((state) => state.scale);
@@ -218,8 +220,6 @@ const NodeComponent: React.FC<IProps> = (props) => {
             document.removeEventListener("mousemove", onMouseMove);
         };
     }, [onMouseMove, onMouseUp]);
-
-    if (props.node == null) return null;
 
     const position: IOffset = props.node.offset;
 
