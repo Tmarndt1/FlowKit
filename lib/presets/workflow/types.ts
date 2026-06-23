@@ -3,7 +3,7 @@ import { IEndpoint } from "../../interfaces/IEndpoint";
 import { INode } from "../../interfaces/INode";
 import { INodeContainer } from "../../interfaces/INodeContainer";
 
-export type WorkflowCategory = "input" | "math" | "logic" | "policy" | "utility" | "output";
+export type WorkflowCategory = "input" | "math" | "logic" | "policy" | "utility" | "output" | "data" | "text" | "trigger" | "flow" | "annotation";
 
 export type WorkflowValueType = "number" | "boolean" | "text" | "any";
 
@@ -135,6 +135,72 @@ export interface WorkflowUtilityNodeData extends WorkflowBaseNodeData {
     variableQuery?: never;
 }
 
+export interface WorkflowDataNodeData extends WorkflowBaseNodeData {
+    category: "data";
+    resolvedAt?: never;
+    styleVariant?: never;
+    switchCases?: never;
+    thresholdPolicy?: never;
+    value?: never;
+    valueSource?: never;
+    variant?: never;
+    variableKey?: never;
+    variableQuery?: never;
+}
+
+export interface WorkflowTextNodeData extends WorkflowBaseNodeData {
+    category: "text";
+    resolvedAt?: never;
+    styleVariant?: never;
+    switchCases?: never;
+    thresholdPolicy?: never;
+    value?: never;
+    valueSource?: never;
+    variant?: never;
+    variableKey?: never;
+    variableQuery?: never;
+}
+
+export interface WorkflowTriggerNodeData extends WorkflowBaseNodeData {
+    category: "trigger";
+    resolvedAt?: never;
+    styleVariant?: never;
+    switchCases?: never;
+    thresholdPolicy?: never;
+    value?: never;
+    valueSource?: never;
+    variant?: never;
+    variableKey?: never;
+    variableQuery?: never;
+}
+
+export interface WorkflowFlowNodeData extends WorkflowBaseNodeData {
+    category: "flow";
+    resolvedAt?: never;
+    styleVariant?: never;
+    switchCases?: never;
+    thresholdPolicy?: never;
+    value?: never;
+    valueSource?: never;
+    variant?: never;
+    variableKey?: never;
+    variableQuery?: never;
+}
+
+export interface WorkflowAnnotationNodeData extends WorkflowBaseNodeData {
+    category: "annotation";
+    content?: string;
+    resolvedAt?: never;
+    styleVariant: "annotation";
+    switchCases?: never;
+    thresholdPolicy?: never;
+    value?: never;
+    valueSource?: never;
+    variant?: never;
+    variableKey?: never;
+    variableQuery?: never;
+}
+
 export interface WorkflowOutputNodeData extends WorkflowBaseNodeData {
     category: "output";
     resolvedAt?: never;
@@ -157,6 +223,11 @@ export type WorkflowNodeData =
     | WorkflowSwitchNodeData
     | WorkflowThresholdPolicyNodeData
     | WorkflowUtilityNodeData
+    | WorkflowDataNodeData
+    | WorkflowTextNodeData
+    | WorkflowTriggerNodeData
+    | WorkflowFlowNodeData
+    | WorkflowAnnotationNodeData
     | WorkflowOutputNodeData;
 
 export type WorkflowEndpointData = {

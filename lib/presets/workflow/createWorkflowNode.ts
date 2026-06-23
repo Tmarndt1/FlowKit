@@ -33,19 +33,39 @@ function createThresholdOutputEndpoints(
     }));
 }
 
+export type WorkflowConnectionValidationResult =
+    | { valid: true }
+    | { valid: false; reason: "wrong-source-side" }
+    | { valid: false; reason: "wrong-target-side" }
+    | { valid: false; reason: "type-mismatch"; sourceType: string; targetType: string };
+
+export function validateWorkflowConnection(connection: {
+    source: IEndpoint<WorkflowEndpointData>;
+    target: IEndpoint<WorkflowEndpointData>;
+}): WorkflowConnectionValidationResult {
+    if (connection.source.position !== Position.Right) {
+        return { valid: false, reason: "wrong-source-side" };
+    }
+
+    if (connection.target.position !== Position.Left) {
+        return { valid: false, reason: "wrong-target-side" };
+    }
+
+    const sourceType = connection.source.data?.valueType;
+    const targetType = connection.target.data?.valueType;
+
+    if (sourceType == null || targetType == null) return { valid: true };
+    if (sourceType === "any" || targetType === "any") return { valid: true };
+    if (sourceType === targetType) return { valid: true };
+
+    return { valid: false, reason: "type-mismatch", sourceType, targetType };
+}
+
 export function isWorkflowConnectionValid(connection: {
     source: IEndpoint<WorkflowEndpointData>;
     target: IEndpoint<WorkflowEndpointData>;
 }): boolean {
-    const sourceType = connection.source.data?.valueType;
-    const targetType = connection.target.data?.valueType;
-
-    if (connection.source.position !== Position.Right) return false;
-    if (connection.target.position !== Position.Left) return false;
-    if (sourceType == null || targetType == null) return true;
-    if (sourceType === "any" || targetType === "any") return true;
-
-    return sourceType === targetType;
+    return validateWorkflowConnection(connection).valid;
 }
 
 export function createWorkflowEndpoints(nodeKey: string, preset: WorkflowPreset): WorkflowNode["endpoints"] {

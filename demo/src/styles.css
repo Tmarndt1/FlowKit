@@ -389,6 +389,31 @@ button {
   background: #ff6767;
 }
 
+.category-swatch-data,
+.palette-node-data .palette-node-icon {
+  background: #4ecdc4;
+}
+
+.category-swatch-text,
+.palette-node-text .palette-node-icon {
+  background: #f7b731;
+}
+
+.category-swatch-trigger,
+.palette-node-trigger .palette-node-icon {
+  background: #26de81;
+}
+
+.category-swatch-flow,
+.palette-node-flow .palette-node-icon {
+  background: #fd9644;
+}
+
+.category-swatch-annotation,
+.palette-node-annotation .palette-node-icon {
+  background: rgba(255, 240, 150, 0.7);
+}
+
 .palette-list {
   display: grid;
 }

@@ -1,6 +1,7 @@
 import { NodeTypes } from "../../types/NodeTypes";
 import { WorkflowNode } from "../../components/presets/workflow/WorkflowNode";
 import { workflowPresets } from "./definitions";
+import { WorkflowCategory } from "./types";
 
 export { WorkflowNode };
 export {
@@ -10,7 +11,9 @@ export {
     isWorkflowConnectionValid,
     updateWorkflowDecisionTableBranches,
     updateWorkflowThresholdBranches,
+    validateWorkflowConnection,
 } from "./createWorkflowNode";
+export type { WorkflowConnectionValidationResult } from "./createWorkflowNode";
 export {
     defaultDecisionTableBranches,
     workflowCategoryLabels,
@@ -23,15 +26,18 @@ export {
     workflowPresets,
 } from "./definitions";
 export type {
+    WorkflowAnnotationNodeData,
     WorkflowBaseNodeData,
     WorkflowCategory,
     WorkflowContainer,
+    WorkflowDataNodeData,
     WorkflowDecisionBranch,
     WorkflowDecisionTableNodeData,
     WorkflowEdge,
     WorkflowEdgeData,
     WorkflowEndpoint,
     WorkflowEndpointData,
+    WorkflowFlowNodeData,
     WorkflowIfElseNodeData,
     WorkflowInputNodeData,
     WorkflowLogicNodeData,
@@ -40,9 +46,11 @@ export type {
     WorkflowNodeData,
     WorkflowOutputNodeData,
     WorkflowSwitchNodeData,
+    WorkflowTextNodeData,
     WorkflowThresholdPolicyNodeData,
     WorkflowPreset,
     WorkflowThresholdBranch,
+    WorkflowTriggerNodeData,
     WorkflowUtilityNodeData,
     WorkflowVariableNodeData,
     WorkflowValueType,
@@ -58,6 +66,6 @@ export function groupWorkflowPresets() {
             groups[preset.category].push(preset);
             return groups;
         },
-        { input: [], math: [], logic: [], policy: [], utility: [], output: [] } as Record<"input" | "math" | "logic" | "policy" | "utility" | "output", typeof workflowPresets>
+        { input: [], math: [], logic: [], policy: [], utility: [], output: [], data: [], text: [], trigger: [], flow: [], annotation: [] } as Record<WorkflowCategory, typeof workflowPresets>
     );
 }

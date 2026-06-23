@@ -5,7 +5,7 @@ type NodePaletteProps = {
   onAddNode: (preset: WorkflowPreset) => void;
 };
 
-const categoryOrder: WorkflowCategory[] = ["input", "math", "logic", "policy", "utility", "output"];
+const categoryOrder: WorkflowCategory[] = ["input", "math", "logic", "policy", "utility", "output", "data", "text", "trigger", "flow", "annotation"];
 const groupedPresets = groupPresets();
 
 export function NodePalette({ onAddNode }: NodePaletteProps) {
