@@ -143,6 +143,8 @@ export function App() {
 
 Floating edges connect to node bounds instead of fixed endpoint elements. Use `anchorMode: "floating"` and pass node keys as `sourceId` and `targetId`.
 
+<img src="./docs/images/NetworkDiagram.png" alt="Network diagram demo — floating edges with rack containers" width="100%" />
+
 ```ts
 const edge = {
   key: "edge-router-switch",

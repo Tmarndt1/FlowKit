@@ -2003,8 +2003,51 @@ button {
     linear-gradient(90deg, rgba(93, 124, 161, 0.07) 1px, transparent 1px) !important;
 }
 
-.network-canvas .flow-kit-node-container {
-  display: none;
+.network-canvas .flow-kit-node-container.network-rack {
+  background:
+    linear-gradient(90deg, rgba(255, 255, 255, 0.016) 1px, transparent 1px),
+    linear-gradient(rgba(255, 255, 255, 0.016) 1px, transparent 1px),
+    rgba(11, 19, 30, 0.55);
+  backdrop-filter: none;
+  border-color: rgba(72, 102, 140, 0.35);
+  border-style: dashed;
+}
+
+.network-canvas .flow-kit-node-container.network-rack .flow-kit-node-container-header {
+  background: transparent;
+  border-bottom: 1px solid rgba(72, 102, 140, 0.28);
+}
+
+.network-canvas .flow-kit-node-container.network-rack-edge {
+  border-color: rgba(116, 133, 154, 0.42);
+}
+
+.network-canvas .flow-kit-node-container.network-rack-edge .flow-kit-node-container-header {
+  color: #8fa3bc;
+}
+
+.network-canvas .flow-kit-node-container.network-rack-core {
+  border-color: rgba(23, 156, 255, 0.3);
+}
+
+.network-canvas .flow-kit-node-container.network-rack-core .flow-kit-node-container-header {
+  color: #68b6ff;
+}
+
+.network-canvas .flow-kit-node-container.network-rack-dist {
+  border-color: rgba(66, 198, 90, 0.3);
+}
+
+.network-canvas .flow-kit-node-container.network-rack-dist .flow-kit-node-container-header {
+  color: #6dd98a;
+}
+
+.network-canvas .flow-kit-node-container.network-rack-server {
+  border-color: rgba(164, 119, 255, 0.3);
+}
+
+.network-canvas .flow-kit-node-container.network-rack-server .flow-kit-node-container-header {
+  color: #b899ff;
 }
 
 .network-canvas .network-legend {

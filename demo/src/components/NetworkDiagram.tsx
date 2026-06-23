@@ -12,6 +12,7 @@ import {
   FlowKitMiniMap,
   IEdge,
   INode,
+  INodeContainer,
   NodeTypes,
   useNodeFlowSelection,
   useNodeFlowSelectionChange,
@@ -657,6 +658,63 @@ const networkEdges: NetworkEdge[] = [
   },
 ];
 
+const networkContainers: INodeContainer[] = [
+  {
+    key: "rack-wan-edge",
+    label: "WAN Edge",
+    nodeKeys: ["network-internet", "network-firewall"],
+    resizeToFit: false,
+    position: { x: 630, y: -42 },
+    style: { width: 300, height: 318 },
+    className: "network-rack network-rack-edge",
+  },
+  {
+    key: "rack-core",
+    label: "Core Backbone",
+    nodeKeys: ["network-core-rtr-01", "network-core-rtr-02", "network-core-rtr-03"],
+    resizeToFit: false,
+    position: { x: 200, y: 260 },
+    style: { width: 1150, height: 170 },
+    className: "network-rack network-rack-core",
+  },
+  {
+    key: "rack-b",
+    label: "Rack B — Distribution",
+    nodeKeys: ["network-dist-sw-01"],
+    resizeToFit: false,
+    position: { x: 360, y: 512 },
+    style: { width: 218, height: 155 },
+    className: "network-rack network-rack-dist",
+  },
+  {
+    key: "rack-c",
+    label: "Rack C — Distribution",
+    nodeKeys: ["network-dist-sw-02"],
+    resizeToFit: false,
+    position: { x: 910, y: 512 },
+    style: { width: 218, height: 155 },
+    className: "network-rack network-rack-dist",
+  },
+  {
+    key: "rack-d",
+    label: "Rack D — Compute",
+    nodeKeys: ["network-srv-app-01", "network-srv-db-01"],
+    resizeToFit: false,
+    position: { x: 8, y: 962 },
+    style: { width: 570, height: 158 },
+    className: "network-rack network-rack-server",
+  },
+  {
+    key: "rack-e",
+    label: "Rack E — Web Tier",
+    nodeKeys: ["network-srv-web-01", "network-srv-web-02"],
+    resizeToFit: false,
+    position: { x: 842, y: 962 },
+    style: { width: 570, height: 158 },
+    className: "network-rack network-rack-server",
+  },
+];
+
 const networkNodeTypes: NodeTypes = {
   "network-node": NetworkNode,
 };
@@ -942,6 +1000,7 @@ type NetworkDiagramProps = {
 };
 
 export function NetworkDiagram({ animatedEdges, collapsibleEdges, edgePathType }: NetworkDiagramProps) {
+  const [containers, setContainers] = React.useState<INodeContainer[]>(networkContainers);
   const [edges, setEdges] = React.useState<NetworkEdge[]>(networkEdges);
   const [selectedDeviceKey, setSelectedDeviceKey] = React.useState<string | null>("network-core-rtr-01");
   const nodeSummary = React.useMemo(() => {
@@ -1006,8 +1065,6 @@ export function NetworkDiagram({ animatedEdges, collapsibleEdges, edgePathType }
     );
   }, []);
 
-  console.log(selectedDevice)
-
   return (
     <section className="network-panel">
       <NetworkSidebar linkSummary={linkSummary} nodes={networkNodes} />
@@ -1015,6 +1072,7 @@ export function NetworkDiagram({ animatedEdges, collapsibleEdges, edgePathType }
         <FlowKit
           centerOnLoad
           collapsibleEdges={collapsibleEdges}
+          containers={containers}
           edgePathType={edgePathType}
           edgeRouting={{ avoidNodes: true, parallelOffset: 18 }}
           edges={displayEdges}
@@ -1041,6 +1099,7 @@ export function NetworkDiagram({ animatedEdges, collapsibleEdges, edgePathType }
           />
           <FlowKitControls />
           <FlowKitEvents
+            onContainersChange={setContainers}
             onNodesChange={(changes) => changes.forEach((change) => {
               if (change.type === "select") setSelectedDeviceKey(change.selected ? change.key : null);
             })}
