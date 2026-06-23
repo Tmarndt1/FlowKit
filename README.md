@@ -38,6 +38,7 @@ Use it for workflow engines, automation builders, network topology editors, ETL 
 * Selection state
 * Group containers with draggable membership
 * Optional container resize-to-fit behavior
+* Custom container renderers via `containerTypes`
 * State classes for fold preview and hidden nodes
 
 ### Edges
@@ -51,12 +52,17 @@ Use it for workflow engines, automation builders, network topology editors, ETL 
 * Collapsible edge controls
 * Upstream, downstream, both-sides, or connection-only folding
 
+### Events
+
+* Normalized `NodeChange` and `EdgeChange` descriptors for position, selection, dimensions, and connections
+* Container membership change callback
+
 ### Customization
 
 * CSS class hooks for nodes, edges, endpoints, controls, minimap, and containers
 * CSS variables for common colors
 * Per-edge path type, animation, collapse, arrows, and styles
-* Custom node and edge component maps
+* Custom node, edge, and container component maps
 * Public helper for advanced fold-state derivation
 
 ---
@@ -177,7 +183,6 @@ import {
   FlowKit,
   createWorkflowNode,
   workflowNodeTypes,
-  workflowPresets,
 } from "flowkit";
 
 const nodes = [
@@ -191,8 +196,6 @@ export function Workflow() {
   return <FlowKit nodes={nodes} edges={[]} nodeTypes={workflowNodeTypes} />;
 }
 ```
-
-The workflow preset includes the standard demo's input, math, logic, policy, utility, and output nodes, including the styled `logic-if-else`, multi-output `logic-switch`, and orange `policy-decision-table` nodes. The old `policy-threshold` key remains available as a compatibility alias.
 
 ### Shapes
 
@@ -248,20 +251,240 @@ For advanced integrations, `getFoldGraphState` is exported.
 
 ## Containers
 
-Containers resize around their assigned nodes by default. Disable that behavior per container when you want a container to keep its current rendered size after nodes are dragged in or out.
+Containers are visual groups that wrap a set of nodes. They resize around their assigned nodes by default. Disable that behavior per container to keep a fixed size after nodes are dragged in or out.
 
 ```ts
-const containers = [
+const containers: INodeContainer[] = [
   {
     key: "rack-a",
     label: "Rack A",
     nodeKeys: ["router", "switch"],
     resizeToFit: false,
+    style: { width: 400, height: 300, minWidth: 200, minHeight: 120 },
+    className: "my-custom-container",
   },
 ];
 ```
 
-When `resizeToFit` is `false`, FlowKit preserves the rendered container position and size during membership changes. Users can still move or manually resize the container unless `readOnly` is enabled.
+When `resizeToFit` is `false`, FlowKit preserves the rendered container position and size during membership changes. Users can still move or manually resize the container unless `readOnly` is enabled. Resizing is clamped so the container cannot be made smaller than its currently contained nodes.
+
+### `INodeContainer` fields
+
+| Field | Type | Description |
+|-------|------|-------------|
+| `key` | `string` | Stable identifier |
+| `label` | `string?` | Header text in the built-in renderer |
+| `type` | `string?` | Selects a custom renderer from `containerTypes` |
+| `nodeKeys` | `string[]` | Node keys assigned to this container |
+| `padding` | `number?` | Space between container bounds and contained nodes (default `24`) |
+| `resizeToFit` | `boolean?` | Recalculate bounds from contained nodes after membership changes (default `true`) |
+| `position` | `IOffset?` | Canvas-space top-left position. Derived from node bounds when omitted |
+| `style` | `React.CSSProperties?` | Inline styles. Use `width`, `height`, `minWidth`, `minHeight` here for explicit dimensions |
+| `className` | `string?` | Extra CSS class names applied to the container element |
+
+### Custom container renderers
+
+Register custom container components the same way as `nodeTypes` and `edgeTypes`:
+
+```tsx
+import { ContainerTypes, INodeContainer } from "flowkit";
+
+function GroupBox(props: INodeContainer & { className: string; style: React.CSSProperties }) {
+  return (
+    <div className={props.className} style={props.style}>
+      <header>{props.label}</header>
+    </div>
+  );
+}
+
+const containerTypes: ContainerTypes = {
+  "group-box": GroupBox,
+};
+```
+
+Pass the map to `FlowKit` and set `type` on each container that should use it:
+
+```tsx
+<FlowKit
+  nodes={nodes}
+  edges={edges}
+  containers={[{ key: "g1", type: "group-box", label: "Group", nodeKeys: ["a", "b"] }]}
+  containerTypes={containerTypes}
+/>
+```
+
+The custom component receives all `INodeContainer` fields plus `className` and `style` as props. The wrapping `div` that handles drag and resize is still managed by FlowKit.
+
+---
+
+## Events
+
+`FlowKitEvents` is a non-visual component placed inside `FlowKit` that forwards canvas interactions to app callbacks.
+
+```tsx
+<FlowKit nodes={nodes} edges={edges}>
+  <FlowKitEvents
+    onNodesChange={(changes) => {
+      changes.forEach((change) => {
+        if (change.type === "position") {
+          setNodes((ns) => ns.map((n) =>
+            n.key === change.key ? { ...n, offset: change.offset } : n
+          ));
+        }
+      });
+    }}
+    onEdgesChange={(changes) => {
+      changes.forEach((change) => {
+        if (change.type === "connect") {
+          setEdges((es) => [...es, {
+            key: `edge-${change.sourceId}-${change.targetId}`,
+            type: "edge",
+            sourceId: change.sourceId,
+            targetId: change.targetId,
+          }]);
+        }
+      });
+    }}
+    onContainersChange={setContainers}
+  />
+</FlowKit>
+```
+
+### `FlowKitEventsProps`
+
+| Prop | Type | Description |
+|------|------|-------------|
+| `onNodesChange` | `(changes: NodeChange[]) => void` | Called when nodes are repositioned, resized, or their selection changes |
+| `onEdgesChange` | `(changes: EdgeChange[]) => void` | Called when edges are connected, selected, added, or removed |
+| `onContainersChange` | `(containers: INodeContainer[]) => void` | Called when container membership changes after a node drag |
+
+### `NodeChange`
+
+```ts
+type NodeChange =
+  | { type: "position";   key: string; offset: IOffset }
+  | { type: "select";     key: string; selected: boolean }
+  | { type: "dimensions"; key: string; width: number; height: number }
+  | { type: "add";        node: INode<any, any> }
+  | { type: "remove";     key: string };
+```
+
+`position` fires after a drag completes and includes the final canvas-space offset for every node that moved (the entire multi-selection group when multiple nodes are dragged together). `dimensions` fires when a node's rendered size changes. `select` fires for every node whose selection status changed in the most recent interaction.
+
+### `EdgeChange`
+
+```ts
+type EdgeChange =
+  | { type: "connect"; sourceId: string; targetId: string }
+  | { type: "select";  key: string; selected: boolean }
+  | { type: "add";     edge: IEdge<any> }
+  | { type: "remove";  key: string };
+```
+
+`connect` replaces the old `onConnect` callback. It fires when the user successfully drops an endpoint onto a compatible target. `select` mirrors the node variant.
+
+### Selection hook
+
+For components rendered inside `FlowKit` that need the legacy selected/unselected pattern, `useNodeFlowSelectionChange` is still exported:
+
+```tsx
+import { useNodeFlowSelectionChange } from "flowkit";
+
+function SelectionListener() {
+  useNodeFlowSelectionChange(
+    (element) => console.log("selected", element),
+    (element) => console.log("unselected", element),
+  );
+  return null;
+}
+```
+
+---
+
+## Auto Layout
+
+FlowKit ships layout algorithms that reposition nodes programmatically. Call them with your current nodes and edges, apply the result, then call `notifyLayout()` on the FlowKit ref to redraw edges at their new positions.
+
+```tsx
+import * as React from "react";
+import {
+  FlowKit,
+  FlowKitHandle,
+  hierarchicalLayout,
+  forceLayout,
+  toLayoutNodes,
+  toLayoutEdges,
+  applyLayout,
+} from "flowkit";
+
+export function AutoLayout() {
+  const flowRef = React.useRef<FlowKitHandle>(null);
+  const [nodes, setNodes] = React.useState(initialNodes);
+
+  const applyHierarchical = () => {
+    const result = hierarchicalLayout(
+      toLayoutNodes(nodes),
+      toLayoutEdges(edges),
+      { direction: "TB", rankSpacing: 80, nodeSpacing: 40 }
+    );
+    setNodes(applyLayout(nodes, result));
+    flowRef.current?.notifyLayout();
+  };
+
+  return (
+    <FlowKit ref={flowRef} nodes={nodes} edges={edges}>
+      <FlowKitControls />
+    </FlowKit>
+  );
+}
+```
+
+### Available algorithms
+
+**`hierarchicalLayout(nodes, edges, options?)`** — ranks nodes by topological order and arranges them in rows or columns.
+
+Options:
+
+| Option | Default | Description |
+|--------|---------|-------------|
+| `direction` | `"TB"` | `"TB"` top-to-bottom, `"LR"` left-to-right, `"BT"` bottom-to-top, `"RL"` right-to-left |
+| `rankSpacing` | `80` | Gap between rank layers in pixels |
+| `nodeSpacing` | `40` | Gap between nodes within a layer |
+
+**`forceLayout(nodes, edges, options?)`** — physics simulation that spreads nodes apart naturally.
+
+Options:
+
+| Option | Default | Description |
+|--------|---------|-------------|
+| `iterations` | `300` | Number of simulation steps |
+| `repulsion` | `5000` | Force pushing unconnected nodes apart |
+| `attraction` | `0.01` | Force pulling connected nodes together |
+| `damping` | `0.85` | Velocity damping per step |
+
+### Helper utilities
+
+```ts
+toLayoutNodes(nodes)    // Convert INode[] to LayoutNode[] for algorithm input
+toLayoutEdges(edges)    // Convert IEdge[] to LayoutEdge[] for algorithm input
+applyLayout(nodes, result) // Merge LayoutResult positions back into INode[]
+buildAdjacency(nodes, edges) // Build adjacency lists for custom traversals
+topoRanks(nodes, edges) // Return topological rank for each node key
+placeConnected(nodes, edges, options?) // Place disconnected subgraphs side by side
+findFreePosition(nodes, offset?) // Find an unoccupied position on the canvas
+```
+
+### `FlowKitHandle`
+
+The imperative ref API exposed by `FlowKit`:
+
+| Method | Description |
+|--------|-------------|
+| `recenter()` | Pan and zoom to fit all nodes |
+| `panToNode(key)` | Pan the viewport so the node with the given key is centered |
+| `zoomIn()` | Increase zoom level |
+| `zoomOut()` | Decrease zoom level |
+| `notifyLayout()` | Redraw all edges after programmatic node repositioning |
 
 ---
 
@@ -383,7 +606,6 @@ FlowKit supports both single and multi-selection out of the box.
 
 * Click a node or edge to select it, replacing the previous selection.
 * Hold `Shift`, `Ctrl`, or `Cmd` and click to add or remove a node or edge from the current selection.
-* Hold `Shift` and drag across empty canvas to draw a marquee box; every node it touches is added to the selection. A plain drag still pans the canvas.
 * Dragging any selected node moves the whole selection together.
 
 Read the current selection from components rendered inside `FlowKit`:
@@ -409,6 +631,26 @@ Multi-selection is enabled by default. Set `multiSelect={false}` on `FlowKit` to
 
 ---
 
+## Endpoints
+
+Endpoints highlight immediately when an edge drag begins — valid targets show green, invalid targets show red — without requiring a hover. The source endpoint retains its default appearance.
+
+Override endpoint appearance:
+
+```tsx
+<Endpoint endpoint={ep} className="my-endpoint" style={{ width: 10, height: 10 }} />
+```
+
+Relevant CSS hooks:
+
+```css
+.flow-kit-endpoint {}
+.flow-kit-endpoint-proximity-target {}  /* active during proximity connect */
+.flow-kit-endpoint-selected {}          /* endpoint of the selected edge */
+```
+
+---
+
 ## Styling
 
 FlowKit ships with default CSS classes and expects applications to override them as needed.
@@ -425,6 +667,8 @@ Common hooks:
 .flow-kit-controls {}
 .flow-kit-mini-map {}
 .flow-kit-node-container {}
+.flow-kit-node-container-header {}
+.flow-kit-node-container-dragging-out {}
 ```
 
 Example:
@@ -445,7 +689,7 @@ Example:
 
 ## Demo
 
-The demo includes a workflow editor and a floating-edge network diagram.
+The demo includes a workflow editor, a floating-edge network diagram, and an auto-layout explorer.
 
 ```bash
 npm install
@@ -460,7 +704,7 @@ npm run dev
 
 ## Status
 
-FlowKit is under active development. Planned areas include undo/redo, copy/paste, auto-layout, bundled edges, self-loops, and broader keyboard support.
+FlowKit is under active development. Planned areas include undo/redo, copy/paste, marquee selection, edge labels, and broader keyboard support.
 
 ---
 
