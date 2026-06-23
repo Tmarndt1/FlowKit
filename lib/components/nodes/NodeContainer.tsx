@@ -24,6 +24,7 @@ interface IProps {
     container: INodeContainer;
     customContainer?: React.ComponentClass | React.FunctionComponent<any>;
     nodes: INode<any, any>[];
+    onDragEnd?: (containerKey: string) => void;
     onResizeEnd?: (containerKey: string) => void;
 }
 
@@ -188,6 +189,7 @@ export const NodeContainer: React.FC<IProps> = (props) => {
     const originalNodePositionsRef = React.useRef<Map<string, IOffset>>(new Map());
     const originalBoundsRef = React.useRef<ContainerBounds | null>(null);
     const notifyEndpointsChangedRef = React.useRef<typeof notifyEndpointsChanged>(notifyEndpointsChanged);
+    const onDragEndRef = React.useRef<typeof props.onDragEnd>(props.onDragEnd);
     const onResizeEndRef = React.useRef<typeof props.onResizeEnd>(props.onResizeEnd);
     const snapRef = React.useRef<{ containers: boolean; enabled: boolean; size: number }>({ containers: snapContainers, enabled: snapEnabled, size: snapSize });
     const setDraggingNodeRef = React.useRef<typeof setDraggingNode>(setDraggingNode);
@@ -195,6 +197,7 @@ export const NodeContainer: React.FC<IProps> = (props) => {
     propsRef.current = props;
     scaleRef.current = scale;
     notifyEndpointsChangedRef.current = notifyEndpointsChanged;
+    onDragEndRef.current = props.onDragEnd;
     onResizeEndRef.current = props.onResizeEnd;
     snapRef.current = { containers: snapContainers, enabled: snapEnabled, size: snapSize };
     setDraggingNodeRef.current = setDraggingNode;
@@ -284,6 +287,7 @@ export const NodeContainer: React.FC<IProps> = (props) => {
         document.removeEventListener("mouseup", onMouseUp);
         document.removeEventListener("mousemove", onMouseMove);
         if (wasResizing) onResizeEndRef.current?.(propsRef.current.container.key);
+        else onDragEndRef.current?.(propsRef.current.container.key);
     }, [onMouseMove]);
 
     const onMouseDown = React.useCallback<(e: React.MouseEvent<HTMLDivElement, MouseEvent>) => void>((e: React.MouseEvent<HTMLDivElement, MouseEvent>): void => {

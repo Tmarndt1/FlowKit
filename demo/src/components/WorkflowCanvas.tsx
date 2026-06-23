@@ -8,10 +8,13 @@ import {
   FlowKitLegend,
   FlowKitLegendItem,
   FlowKitMiniMap,
+  applyContainerChanges,
+  ContainerChange,
   EdgeCollapseMode,
   EdgePathType,
   IEdge,
   INode,
+  NodeChange,
   NodeTypes,
 } from "../../../lib/index";
 import { WorkflowContainer, WorkflowEdge, WorkflowNode as WorkflowNodeType } from "../types";
@@ -44,8 +47,9 @@ type WorkflowCanvasProps = {
   nodes: WorkflowNodeType[];
   nodeTypes: NodeTypes;
   onConnect: (sourceId: string, targetId: string) => void;
-  onContainersChange: (containers: WorkflowContainer[]) => void;
+  onContainersChange: (changes: ContainerChange[]) => void;
   onEdgeCollapsedChange: (edgeKey: string, collapsed: boolean, mode: EdgeCollapseMode) => void;
+  onNodesChange: (changes: NodeChange[]) => void;
   onRemove: (node: INode<any, any> | null, removedEdges: IEdge<any>[]) => void;
   onSelectionChange: (key: string | null) => void;
 };
@@ -61,6 +65,7 @@ export function WorkflowCanvas({
   onConnect,
   onContainersChange,
   onEdgeCollapsedChange,
+  onNodesChange,
   onRemove,
   onSelectionChange,
 }: WorkflowCanvasProps) {
@@ -119,9 +124,14 @@ export function WorkflowCanvas({
             if (change.type === "connect") onConnect(change.sourceId, change.targetId);
             if (change.type === "select") onSelectionChange(change.selected ? change.key : null);
           })}
-          onNodesChange={(changes) => changes.forEach((change) => {
-            if (change.type === "select") onSelectionChange(change.selected ? change.key : null);
-          })}
+          onNodesChange={(changes) => {
+            const forwarded: NodeChange[] = [];
+            changes.forEach((change) => {
+              if (change.type === "select") onSelectionChange(change.selected ? change.key : null);
+              else forwarded.push(change);
+            });
+            if (forwarded.length > 0) onNodesChange(forwarded);
+          }}
         />
         <FlowKitGridSnap size={28} containers />
         <FlowKitKeyboardCommands edges={edges} nodes={nodes} onRemove={onRemove} />

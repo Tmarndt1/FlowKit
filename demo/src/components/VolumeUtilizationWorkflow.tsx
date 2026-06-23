@@ -1,5 +1,6 @@
 import * as React from "react";
 import {
+  applyContainerChanges,
   EdgeCollapseMode,
   EdgePathType,
   FlowKit,
@@ -165,7 +166,7 @@ export function VolumeUtilizationWorkflow({
   collapsibleEdges,
   edgePathType,
 }: VolumeUtilizationWorkflowProps) {
-  const [nodes] = React.useState<WorkflowNodeType[]>(initialVolumeNodes);
+  const [nodes, setNodes] = React.useState<WorkflowNodeType[]>(initialVolumeNodes);
   const [edges, setEdges] = React.useState<WorkflowEdge[]>(initialVolumeEdges);
   const [containers, setContainers] = React.useState<WorkflowContainer[]>(initialVolumeContainers);
 
@@ -213,7 +214,16 @@ export function VolumeUtilizationWorkflow({
           />
           <FlowKitControls />
           <FlowKitEvents
-            onContainersChange={setContainers}
+            onContainersChange={(changes) => setContainers((c) => applyContainerChanges(c, changes))}
+            onNodesChange={(changes) => setNodes((currentNodes) => {
+              let next = currentNodes;
+              changes.forEach((change) => {
+                if (change.type === "position") {
+                  next = next.map((n) => n.key === change.key ? { ...n, offset: change.offset } : n);
+                }
+              });
+              return next;
+            })}
           />
           <FlowKitGridSnap size={28} containers />
           <FlowKitMiniMap

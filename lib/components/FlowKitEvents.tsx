@@ -1,6 +1,6 @@
 import * as React from "react";
-import { INodeContainer } from "../interfaces/INodeContainer";
 import { FlowElement } from "../types/FlowElement";
+import { ContainerChange } from "../types/ContainerChange";
 import { EdgeChange } from "../types/EdgeChange";
 import { NodeChange } from "../types/NodeChange";
 import {
@@ -12,8 +12,8 @@ import {
 
 /** Props for the event bridge component that exposes FlowKit interactions. */
 export interface FlowKitEventsProps {
-    /** Called when container membership changes after a node drag. */
-    onContainersChange?: (containers: INodeContainer[]) => any;
+    /** Called with normalized change descriptors when containers are moved, resized, or have membership changes. */
+    onContainersChange?: (changes: ContainerChange[]) => void;
     /** Called with normalized change descriptors when edges are connected, selected, added, or removed. */
     onEdgesChange?: (changes: EdgeChange[]) => void;
     /** Called with normalized change descriptors when nodes are repositioned, resized, selected, added, or removed. */
@@ -107,7 +107,7 @@ export const FlowKitEvents: React.FC<FlowKitEventsProps> = (props) => {
         if (containerChangeRequest.version === lastContainerChangeVersionRef.current) return;
 
         lastContainerChangeVersionRef.current = containerChangeRequest.version;
-        onContainersChangeRef.current?.(containerChangeRequest.containers);
+        onContainersChangeRef.current?.(containerChangeRequest.changes);
     }, [containerChangeRequest]);
 
     React.useEffect(() => {

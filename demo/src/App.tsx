@@ -1,10 +1,12 @@
 import * as React from "react";
 import { Position } from "../../lib/enums/Position";
 import {
+  applyContainerChanges,
   EdgeCollapseMode,
   EdgePathType,
   IEdge,
   INode,
+  NodeChange,
   updateWorkflowDecisionTableBranches,
   workflowNodeTypes,
 } from "../../lib/index";
@@ -130,6 +132,20 @@ export function App() {
           : {};
 
       return [...currentNodes, createNode(preset.type, nodeKey, { x: 250 + offset, y: 520 + offset }, variableDefaults)];
+    });
+  }, []);
+
+  const onNodesChange = React.useCallback((changes: NodeChange[]) => {
+    setNodes((currentNodes) => {
+      let next = currentNodes;
+
+      changes.forEach((change) => {
+        if (change.type === "position") {
+          next = next.map((n) => n.key === change.key ? { ...n, offset: change.offset } : n);
+        }
+      });
+
+      return next;
     });
   }, []);
 
@@ -351,8 +367,9 @@ export function App() {
               nodes={nodes}
               nodeTypes={workflowNodeTypes}
               onConnect={onConnect}
-              onContainersChange={setContainers}
+              onContainersChange={(changes) => setContainers((c) => applyContainerChanges(c, changes))}
               onEdgeCollapsedChange={onEdgeCollapsedChange}
+              onNodesChange={onNodesChange}
               onRemove={onRemove}
               onSelectionChange={setSelectedKey}
             />

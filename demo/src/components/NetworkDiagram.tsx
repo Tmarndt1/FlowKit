@@ -1,5 +1,6 @@
 import * as React from "react";
 import {
+  applyContainerChanges,
   EdgeCollapseMode,
   EdgePathType,
   FlowKit,
@@ -1000,11 +1001,12 @@ type NetworkDiagramProps = {
 };
 
 export function NetworkDiagram({ animatedEdges, collapsibleEdges, edgePathType }: NetworkDiagramProps) {
+  const [nodes, setNodes] = React.useState<NetworkNodeType[]>(networkNodes);
   const [containers, setContainers] = React.useState<INodeContainer[]>(networkContainers);
   const [edges, setEdges] = React.useState<NetworkEdge[]>(networkEdges);
   const [selectedDeviceKey, setSelectedDeviceKey] = React.useState<string | null>("network-core-rtr-01");
   const nodeSummary = React.useMemo(() => {
-  const counts = { critical: 0, degraded: 0, healthy: 0, unknown: 0 };
+    const counts = { critical: 0, degraded: 0, healthy: 0, unknown: 0 };
 
     networkNodes.forEach((node) => {
       counts[node.data?.status ?? "unknown"] += 1;
@@ -1026,8 +1028,8 @@ export function NetworkDiagram({ animatedEdges, collapsibleEdges, edgePathType }
     [linkSummary, nodeSummary]
   );
   const selectedDevice = React.useMemo(
-    () => networkNodes.find((node) => node.key === selectedDeviceKey),
-    [selectedDeviceKey]
+    () => nodes.find((node) => node.key === selectedDeviceKey),
+    [nodes, selectedDeviceKey]
   );
   const displayEdges = React.useMemo(
     () =>
@@ -1067,7 +1069,7 @@ export function NetworkDiagram({ animatedEdges, collapsibleEdges, edgePathType }
 
   return (
     <section className="network-panel">
-      <NetworkSidebar linkSummary={linkSummary} nodes={networkNodes} />
+      <NetworkSidebar linkSummary={linkSummary} nodes={nodes} />
       <div className="network-canvas">
         <FlowKit
           centerOnLoad
@@ -1076,7 +1078,7 @@ export function NetworkDiagram({ animatedEdges, collapsibleEdges, edgePathType }
           edgePathType={edgePathType}
           edgeRouting={{ avoidNodes: true, parallelOffset: 18 }}
           edges={displayEdges}
-          nodes={networkNodes}
+          nodes={nodes}
           nodeTypes={networkNodeTypes}
           onEdgeCollapsedChange={({ collapsed, edge, mode }) => onEdgeCollapsedChange(edge.key, collapsed, mode)}
           zoomMax={1.35}
@@ -1092,17 +1094,28 @@ export function NetworkDiagram({ animatedEdges, collapsibleEdges, edgePathType }
           <FlowKitMiniMap
             className="network-mini-map"
             height={150}
-            nodes={networkNodes}
+            nodes={nodes}
             position="bottom-left"
             width={190}
             nodeClassName={(node) => `network-mini-map-node-${node.data?.deviceType ?? "unknown"}`}
           />
           <FlowKitControls />
           <FlowKitEvents
-            onContainersChange={setContainers}
-            onNodesChange={(changes) => changes.forEach((change) => {
-              if (change.type === "select") setSelectedDeviceKey(change.selected ? change.key : null);
-            })}
+            onContainersChange={(changes) => setContainers((c) => applyContainerChanges(c, changes))}
+            onNodesChange={(changes) => {
+              changes.forEach((change) => {
+                if (change.type === "select") setSelectedDeviceKey(change.selected ? change.key : null);
+              });
+              setNodes((currentNodes) => {
+                let next = currentNodes;
+                changes.forEach((change) => {
+                  if (change.type === "position") {
+                    next = next.map((n) => n.key === change.key ? { ...n, offset: change.offset } : n);
+                  }
+                });
+                return next;
+              });
+            }}
           />
           <FlowKitGridSnap size={20} />
         </FlowKit>

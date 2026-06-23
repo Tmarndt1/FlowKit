@@ -7,6 +7,7 @@ import { NodeTypes } from "../../types/NodeTypes";
 import { Node } from "./Node";
 import { NodeContainer } from "./NodeContainer";
 import { useNodeFlowRenderStore } from "../../contexts/NodeFlowContext";
+import { ContainerChange } from "../../types/ContainerChange";
 
 interface LayerBounds {
     minTop: number;
@@ -60,15 +61,18 @@ const NodesLayerComponent = React.forwardRef<NodesLayerHandle, IProps>((props, r
     const layerRef = React.useRef<HTMLDivElement>(null);
     const hasContainerChangeListener = useNodeFlowRenderStore((state) => state.hasContainerChangeListener);
     const requestContainersChange = useNodeFlowRenderStore((state) => state.requestContainersChange);
+    const requestNodesChange = useNodeFlowRenderStore((state) => state.requestNodesChange);
     const propsRef = React.useRef<IProps>(props);
     const hasContainerChangeListenerRef = React.useRef<boolean>(hasContainerChangeListener);
     const requestContainersChangeRef = React.useRef<typeof requestContainersChange>(requestContainersChange);
+    const requestNodesChangeRef = React.useRef<typeof requestNodesChange>(requestNodesChange);
     const [, forceContainerRender] = React.useReducer((value: number) => value + 1, 0);
     const containers = props.containers ?? [];
 
     propsRef.current = props;
     hasContainerChangeListenerRef.current = hasContainerChangeListener;
     requestContainersChangeRef.current = requestContainersChange;
+    requestNodesChangeRef.current = requestNodesChange;
 
     const updateContainerMembership = React.useCallback<(node: INode<any, any>) => void>((node: INode<any, any>): void => {
         const currentContainers = propsRef.current.containers ?? [];
@@ -96,36 +100,32 @@ const NodesLayerComponent = React.forwardRef<NodesLayerHandle, IProps>((props, r
                 nodeCenter.y <= rect.bottom
             );
         });
-        let changed = false;
 
+        const changes: ContainerChange[] = [];
         const nextContainers = currentContainers.map((container) => {
             const containsNode = container.nodeKeys.includes(node.key);
             const shouldContainNode = container.key === targetContainer?.key;
 
             if (containsNode === shouldContainNode) return container;
 
-            changed = true;
-
             const bounds = getRenderedContainerBounds(container);
             const nodeKeys = shouldContainNode
                 ? [...container.nodeKeys, node.key]
                 : container.nodeKeys.filter((nodeKey) => nodeKey !== node.key);
-            const nextContainer: INodeContainer = {
-                ...container,
-                nodeKeys,
-            };
+            const nextContainer: INodeContainer = { ...container, nodeKeys };
 
             if ((nodeKeys.length < 1 || container.resizeToFit === false) && bounds != null) {
                 nextContainer.position = { x: bounds.x, y: bounds.y };
                 nextContainer.style = { ...nextContainer.style, width: bounds.width, height: bounds.height };
             }
 
+            changes.push({ type: "membership", key: container.key, nodeKeys });
             return nextContainer;
         });
 
-        if (!changed) return;
+        if (changes.length === 0) return;
 
-        requestContainersChangeRef.current(nextContainers);
+        requestContainersChangeRef.current(changes);
 
         if (hasContainerChangeListenerRef.current) return;
 
@@ -133,21 +133,63 @@ const NodesLayerComponent = React.forwardRef<NodesLayerHandle, IProps>((props, r
         forceContainerRender();
     }, []);
 
+    const onDragEnd = React.useCallback<(containerKey: string) => void>((containerKey: string): void => {
+        const currentContainers = propsRef.current.containers ?? [];
+        const container = currentContainers.find((c) => c.key === containerKey);
+
+        if (container == null || container.position == null) return;
+
+        const bounds = getRenderedContainerBounds(container);
+
+        if (bounds == null) return;
+
+        requestContainersChangeRef.current([{ type: "move", key: containerKey, position: { x: bounds.x, y: bounds.y } }]);
+
+        const nodePositionChanges = (propsRef.current.nodes ?? [])
+            .filter((n) => container.nodeKeys.includes(n.key))
+            .map((n) => ({ type: "position" as const, key: n.key, offset: { x: n.offset.x, y: n.offset.y } }));
+
+        if (nodePositionChanges.length > 0) requestNodesChangeRef.current(nodePositionChanges);
+
+        if (hasContainerChangeListenerRef.current) return;
+
+        const idx = currentContainers.findIndex((c) => c.key === containerKey);
+
+        if (idx >= 0) currentContainers[idx] = { ...currentContainers[idx], position: { x: bounds.x, y: bounds.y } };
+
+        forceContainerRender();
+    }, []);
+
     const onResizeEnd = React.useCallback<(containerKey: string) => void>((containerKey: string): void => {
         const currentContainers = propsRef.current.containers ?? [];
-        const nextContainers = currentContainers.map((container) => {
-            if (container.key !== containerKey) return container;
-            const bounds = getRenderedContainerBounds(container);
-            if (bounds == null) return container;
-            return {
-                ...container,
-                position: { x: bounds.x, y: bounds.y },
-                style: { ...container.style, width: bounds.width, height: bounds.height },
-            };
-        });
-        requestContainersChangeRef.current(nextContainers);
+        const container = currentContainers.find((c) => c.key === containerKey);
+
+        if (container == null) return;
+
+        const bounds = getRenderedContainerBounds(container);
+
+        if (bounds == null) return;
+
+        requestContainersChangeRef.current([{
+            type: "resize",
+            key: containerKey,
+            position: { x: bounds.x, y: bounds.y },
+            width: bounds.width,
+            height: bounds.height,
+        }]);
+
         if (hasContainerChangeListenerRef.current) return;
-        currentContainers.splice(0, currentContainers.length, ...nextContainers);
+
+        const idx = currentContainers.findIndex((c) => c.key === containerKey);
+
+        if (idx >= 0) {
+            currentContainers[idx] = {
+                ...currentContainers[idx],
+                position: { x: bounds.x, y: bounds.y },
+                style: { ...currentContainers[idx].style, width: bounds.width, height: bounds.height },
+            };
+        }
+
         forceContainerRender();
     }, []);
 
@@ -197,6 +239,7 @@ const NodesLayerComponent = React.forwardRef<NodesLayerHandle, IProps>((props, r
                     container={container}
                     customContainer={container.type != null ? props.containerTypes?.[container.type] : undefined}
                     nodes={props.nodes}
+                    onDragEnd={onDragEnd}
                     onResizeEnd={onResizeEnd}
                 />
             ))}

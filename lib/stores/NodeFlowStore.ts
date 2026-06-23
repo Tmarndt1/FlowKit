@@ -4,6 +4,7 @@ import { IEndpoint } from "../interfaces/IEndpoint";
 import { INode } from "../interfaces/INode";
 import { INodeContainer } from "../interfaces/INodeContainer";
 import { IOffset } from "../interfaces/IOffset";
+import { ContainerChange } from "../types/ContainerChange";
 import { NodeChange } from "../types/NodeChange";
 import { Nullable } from "../types/Nullable";
 
@@ -18,7 +19,7 @@ export interface EdgeRenderRequest {
 }
 
 export interface ContainerChangeRequest {
-    containers: INodeContainer[];
+    changes: ContainerChange[];
     version: number;
 }
 
@@ -92,7 +93,7 @@ export interface NodeFlowRenderState {
     edgeRenderRequest: EdgeRenderRequest | null;
     hasContainerChangeListener: boolean;
     notifyEndpointsChanged: (endpoints: IEndpoint<any>[]) => void;
-    requestContainersChange: (containers: INodeContainer[]) => void;
+    requestContainersChange: (changes: ContainerChange[]) => void;
     requestNodesChange: (changes: NodeChange[]) => void;
     requestEdgeRender: (edge: IEdge<any>) => void;
     setHasContainerChangeListener: (hasContainerChangeListener: boolean) => void;
@@ -290,10 +291,10 @@ export function createNodeFlowRenderStore(): NodeFlowRenderStore {
                     version: (get().endpointUpdate?.version ?? 0) + 1,
                 },
             }),
-        requestContainersChange: (containers) =>
+        requestContainersChange: (changes) =>
             set({
                 containerChangeRequest: {
-                    containers,
+                    changes,
                     version: (get().containerChangeRequest?.version ?? 0) + 1,
                 },
             }),
