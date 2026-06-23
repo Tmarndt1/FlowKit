@@ -1,7 +1,7 @@
 import * as React from "react";
 
 const S = (props: React.SVGProps<SVGSVGElement>) => (
-    <svg fill="none" height={40} viewBox="0 0 40 40" width={40} xmlns="http://www.w3.org/2000/svg" {...props} />
+    <svg fill="none" height={36} viewBox="0 0 40 40" width={36} xmlns="http://www.w3.org/2000/svg" {...props} />
 );
 
 // ── Infrastructure ────────────────────────────────────────────────────────────
@@ -356,19 +356,22 @@ const GatewayIcon = () => (
 
 const RadioIcon = () => (
     <S>
-        {/* mast */}
-        <line stroke="currentColor" strokeLinecap="round" strokeWidth="2" x1="20" x2="20" y1="16" y2="34" />
-        {/* base */}
-        <line stroke="currentColor" strokeLinecap="round" strokeWidth="2" x1="14" x2="26" y1="34" y2="34" />
-        {/* dish / yagi arms */}
-        <line stroke="currentColor" strokeLinecap="round" strokeWidth="1.8" x1="20" x2="9" y1="20" y2="13" />
-        <line stroke="currentColor" strokeLinecap="round" strokeWidth="1.4" x1="20" x2="10" y1="22" y2="17" />
-        <line stroke="currentColor" strokeLinecap="round" strokeWidth="1.1" x1="20" x2="11" y1="24" y2="21" />
-        {/* signal arcs */}
-        <path d="M7 8 Q11 4 15 8" fill="none" stroke="currentColor" strokeLinecap="round" strokeWidth="1.5" />
-        <path d="M4 5 Q11 -1 18 5" fill="none" stroke="currentColor" strokeLinecap="round" strokeWidth="1.2" />
-        {/* tx dot */}
-        <circle cx="8.5" cy="10.5" fill="currentColor" r="1.8" />
+        {/* parabolic reflector bowl, opening to the right */}
+        <path
+            d="M 25 4 Q 4 4 4 20 Q 4 36 25 36"
+            fill="currentColor" fillOpacity=".15"
+            stroke="currentColor" strokeLinecap="round" strokeWidth="2"
+        />
+        {/* rim */}
+        <line stroke="currentColor" strokeLinecap="round" strokeWidth="1.8" x1="25" y1="4" x2="25" y2="36" />
+        {/* feed arm from upper rim to LNB at focal point */}
+        <line stroke="currentColor" strokeLinecap="round" strokeWidth="1.5" x1="25" y1="8" x2="33" y2="20" />
+        {/* LNB */}
+        <circle cx="33" cy="20" fill="currentColor" r="2.5" />
+        {/* mount pole */}
+        <line stroke="currentColor" strokeLinecap="round" strokeWidth="2" x1="12" y1="36" x2="12" y2="39" />
+        {/* base foot */}
+        <line stroke="currentColor" strokeLinecap="round" strokeWidth="2" x1="7" y1="39" x2="17" y2="39" />
     </S>
 );
 
@@ -454,7 +457,7 @@ export function NetworkNodeIcon({ nodeType }: { nodeType: string }): React.React
     if (Icon != null) return <Icon />;
 
     return (
-        <svg fill="none" height={40} viewBox="0 0 40 40" width={40} xmlns="http://www.w3.org/2000/svg">
+        <svg fill="none" height={36} viewBox="0 0 40 40" width={36} xmlns="http://www.w3.org/2000/svg">
             <circle cx="20" cy="20" fill="currentColor" fillOpacity=".15" r="13" stroke="currentColor" strokeWidth="1.5" />
         </svg>
     );

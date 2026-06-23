@@ -1,40 +1,76 @@
 .network-node {
     align-items: center;
-    background: rgba(16, 24, 36, 0.92);
+    background: rgba(12, 20, 32, 0.95);
     border: 1px solid #2a3a50;
-    border-radius: 10px;
-    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.35);
+    border-radius: 12px;
+    box-shadow: 0 8px 28px rgba(0, 0, 0, 0.45);
     box-sizing: border-box;
     display: flex;
     flex-direction: column;
-    gap: 4px;
-    height: 100%;
+    gap: 5px;
+    height: 130px;
     padding: 10px 8px 8px;
     position: relative;
-    width: 100%;
+    width: 120px;
 }
 
-/* category accent colours */
-.network-node-infrastructure { border-color: #3d7eff; box-shadow: 0 8px 24px rgba(0,0,0,.35), inset 0 0 20px rgba(61,126,255,.06); }
-.network-node-security       { border-color: #ff5c5c; box-shadow: 0 8px 24px rgba(0,0,0,.35), inset 0 0 20px rgba(255,92,92,.06); }
-.network-node-server         { border-color: #a477ff; box-shadow: 0 8px 24px rgba(0,0,0,.35), inset 0 0 20px rgba(164,119,255,.06); }
-.network-node-endpoint       { border-color: #49d4e6; box-shadow: 0 8px 24px rgba(0,0,0,.35), inset 0 0 20px rgba(73,212,230,.06); }
-.network-node-wireless       { border-color: #26de81; box-shadow: 0 8px 24px rgba(0,0,0,.35), inset 0 0 20px rgba(38,222,129,.06); }
-.network-node-cloud          { border-color: #fd9644; box-shadow: 0 8px 24px rgba(0,0,0,.35), inset 0 0 20px rgba(253,150,68,.06); }
+/* category border + ambient glow */
+.network-node-infrastructure { border-color: #3d7eff; box-shadow: 0 8px 28px rgba(0,0,0,.45), inset 0 0 28px rgba(61,126,255,.08); }
+.network-node-security       { border-color: #ff5c5c; box-shadow: 0 8px 28px rgba(0,0,0,.45), inset 0 0 28px rgba(255,92,92,.08); }
+.network-node-server         { border-color: #a477ff; box-shadow: 0 8px 28px rgba(0,0,0,.45), inset 0 0 28px rgba(164,119,255,.08); }
+.network-node-endpoint       { border-color: #49d4e6; box-shadow: 0 8px 28px rgba(0,0,0,.45), inset 0 0 28px rgba(73,212,230,.08); }
+.network-node-wireless       { border-color: #26de81; box-shadow: 0 8px 28px rgba(0,0,0,.45), inset 0 0 28px rgba(38,222,129,.08); }
+.network-node-cloud          { border-color: #fd9644; box-shadow: 0 8px 28px rgba(0,0,0,.45), inset 0 0 28px rgba(253,150,68,.08); }
 
-/* icon colours per category */
-.network-node-infrastructure .network-node-icon { color: #3d7eff; }
-.network-node-security       .network-node-icon { color: #ff5c5c; }
-.network-node-server         .network-node-icon { color: #a477ff; }
-.network-node-endpoint       .network-node-icon { color: #49d4e6; }
-.network-node-wireless       .network-node-icon { color: #26de81; }
-.network-node-cloud          .network-node-icon { color: #fd9644; }
-
+/* icon container */
 .network-node-icon {
     align-items: center;
+    border-radius: 10px;
     display: flex;
     flex-shrink: 0;
+    height: 36px;
     justify-content: center;
+    padding: 5px;
+    transition: box-shadow 0.15s ease;
+    width: 36px;
+}
+
+/* icon colour + tinted background + colored border ring */
+.network-node-infrastructure .network-node-icon {
+    background: rgba(61, 126, 255, 0.14);
+    border: 1.5px solid rgba(61, 126, 255, 0.35);
+    box-shadow: 0 0 12px rgba(61, 126, 255, 0.22);
+    color: #3d7eff;
+}
+.network-node-security .network-node-icon {
+    background: rgba(255, 92, 92, 0.14);
+    border: 1.5px solid rgba(255, 92, 92, 0.35);
+    box-shadow: 0 0 12px rgba(255, 92, 92, 0.22);
+    color: #ff5c5c;
+}
+.network-node-server .network-node-icon {
+    background: rgba(164, 119, 255, 0.14);
+    border: 1.5px solid rgba(164, 119, 255, 0.35);
+    box-shadow: 0 0 12px rgba(164, 119, 255, 0.22);
+    color: #a477ff;
+}
+.network-node-endpoint .network-node-icon {
+    background: rgba(73, 212, 230, 0.14);
+    border: 1.5px solid rgba(73, 212, 230, 0.35);
+    box-shadow: 0 0 12px rgba(73, 212, 230, 0.22);
+    color: #49d4e6;
+}
+.network-node-wireless .network-node-icon {
+    background: rgba(38, 222, 129, 0.14);
+    border: 1.5px solid rgba(38, 222, 129, 0.35);
+    box-shadow: 0 0 12px rgba(38, 222, 129, 0.22);
+    color: #26de81;
+}
+.network-node-cloud .network-node-icon {
+    background: rgba(253, 150, 68, 0.14);
+    border: 1.5px solid rgba(253, 150, 68, 0.35);
+    box-shadow: 0 0 12px rgba(253, 150, 68, 0.22);
+    color: #fd9644;
 }
 
 .network-node-icon svg {
@@ -43,8 +79,9 @@
 
 .network-node-label {
     color: #c8d4e8;
-    font-size: 11px;
-    font-weight: 600;
+    font-size: 10px;
+    font-weight: 700;
+    letter-spacing: 0.3px;
     line-height: 1.2;
     max-width: 100%;
     overflow: hidden;
@@ -54,7 +91,7 @@
 }
 
 .network-node-ip {
-    color: #4a6a8a;
+    color: #3d5470;
     font-family: monospace;
     font-size: 9px;
     line-height: 1;
@@ -64,8 +101,8 @@
 .network-node-status {
     border-radius: 50%;
     bottom: 7px;
-    height: 6px;
+    height: 7px;
     position: absolute;
     right: 7px;
-    width: 6px;
+    width: 7px;
 }

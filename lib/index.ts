@@ -103,6 +103,7 @@ export {
 export type { ShapeNode, ShapeNodeData, ShapePreset, ShapePresetType } from "./presets/shapes";
 export {
     NetworkNode,
+    NetworkNodeIcon,
     createNetworkEdge,
     createNetworkNode,
     groupNetworkPresets,

@@ -2153,11 +2153,11 @@ button {
 
 .network-node-icon {
   grid-row: 1 / span 2;
-  height: 30px;
+  height: 36px;
   left: auto;
   position: relative;
   top: auto;
-  width: 30px;
+  width: 36px;
 }
 
 .network-node-status {
@@ -2319,42 +2319,46 @@ button {
   width: 42px;
 }
 
-.network-device-summary-icon::before {
-  background: currentColor;
-  border-radius: 5px;
-  content: "";
-  height: 18px;
-  width: 24px;
+.network-device-summary-icon.network-node-infrastructure {
+  background: rgba(61, 126, 255, 0.14);
+  border: 1.5px solid rgba(61, 126, 255, 0.35);
+  box-shadow: 0 0 12px rgba(61, 126, 255, 0.22);
+  color: #3d7eff;
 }
 
-.network-device-summary-icon.network-node-blue {
-  background: rgba(23, 156, 255, 0.16);
-  color: #179cff;
+.network-device-summary-icon.network-node-security {
+  background: rgba(255, 92, 92, 0.14);
+  border: 1.5px solid rgba(255, 92, 92, 0.35);
+  box-shadow: 0 0 12px rgba(255, 92, 92, 0.22);
+  color: #ff5c5c;
 }
 
-.network-device-summary-icon.network-node-green {
-  background: rgba(66, 198, 90, 0.16);
-  color: #42c65a;
-}
-
-.network-device-summary-icon.network-node-red {
-  background: rgba(255, 100, 100, 0.16);
-  color: #ff6464;
-}
-
-.network-device-summary-icon.network-node-purple {
-  background: rgba(164, 119, 255, 0.16);
+.network-device-summary-icon.network-node-server {
+  background: rgba(164, 119, 255, 0.14);
+  border: 1.5px solid rgba(164, 119, 255, 0.35);
+  box-shadow: 0 0 12px rgba(164, 119, 255, 0.22);
   color: #a477ff;
 }
 
-.network-device-summary-icon.network-node-yellow {
-  background: rgba(242, 190, 36, 0.16);
-  color: #f2be24;
+.network-device-summary-icon.network-node-endpoint {
+  background: rgba(73, 212, 230, 0.14);
+  border: 1.5px solid rgba(73, 212, 230, 0.35);
+  box-shadow: 0 0 12px rgba(73, 212, 230, 0.22);
+  color: #49d4e6;
 }
 
-.network-device-summary-icon.network-node-gray {
-  background: rgba(143, 161, 181, 0.16);
-  color: #8fa1b5;
+.network-device-summary-icon.network-node-wireless {
+  background: rgba(38, 222, 129, 0.14);
+  border: 1.5px solid rgba(38, 222, 129, 0.35);
+  box-shadow: 0 0 12px rgba(38, 222, 129, 0.22);
+  color: #26de81;
+}
+
+.network-device-summary-icon.network-node-cloud {
+  background: rgba(253, 150, 68, 0.14);
+  border: 1.5px solid rgba(253, 150, 68, 0.35);
+  box-shadow: 0 0 12px rgba(253, 150, 68, 0.22);
+  color: #fd9644;
 }
 
 .network-device-summary strong {

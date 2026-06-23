@@ -3,6 +3,7 @@ import { NetworkNode } from "../../components/presets/networking/NetworkNode";
 import { networkPresets } from "./definitions";
 
 export { NetworkNode };
+export { NetworkNodeIcon } from "../../components/presets/networking/NetworkNodeIcon";
 export {
     createNetworkEdge,
     createNetworkNode,

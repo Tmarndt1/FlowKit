@@ -30,10 +30,6 @@ export function createNetworkNode(
             { id: `${key}-bottom`, offset: { x: networkNodeWidth / 2, y: networkNodeHeight },  position: Position.Bottom },
             { id: `${key}-left`,   offset: { x: 0,                    y: networkNodeHeight / 2 }, position: Position.Left },
         ],
-        style: {
-            height: networkNodeHeight,
-            width: networkNodeWidth,
-        },
     };
 }
 

@@ -12,661 +12,149 @@ import {
   FlowKitLegendItem,
   FlowKitMiniMap,
   IEdge,
-  INode,
   INodeContainer,
-  NodeTypes,
-  useNodeFlowSelection,
-  useNodeFlowSelectionChange,
+  NetworkNode,
+  NetworkNodeIcon,
+  NetworkCategory,
+  NetworkPresetNode,
+  NetworkStatus,
+  createNetworkNode,
+  networkNodeTypes,
 } from "../../../lib/index";
-import { useFlowKitConfig } from "../../../lib/contexts/FlowKitConfigContext";
 
-type NetworkNodeData = {
-  accent: "blue" | "cyan" | "gray" | "green" | "orange" | "purple" | "red" | "yellow";
-  cpu?: number;
-  deviceType: "client" | "firewall" | "internet" | "phone" | "radio" | "router" | "server" | "storage" | "switch" | "vm" | "wireless";
-  ip?: string;
-  location?: string;
-  memory?: number;
-  metric: string;
-  model?: string;
-  role?: string;
-  status: "critical" | "degraded" | "healthy" | "unknown";
-  statusLabel: string;
-  subtitle: string;
-  temperature?: string;
-  title: string;
-  uptime?: string;
-  vendor?: string;
-};
-
-type NetworkNodeType = INode<NetworkNodeData, never>;
-type NetworkEdgeData = {
+type DemoEdgeData = {
   label: string;
   latency: string;
-  status: "down" | "degraded" | "up" | "unknown";
+  linkStatus: "down" | "degraded" | "up" | "unknown";
   throughput: string;
 };
-type NetworkEdge = IEdge<NetworkEdgeData>;
 
-const networkNodes: NetworkNodeType[] = [
-  {
-    key: "network-internet",
-    type: "network-node",
-    offset: { x: 710, y: 20 },
-    endpoints: [],
-    data: {
-      accent: "gray",
-      deviceType: "internet",
-      ip: "203.0.113.10",
-      location: "ISP Edge",
-      metric: "1.2 Gbps",
-      model: "Transit",
-      role: "Internet uplink",
-      status: "healthy",
-      statusLabel: "Online",
-      subtitle: "External WAN",
-      title: "Internet",
-      uptime: "30d 6h 11m",
-      vendor: "Carrier",
-    },
-  },
-  {
-    key: "network-firewall",
-    type: "network-node",
-    offset: { x: 735, y: 155 },
-    endpoints: [],
-    data: {
-      accent: "red",
-      cpu: 68,
-      deviceType: "firewall",
-      ip: "10.0.0.254",
-      location: "DC1 - Edge",
-      memory: 61,
-      metric: "99% WAN",
-      model: "PA-3220",
-      role: "Policy boundary",
-      status: "degraded",
-      statusLabel: "High utilization",
-      subtitle: "Firewall",
-      temperature: "43C",
-      title: "FW-01",
-      uptime: "12d 1h 02m",
-      vendor: "Palo Alto",
-    },
-  },
-  {
-    key: "network-core-rtr-01",
-    type: "network-node",
-    offset: { x: 710, y: 310 },
-    endpoints: [],
-    data: {
-      accent: "blue",
-      cpu: 42,
-      deviceType: "router",
-      ip: "10.0.0.1",
-      location: "DC1 - Core",
-      memory: 58,
-      metric: "42% CPU",
-      model: "ASR-1001-X",
-      role: "Core Router",
-      status: "healthy",
-      statusLabel: "Online",
-      subtitle: "Router",
-      temperature: "38C",
-      title: "CORE-RTR-01",
-      uptime: "15d 4h 32m",
-      vendor: "Cisco",
-    },
-  },
-  {
-    key: "network-core-rtr-02",
-    type: "network-node",
-    offset: { x: 270, y: 310 },
-    endpoints: [],
-    data: {
-      accent: "blue",
-      cpu: 34,
-      deviceType: "router",
-      ip: "10.0.0.2",
-      location: "DC1 - Core",
-      memory: 44,
-      metric: "34% CPU",
-      model: "ASR-1001-X",
-      role: "Core Router",
-      status: "healthy",
-      statusLabel: "Online",
-      subtitle: "Router",
-      temperature: "36C",
-      title: "CORE-RTR-02",
-      uptime: "15d 4h 28m",
-      vendor: "Cisco",
-    },
-  },
-  {
-    key: "network-core-rtr-03",
-    type: "network-node",
-    offset: { x: 1150, y: 310 },
-    endpoints: [],
-    data: {
-      accent: "blue",
-      cpu: 31,
-      deviceType: "router",
-      ip: "10.0.0.3",
-      location: "DC1 - Core",
-      memory: 47,
-      metric: "31% CPU",
-      model: "ASR-1001-X",
-      role: "Core Router",
-      status: "healthy",
-      statusLabel: "Online",
-      subtitle: "Router",
-      temperature: "37C",
-      title: "CORE-RTR-03",
-      uptime: "15d 3h 57m",
-      vendor: "Cisco",
-    },
-  },
-  {
-    key: "network-dist-sw-01",
-    type: "network-node",
-    offset: { x: 435, y: 565 },
-    endpoints: [],
-    data: {
-      accent: "green",
-      cpu: 36,
-      deviceType: "switch",
-      ip: "10.0.8.11",
-      location: "Rack B",
-      memory: 48,
-      metric: "10 Gbps",
-      model: "Nexus 93180",
-      role: "Distribution Switch",
-      status: "healthy",
-      statusLabel: "Online",
-      subtitle: "Switch",
-      temperature: "39C",
-      title: "DIST-SW-01",
-      uptime: "20d 9h 12m",
-      vendor: "Cisco",
-    },
-  },
-  {
-    key: "network-dist-sw-02",
-    type: "network-node",
-    offset: { x: 985, y: 565 },
-    endpoints: [],
-    data: {
-      accent: "green",
-      cpu: 38,
-      deviceType: "switch",
-      ip: "10.0.8.12",
-      location: "Rack C",
-      memory: 52,
-      metric: "10 Gbps",
-      model: "Nexus 93180",
-      role: "Distribution Switch",
-      status: "healthy",
-      statusLabel: "Online",
-      subtitle: "Switch",
-      temperature: "40C",
-      title: "DIST-SW-02",
-      uptime: "20d 8h 55m",
-      vendor: "Cisco",
-    },
-  },
-  {
-    key: "network-acc-sw-01",
-    type: "network-node",
-    offset: { x: 200, y: 765 },
-    endpoints: [],
-    data: {
-      accent: "green",
-      deviceType: "switch",
-      ip: "10.0.16.11",
-      location: "Floor 1",
-      metric: "1 Gbps",
-      model: "Catalyst 9300",
-      role: "Access Switch",
-      status: "healthy",
-      statusLabel: "Online",
-      subtitle: "Switch",
-      title: "ACC-SW-01",
-      vendor: "Cisco",
-    },
-  },
-  {
-    key: "network-acc-sw-02",
-    type: "network-node",
-    offset: { x: 505, y: 785 },
-    endpoints: [],
-    data: {
-      accent: "green",
-      deviceType: "switch",
-      ip: "10.0.16.12",
-      location: "Floor 2",
-      metric: "1 Gbps",
-      model: "Catalyst 9300",
-      role: "Access Switch",
-      status: "healthy",
-      statusLabel: "Online",
-      subtitle: "Switch",
-      title: "ACC-SW-02",
-      vendor: "Cisco",
-    },
-  },
-  {
-    key: "network-acc-sw-03",
-    type: "network-node",
-    offset: { x: 915, y: 785 },
-    endpoints: [],
-    data: {
-      accent: "green",
-      deviceType: "switch",
-      ip: "10.0.16.13",
-      location: "Floor 3",
-      metric: "1 Gbps",
-      model: "Catalyst 9300",
-      role: "Access Switch",
-      status: "healthy",
-      statusLabel: "Online",
-      subtitle: "Switch",
-      title: "ACC-SW-03",
-      vendor: "Cisco",
-    },
-  },
-  {
-    key: "network-acc-sw-04",
-    type: "network-node",
-    offset: { x: 1220, y: 765 },
-    endpoints: [],
-    data: {
-      accent: "green",
-      deviceType: "switch",
-      ip: "10.0.16.14",
-      location: "Floor 4",
-      metric: "100 Mbps",
-      model: "Catalyst 9200",
-      role: "Access Switch",
-      status: "degraded",
-      statusLabel: "Rate limited",
-      subtitle: "Switch",
-      title: "ACC-SW-04",
-      vendor: "Cisco",
-    },
-  },
-  {
-    key: "network-srv-app-01",
-    type: "network-node",
-    offset: { x: 80, y: 1015 },
-    endpoints: [],
-    data: {
-      accent: "purple",
-      deviceType: "server",
-      ip: "10.0.32.21",
-      location: "Rack D",
-      metric: "70%",
-      model: "PowerEdge R650",
-      role: "Application Server",
-      status: "healthy",
-      statusLabel: "Serving",
-      subtitle: "Server",
-      title: "SRV-APP-01",
-      vendor: "Dell",
-    },
-  },
-  {
-    key: "network-srv-db-01",
-    type: "network-node",
-    offset: { x: 315, y: 1015 },
-    endpoints: [],
-    data: {
-      accent: "purple",
-      deviceType: "server",
-      ip: "10.0.32.31",
-      location: "Rack D",
-      metric: "Disk latency",
-      model: "PowerEdge R750",
-      role: "Database Server",
-      status: "critical",
-      statusLabel: "Storage alert",
-      subtitle: "Server",
-      title: "SRV-DB-01",
-      vendor: "Dell",
-    },
-  },
-  {
-    key: "network-ap-01",
-    type: "network-node",
-    offset: { x: 565, y: 1035 },
-    endpoints: [],
-    data: {
-      accent: "yellow",
-      deviceType: "wireless",
-      ip: "10.0.48.41",
-      location: "Floor 2",
-      metric: "35%",
-      model: "MR46",
-      role: "Wireless AP",
-      status: "degraded",
-      statusLabel: "Channel busy",
-      subtitle: "Wireless AP",
-      title: "AP-01",
-      vendor: "Meraki",
-    },
-  },
-  {
-    key: "network-ap-02",
-    type: "network-node",
-    offset: { x: 780, y: 1035 },
-    endpoints: [],
-    data: {
-      accent: "yellow",
-      deviceType: "wireless",
-      ip: "10.0.48.42",
-      location: "Floor 2",
-      metric: "28%",
-      model: "MR46",
-      role: "Wireless AP",
-      status: "healthy",
-      statusLabel: "Online",
-      subtitle: "Wireless AP",
-      title: "AP-02",
-      vendor: "Meraki",
-    },
-  },
-  {
-    key: "network-srv-web-01",
-    type: "network-node",
-    offset: { x: 915, y: 1015 },
-    endpoints: [],
-    data: {
-      accent: "purple",
-      deviceType: "server",
-      ip: "10.0.32.41",
-      location: "Rack E",
-      metric: "66%",
-      model: "PowerEdge R650",
-      role: "Web Server",
-      status: "healthy",
-      statusLabel: "Serving",
-      subtitle: "Server",
-      title: "SRV-WEB-01",
-      vendor: "Dell",
-    },
-  },
-  {
-    key: "network-srv-web-02",
-    type: "network-node",
-    offset: { x: 1145, y: 1015 },
-    endpoints: [],
-    data: {
-      accent: "purple",
-      deviceType: "server",
-      ip: "10.0.32.42",
-      location: "Rack E",
-      metric: "62%",
-      model: "PowerEdge R650",
-      role: "Web Server",
-      status: "healthy",
-      statusLabel: "Serving",
-      subtitle: "Server",
-      title: "SRV-WEB-02",
-      vendor: "Dell",
-    },
-  },
-  {
-    key: "network-phone-01",
-    type: "network-node",
-    offset: { x: 1375, y: 1035 },
-    endpoints: [],
-    data: {
-      accent: "gray",
-      deviceType: "phone",
-      ip: "10.0.64.18",
-      location: "Lobby",
-      metric: "SIP down",
-      model: "8845",
-      role: "IP Phone",
-      status: "critical",
-      statusLabel: "Offline",
-      subtitle: "IP Phone",
-      title: "IP-PHONE-01",
-      vendor: "Cisco",
-    },
-  },
+type DemoEdge = IEdge<DemoEdgeData>;
+
+function edge(
+  key: string,
+  sourceId: string,
+  targetId: string,
+  label: string,
+  linkStatus: DemoEdgeData["linkStatus"],
+  throughput: string,
+  latency: string,
+  edgeLabel: string
+): DemoEdge {
+  return {
+    key,
+    type: "edge",
+    anchorMode: "floating",
+    arrows: "target",
+    className: `network-link-${linkStatus}`,
+    label: edgeLabel,
+    sourceId,
+    targetId,
+    data: { label, latency, linkStatus, throughput },
+  };
+}
+
+// Horizontal column centres (subtract 55 for node left-edge since node is 110px wide)
+//  col:  -360  -160   80   310   530   700   920  1140  1360  1580  1800
+// Node positions use top-left corner
+
+const networkNodes: NetworkPresetNode[] = [
+  // ── WAN Edge (y = 30 / 240) — rack-wan-edge (615,-10,620,420) 2×2 grid ──────
+  createNetworkNode("internet",    "network-internet",   { x:  710, y:  30 }, { hostname: "Internet",    ip: "203.0.113.10", vendor: "Carrier",   model: "Transit",       status: "online"  }),
+  createNetworkNode("cloud",       "network-cloud-aws",  { x: 1020, y:  30 }, { hostname: "AWS-Cloud",                      vendor: "Amazon",    model: "us-east-1",     status: "online"  }),
+  createNetworkNode("firewall",    "network-firewall",   { x:  710, y: 240 }, { hostname: "FW-01",       ip: "10.0.0.254",   vendor: "Palo Alto", model: "PA-3220",       status: "warning" }),
+  createNetworkNode("vpn-gateway", "network-vpn-gw",    { x: 1020, y: 240 }, { hostname: "VPN-GW-01",   ip: "10.0.0.253",   vendor: "Cisco",     model: "ASA-5525",      status: "online"  }),
+
+  // ── Core — rack-core (115,390,1380,200) 3 nodes ────────────────────────────
+  createNetworkNode("router",      "network-core-rtr-02",{ x:  285, y: 425 }, { hostname: "CORE-RTR-02", ip: "10.0.0.2",     vendor: "Cisco",     model: "ASR-1001-X",    status: "online"  }),
+  createNetworkNode("router",      "network-core-rtr-01",{ x:  745, y: 425 }, { hostname: "CORE-RTR-01", ip: "10.0.0.1",     vendor: "Cisco",     model: "ASR-1001-X",    status: "online"  }),
+  createNetworkNode("router",      "network-core-rtr-03",{ x: 1205, y: 425 }, { hostname: "CORE-RTR-03", ip: "10.0.0.3",     vendor: "Cisco",     model: "ASR-1001-X",    status: "online"  }),
+
+  // ── Distribution — rack-b/lb/c (340,620,238,200) each 1 node ──────────────
+  createNetworkNode("switch",        "network-dist-sw-01", { x:  399, y: 655 }, { hostname: "DIST-SW-01", ip: "10.0.8.11",  vendor: "Cisco", model: "Nexus 93180",   status: "online"  }),
+  createNetworkNode("load-balancer", "network-lb-01",      { x:  729, y: 655 }, { hostname: "LB-01",      ip: "10.0.8.50",  vendor: "F5",    model: "BIG-IP i4800",  status: "online"  }),
+  createNetworkNode("switch",        "network-dist-sw-02", { x: 1064, y: 655 }, { hostname: "DIST-SW-02", ip: "10.0.8.12",  vendor: "Cisco", model: "Nexus 93180",   status: "online"  }),
+
+  // ── Access (y = 900) ───────────────────────────────────────────────────────
+  createNetworkNode("switch", "network-acc-sw-01", { x:   80, y: 900 }, { hostname: "ACC-SW-01", ip: "10.0.16.11", vendor: "Cisco", model: "Catalyst 9300", status: "online"  }),
+  createNetworkNode("switch", "network-acc-sw-02", { x:  530, y: 900 }, { hostname: "ACC-SW-02", ip: "10.0.16.12", vendor: "Cisco", model: "Catalyst 9300", status: "online"  }),
+  createNetworkNode("switch", "network-acc-sw-03", { x:  980, y: 900 }, { hostname: "ACC-SW-03", ip: "10.0.16.13", vendor: "Cisco", model: "Catalyst 9300", status: "online"  }),
+  createNetworkNode("switch", "network-acc-sw-04", { x: 1430, y: 900 }, { hostname: "ACC-SW-04", ip: "10.0.16.14", vendor: "Cisco", model: "Catalyst 9200", status: "warning" }),
+
+  // ── Servers / Wireless ─────────────────────────────────────────────────────
+  // rack-d (-350,1105,800,200) 3 nodes; rack-e (900,1105,510,200) 2 nodes
+  createNetworkNode("server-dns",      "network-srv-dns-01", { x: -277, y: 1140 }, { hostname: "SRV-DNS-01",  ip: "10.0.32.10", vendor: "Dell",   model: "PowerEdge R450", status: "online"  }),
+  createNetworkNode("server-app",      "network-srv-app-01", { x:  -10, y: 1140 }, { hostname: "SRV-APP-01",  ip: "10.0.32.21", vendor: "Dell",   model: "PowerEdge R650", status: "online"  }),
+  createNetworkNode("server-database", "network-srv-db-01",  { x:  257, y: 1140 }, { hostname: "SRV-DB-01",   ip: "10.0.32.31", vendor: "Dell",   model: "PowerEdge R750", status: "offline" }),
+  createNetworkNode("access-point",    "network-ap-01",      { x:  530, y: 1170 }, { hostname: "AP-01",        ip: "10.0.48.41", vendor: "Meraki", model: "MR46",           status: "warning" }),
+  createNetworkNode("access-point",    "network-ap-02",      { x:  760, y: 1170 }, { hostname: "AP-02",        ip: "10.0.48.42", vendor: "Meraki", model: "MR46",           status: "online"  }),
+  createNetworkNode("server-web",      "network-srv-web-01", { x:  968, y: 1140 }, { hostname: "SRV-WEB-01",  ip: "10.0.32.41", vendor: "Dell",   model: "PowerEdge R650", status: "online"  }),
+  createNetworkNode("server-web",      "network-srv-web-02", { x: 1223, y: 1140 }, { hostname: "SRV-WEB-02",  ip: "10.0.32.42", vendor: "Dell",   model: "PowerEdge R650", status: "online"  }),
+  createNetworkNode("ip-phone",        "network-phone-01",   { x: 1430, y: 1150 }, { hostname: "IP-PHONE-01", ip: "10.0.64.18", vendor: "Cisco",  model: "8845",           status: "offline" }),
+  createNetworkNode("radio",           "network-radio-01",   { x: 1660, y: 1150 }, { hostname: "RADIO-LINK-01", ip: "10.0.72.10", vendor: "Cambium", model: "PTP 550e",    status: "online"  }),
+
+  // ── Endpoints — rack-f (-350,1375,1200,200) 4 nodes ───────────────────────
+  createNetworkNode("laptop",      "network-laptop-01", { x: -260, y: 1410 }, { hostname: "LAPTOP-01",  ip: "10.0.64.21", vendor: "Lenovo",  model: "ThinkPad X1", status: "online" }),
+  createNetworkNode("workstation", "network-ws-01",     { x:   40, y: 1410 }, { hostname: "WS-ENGG-01", ip: "10.0.64.22", vendor: "HP",      model: "Z4 G5",       status: "online" }),
+  createNetworkNode("iot",         "network-iot-01",    { x:  340, y: 1410 }, { hostname: "SENSOR-01",  ip: "10.0.64.80", vendor: "Siemens", model: "S7-1200",     status: "online" }),
+  createNetworkNode("ip-camera",   "network-cam-01",    { x:  640, y: 1410 }, { hostname: "CAM-LOBBY",  ip: "10.0.64.91", vendor: "Axis",    model: "P3245-V",     status: "online" }),
 ];
 
-const networkEdges: NetworkEdge[] = [
+const networkEdges: DemoEdge[] = [
+  // WAN
+  edge("e-internet-cloud",    "network-internet",    "network-cloud-aws",    "Cloud uplink",      "up",       "100 Gbps", "5 ms",    "BGP 100G"),
+  edge("e-internet-fw",       "network-internet",    "network-firewall",     "ISP uplink",        "down",     "1.2 Gbps", "18 ms",   "1.2 Gbps 99%"),
+  edge("e-internet-vpn",      "network-internet",    "network-vpn-gw",       "VPN uplink",        "up",       "1 Gbps",   "22 ms",   "VPN 1 Gbps"),
+  edge("e-fw-core",           "network-firewall",    "network-core-rtr-01",  "Firewall transit",  "degraded", "10 Gbps",  "12 ms",   "10 Gbps 79%"),
+  edge("e-vpn-core",          "network-vpn-gw",      "network-core-rtr-01",  "VPN transit",       "up",       "1 Gbps",   "3 ms",    "VPN transit"),
+  // Core mesh
+  edge("e-core-left",         "network-core-rtr-01", "network-core-rtr-02",  "Core peer left",    "up",       "10 Gbps",  "1 ms",    "10 Gbps 45%"),
+  edge("e-core-right",        "network-core-rtr-01", "network-core-rtr-03",  "Core peer right",   "up",       "10 Gbps",  "1 ms",    "10 Gbps 42%"),
+  // Core → Distribution
+  edge("e-core-dist01",       "network-core-rtr-01", "network-dist-sw-01",   "Distribution left", "up",       "10 Gbps",  "1 ms",    "10 Gbps 36%"),
+  edge("e-core-lb",           "network-core-rtr-01", "network-lb-01",        "LB uplink",         "up",       "10 Gbps",  "1 ms",    "10 Gbps"),
+  edge("e-core-dist02",       "network-core-rtr-01", "network-dist-sw-02",   "Distribution right","up",       "10 Gbps",  "1 ms",    "10 Gbps 38%"),
+  edge("e-rtr02-dist01",      "network-core-rtr-02", "network-dist-sw-01",   "Left aggregation",  "up",       "10 Gbps",  "1 ms",    "10 Gbps 34%"),
+  edge("e-rtr03-dist02",      "network-core-rtr-03", "network-dist-sw-02",   "Right aggregation", "up",       "10 Gbps",  "1 ms",    "10 Gbps 31%"),
   {
-    key: "network-edge-internet-firewall",
-    type: "edge",
-    anchorMode: "floating",
-    arrows: "target",
-    className: "network-link-down",
-    label: "1.2 Gbps 99%",
-    sourceId: "network-internet",
-    targetId: "network-firewall",
-    data: { label: "ISP uplink", latency: "18 ms", status: "down", throughput: "1.2 Gbps" },
+    key: "e-dist-peer",
+    type: "edge", anchorMode: "floating", arrows: "both",
+    className: "network-link-degraded", label: "L3 52%",
+    sourceId: "network-dist-sw-01", targetId: "network-dist-sw-02",
+    data: { label: "L3 peer", latency: "3 ms", linkStatus: "degraded", throughput: "10 Gbps" },
   },
-  {
-    key: "network-edge-firewall-core",
-    type: "edge",
-    anchorMode: "floating",
-    arrows: "target",
-    className: "network-link-degraded",
-    label: "10 Gbps 79%",
-    sourceId: "network-firewall",
-    targetId: "network-core-rtr-01",
-    data: { label: "Firewall transit", latency: "12 ms", status: "degraded", throughput: "10 Gbps" },
-  },
-  {
-    key: "network-edge-core-left",
-    type: "edge",
-    anchorMode: "floating",
-    arrows: "target",
-    className: "network-link-up",
-    label: "10 Gbps 45%",
-    sourceId: "network-core-rtr-01",
-    targetId: "network-core-rtr-02",
-    data: { label: "Core peer left", latency: "1 ms", status: "up", throughput: "10 Gbps" },
-  },
-  {
-    key: "network-edge-core-right",
-    type: "edge",
-    anchorMode: "floating",
-    arrows: "target",
-    className: "network-link-up",
-    label: "10 Gbps 42%",
-    sourceId: "network-core-rtr-01",
-    targetId: "network-core-rtr-03",
-    data: { label: "Core peer right", latency: "1 ms", status: "up", throughput: "10 Gbps" },
-  },
-  {
-    key: "network-edge-core-dist-01",
-    type: "edge",
-    anchorMode: "floating",
-    arrows: "target",
-    className: "network-link-up",
-    label: "10 Gbps 36%",
-    sourceId: "network-core-rtr-01",
-    targetId: "network-dist-sw-01",
-    data: { label: "Distribution left", latency: "1 ms", status: "up", throughput: "10 Gbps" },
-  },
-  {
-    key: "network-edge-core-dist-02",
-    type: "edge",
-    anchorMode: "floating",
-    arrows: "target",
-    className: "network-link-up",
-    label: "10 Gbps 38%",
-    sourceId: "network-core-rtr-01",
-    targetId: "network-dist-sw-02",
-    data: { label: "Distribution right", latency: "1 ms", status: "up", throughput: "10 Gbps" },
-  },
-  {
-    key: "network-edge-rtr02-dist01",
-    type: "edge",
-    anchorMode: "floating",
-    arrows: "target",
-    className: "network-link-up",
-    label: "10 Gbps 34%",
-    sourceId: "network-core-rtr-02",
-    targetId: "network-dist-sw-01",
-    data: { label: "Left aggregation", latency: "1 ms", status: "up", throughput: "10 Gbps" },
-  },
-  {
-    key: "network-edge-rtr03-dist02",
-    type: "edge",
-    anchorMode: "floating",
-    arrows: "target",
-    className: "network-link-up",
-    label: "10 Gbps 31%",
-    sourceId: "network-core-rtr-03",
-    targetId: "network-dist-sw-02",
-    data: { label: "Right aggregation", latency: "1 ms", status: "up", throughput: "10 Gbps" },
-  },
-  {
-    key: "network-edge-dist-peer",
-    type: "edge",
-    anchorMode: "floating",
-    arrows: "both",
-    className: "network-link-degraded",
-    label: "L3 52%",
-    sourceId: "network-dist-sw-01",
-    targetId: "network-dist-sw-02",
-    data: { label: "L3 peer", latency: "3 ms", status: "degraded", throughput: "10 Gbps" },
-  },
-  {
-    key: "network-edge-dist01-acc01",
-    type: "edge",
-    anchorMode: "floating",
-    arrows: "target",
-    className: "network-link-up",
-    label: "1 Gbps 65%",
-    sourceId: "network-dist-sw-01",
-    targetId: "network-acc-sw-01",
-    data: { label: "Access uplink 01", latency: "2 ms", status: "up", throughput: "1 Gbps" },
-  },
-  {
-    key: "network-edge-dist01-acc02",
-    type: "edge",
-    anchorMode: "floating",
-    arrows: "target",
-    className: "network-link-up",
-    label: "1 Gbps 48%",
-    sourceId: "network-dist-sw-01",
-    targetId: "network-acc-sw-02",
-    data: { label: "Access uplink 02", latency: "2 ms", status: "up", throughput: "1 Gbps" },
-  },
-  {
-    key: "network-edge-dist02-acc03",
-    type: "edge",
-    anchorMode: "floating",
-    arrows: "target",
-    className: "network-link-up",
-    label: "1 Gbps 52%",
-    sourceId: "network-dist-sw-02",
-    targetId: "network-acc-sw-03",
-    data: { label: "Access uplink 03", latency: "2 ms", status: "up", throughput: "1 Gbps" },
-  },
-  {
-    key: "network-edge-dist02-acc04",
-    type: "edge",
-    anchorMode: "floating",
-    arrows: "target",
-    className: "network-link-degraded",
-    label: "1 Gbps 47%",
-    sourceId: "network-dist-sw-02",
-    targetId: "network-acc-sw-04",
-    data: { label: "Access uplink 04", latency: "11 ms", status: "degraded", throughput: "1 Gbps" },
-  },
-  {
-    key: "network-edge-acc01-app",
-    type: "edge",
-    anchorMode: "floating",
-    arrows: "target",
-    className: "network-link-up",
-    label: "1 Gbps 70%",
-    sourceId: "network-acc-sw-01",
-    targetId: "network-srv-app-01",
-    data: { label: "App server", latency: "1 ms", status: "up", throughput: "1 Gbps" },
-  },
-  {
-    key: "network-edge-acc01-db",
-    type: "edge",
-    anchorMode: "floating",
-    arrows: "target",
-    className: "network-link-down",
-    label: "1 Gbps down",
-    sourceId: "network-acc-sw-01",
-    targetId: "network-srv-db-01",
-    data: { label: "Database server", latency: "timeout", status: "down", throughput: "0 bps" },
-  },
-  {
-    key: "network-edge-acc02-ap01",
-    type: "edge",
-    anchorMode: "floating",
-    arrows: "target",
-    className: "network-link-degraded",
-    label: "1 Gbps 35%",
-    sourceId: "network-acc-sw-02",
-    targetId: "network-ap-01",
-    data: { label: "Wireless AP 01", latency: "9 ms", status: "degraded", throughput: "1 Gbps" },
-  },
-  {
-    key: "network-edge-acc02-ap02",
-    type: "edge",
-    anchorMode: "floating",
-    arrows: "target",
-    className: "network-link-up",
-    label: "1 Gbps 28%",
-    sourceId: "network-acc-sw-02",
-    targetId: "network-ap-02",
-    data: { label: "Wireless AP 02", latency: "3 ms", status: "up", throughput: "1 Gbps" },
-  },
-  {
-    key: "network-edge-acc03-web01",
-    type: "edge",
-    anchorMode: "floating",
-    arrows: "target",
-    className: "network-link-up",
-    label: "1 Gbps 66%",
-    sourceId: "network-acc-sw-03",
-    targetId: "network-srv-web-01",
-    data: { label: "Web server 01", latency: "1 ms", status: "up", throughput: "1 Gbps" },
-  },
-  {
-    key: "network-edge-acc03-web02",
-    type: "edge",
-    anchorMode: "floating",
-    arrows: "target",
-    className: "network-link-up",
-    label: "1 Gbps 62%",
-    sourceId: "network-acc-sw-03",
-    targetId: "network-srv-web-02",
-    data: { label: "Web server 02", latency: "1 ms", status: "up", throughput: "1 Gbps" },
-  },
-  {
-    key: "network-edge-acc04-phone",
-    type: "edge",
-    anchorMode: "floating",
-    arrows: "target",
-    className: "network-link-down",
-    label: "100 Mbps down",
-    sourceId: "network-acc-sw-04",
-    targetId: "network-phone-01",
-    data: { label: "Voice endpoint", latency: "timeout", status: "down", throughput: "0 bps" },
-  },
+  // Distribution → Access
+  edge("e-dist01-acc01",      "network-dist-sw-01",  "network-acc-sw-01",    "Access uplink 01",  "up",       "1 Gbps",   "2 ms",    "1 Gbps 65%"),
+  edge("e-dist01-acc02",      "network-dist-sw-01",  "network-acc-sw-02",    "Access uplink 02",  "up",       "1 Gbps",   "2 ms",    "1 Gbps 48%"),
+  edge("e-dist02-acc03",      "network-dist-sw-02",  "network-acc-sw-03",    "Access uplink 03",  "up",       "1 Gbps",   "2 ms",    "1 Gbps 52%"),
+  edge("e-dist02-acc04",      "network-dist-sw-02",  "network-acc-sw-04",    "Access uplink 04",  "degraded", "1 Gbps",   "11 ms",   "1 Gbps 47%"),
+  // Access → Servers / Wireless / Endpoints
+  edge("e-acc01-dns",         "network-acc-sw-01",   "network-srv-dns-01",   "DNS server",        "up",       "1 Gbps",   "1 ms",    "1 Gbps"),
+  edge("e-acc01-app",         "network-acc-sw-01",   "network-srv-app-01",   "App server",        "up",       "1 Gbps",   "1 ms",    "1 Gbps 70%"),
+  edge("e-acc01-db",          "network-acc-sw-01",   "network-srv-db-01",    "Database server",   "down",     "0 bps",    "timeout", "1 Gbps down"),
+  edge("e-acc02-ap01",        "network-acc-sw-02",   "network-ap-01",        "Wireless AP 01",    "degraded", "1 Gbps",   "9 ms",    "1 Gbps 35%"),
+  edge("e-acc02-ap02",        "network-acc-sw-02",   "network-ap-02",        "Wireless AP 02",    "up",       "1 Gbps",   "3 ms",    "1 Gbps 28%"),
+  // Load balancer → Web tier
+  edge("e-lb-web01",          "network-lb-01",       "network-srv-web-01",   "Web server 01",     "up",       "10 Gbps",  "1 ms",    "LB→WEB-01"),
+  edge("e-lb-web02",          "network-lb-01",       "network-srv-web-02",   "Web server 02",     "up",       "10 Gbps",  "1 ms",    "LB→WEB-02"),
+  edge("e-acc03-web01",       "network-acc-sw-03",   "network-srv-web-01",   "Web uplink 01",     "up",       "1 Gbps",   "1 ms",    "1 Gbps 66%"),
+  edge("e-acc04-phone",       "network-acc-sw-04",   "network-phone-01",     "Voice endpoint",    "down",     "0 bps",    "timeout", "100 Mbps down"),
+  edge("e-acc04-radio",       "network-acc-sw-04",   "network-radio-01",     "Radio backhaul",    "up",       "1 Gbps",   "4 ms",    "1 Gbps"),
+  // Endpoints
+  edge("e-acc01-laptop",      "network-acc-sw-01",   "network-laptop-01",    "Laptop link",       "up",       "1 Gbps",   "1 ms",    "1 Gbps"),
+  edge("e-acc01-ws",          "network-acc-sw-01",   "network-ws-01",        "Workstation link",  "up",       "1 Gbps",   "1 ms",    "1 Gbps"),
+  edge("e-acc01-iot",         "network-acc-sw-01",   "network-iot-01",       "IoT sensor",        "up",       "100 Mbps", "2 ms",    "100 Mbps"),
+  edge("e-acc02-cam",         "network-acc-sw-02",   "network-cam-01",       "IP camera",         "up",       "100 Mbps", "1 ms",    "100 Mbps"),
 ];
 
 const networkContainers: INodeContainer[] = [
   {
     key: "rack-wan-edge",
     label: "WAN Edge",
-    nodeKeys: ["network-internet", "network-firewall"],
+    nodeKeys: ["network-internet", "network-cloud-aws", "network-firewall", "network-vpn-gw"],
     resizeToFit: false,
-    position: { x: 630, y: -42 },
-    style: { width: 300, height: 318 },
+    position: { x: 615, y: -10 },
+    style: { width: 620, height: 420 },
     className: "network-rack network-rack-edge",
   },
   {
@@ -674,8 +162,8 @@ const networkContainers: INodeContainer[] = [
     label: "Core Backbone",
     nodeKeys: ["network-core-rtr-01", "network-core-rtr-02", "network-core-rtr-03"],
     resizeToFit: false,
-    position: { x: 200, y: 260 },
-    style: { width: 1150, height: 170 },
+    position: { x: 115, y: 390 },
+    style: { width: 1380, height: 200 },
     className: "network-rack network-rack-core",
   },
   {
@@ -683,8 +171,17 @@ const networkContainers: INodeContainer[] = [
     label: "Rack B — Distribution",
     nodeKeys: ["network-dist-sw-01"],
     resizeToFit: false,
-    position: { x: 360, y: 512 },
-    style: { width: 218, height: 155 },
+    position: { x: 340, y: 620 },
+    style: { width: 238, height: 200 },
+    className: "network-rack network-rack-dist",
+  },
+  {
+    key: "rack-lb",
+    label: "Load Balancer",
+    nodeKeys: ["network-lb-01"],
+    resizeToFit: false,
+    position: { x: 670, y: 620 },
+    style: { width: 238, height: 200 },
     className: "network-rack network-rack-dist",
   },
   {
@@ -692,17 +189,17 @@ const networkContainers: INodeContainer[] = [
     label: "Rack C — Distribution",
     nodeKeys: ["network-dist-sw-02"],
     resizeToFit: false,
-    position: { x: 910, y: 512 },
-    style: { width: 218, height: 155 },
+    position: { x: 1005, y: 620 },
+    style: { width: 238, height: 200 },
     className: "network-rack network-rack-dist",
   },
   {
     key: "rack-d",
     label: "Rack D — Compute",
-    nodeKeys: ["network-srv-app-01", "network-srv-db-01"],
+    nodeKeys: ["network-srv-dns-01", "network-srv-app-01", "network-srv-db-01"],
     resizeToFit: false,
-    position: { x: 8, y: 962 },
-    style: { width: 570, height: 158 },
+    position: { x: -350, y: 1105 },
+    style: { width: 800, height: 200 },
     className: "network-rack network-rack-server",
   },
   {
@@ -710,26 +207,34 @@ const networkContainers: INodeContainer[] = [
     label: "Rack E — Web Tier",
     nodeKeys: ["network-srv-web-01", "network-srv-web-02"],
     resizeToFit: false,
-    position: { x: 842, y: 962 },
-    style: { width: 570, height: 158 },
+    position: { x: 900, y: 1105 },
+    style: { width: 510, height: 200 },
+    className: "network-rack network-rack-server",
+  },
+  {
+    key: "rack-f",
+    label: "Rack F — Endpoints",
+    nodeKeys: ["network-laptop-01", "network-ws-01", "network-iot-01", "network-cam-01"],
+    resizeToFit: false,
+    position: { x: -350, y: 1375 },
+    style: { width: 1200, height: 200 },
     className: "network-rack network-rack-server",
   },
 ];
 
-const networkNodeTypes: NodeTypes = {
-  "network-node": NetworkNode,
-};
-
-function getEdgeNodeKey(edge: NetworkEdge, side: "source" | "target") {
-  return side === "source" ? edge.sourceId : edge.targetId;
+function getStatusLabel(status?: NetworkStatus): string {
+  switch (status) {
+    case "online":  return "Online";
+    case "offline": return "Offline";
+    case "warning": return "Warning";
+    default:        return "Unknown";
+  }
 }
 
-function getDeviceTypeCounts(nodes: NetworkNodeType[]) {
+function getCategoryCounts(nodes: NetworkPresetNode[]) {
   return nodes.reduce<Record<string, number>>((counts, node) => {
-    const key = node.data?.deviceType ?? "unknown";
-
+    const key = node.data?.category ?? "unknown";
     counts[key] = (counts[key] ?? 0) + 1;
-
     return counts;
   }, {});
 }
@@ -738,23 +243,23 @@ function NetworkSidebar({
   linkSummary,
   nodes,
 }: {
-  linkSummary: Record<NetworkEdgeData["status"], number>;
-  nodes: NetworkNodeType[];
+  linkSummary: Record<DemoEdgeData["linkStatus"], number>;
+  nodes: NetworkPresetNode[];
 }) {
-  const deviceCounts = React.useMemo(() => getDeviceTypeCounts(nodes), [nodes]);
-  const deviceItems = [
-    { key: "router", label: "Routers", color: "#179cff" },
-    { key: "switch", label: "Switches", color: "#42c65a" },
-    { key: "firewall", label: "Firewalls", color: "#ff6464" },
-    { key: "server", label: "Servers", color: "#a477ff" },
-    { key: "wireless", label: "Wireless", color: "#f2be24" },
-    { key: "phone", label: "Others", color: "#7e8a9b" },
+  const categoryCounts = React.useMemo(() => getCategoryCounts(nodes), [nodes]);
+  const categoryItems: { key: NetworkCategory; label: string; color: string }[] = [
+    { key: "infrastructure", label: "Infrastructure", color: "#3d7eff" },
+    { key: "security",       label: "Security",       color: "#ff5c5c" },
+    { key: "server",         label: "Servers",        color: "#a477ff" },
+    { key: "endpoint",       label: "Endpoints",      color: "#49d4e6" },
+    { key: "wireless",       label: "Wireless",       color: "#26de81" },
+    { key: "cloud",          label: "Cloud",          color: "#fd9644" },
   ];
   const linkItems = [
-    { key: "up", label: "Up", color: "#35cf68", value: linkSummary.up },
+    { key: "up",       label: "Up",      color: "#35cf68", value: linkSummary.up },
     { key: "degraded", label: "Degraded", color: "#f2be24", value: linkSummary.degraded },
-    { key: "down", label: "Down", color: "#ff5f67", value: linkSummary.down },
-    { key: "unknown", label: "Unknown", color: "#7e8a9b", value: linkSummary.unknown },
+    { key: "down",     label: "Down",    color: "#ff5f67", value: linkSummary.down },
+    { key: "unknown",  label: "Unknown", color: "#7e8a9b", value: linkSummary.unknown },
   ];
 
   return (
@@ -769,11 +274,11 @@ function NetworkSidebar({
       </nav>
       <section className="network-sidebar-section">
         <h3>Device Types</h3>
-        {deviceItems.map((item) => (
+        {categoryItems.map((item) => (
           <div className="network-sidebar-row" key={item.key}>
             <span className="network-sidebar-device-icon" style={{ color: item.color }} />
             <span>{item.label}</span>
-            <strong>{deviceCounts[item.key] ?? 0}</strong>
+            <strong>{categoryCounts[item.key] ?? 0}</strong>
           </div>
         ))}
       </section>
@@ -791,21 +296,15 @@ function NetworkSidebar({
   );
 }
 
-function NetworkDeviceDetails({ edges, node }: { edges: NetworkEdge[]; node?: NetworkNodeType }) {
+function NetworkDeviceDetails({ edges, node }: { edges: DemoEdge[]; node?: NetworkPresetNode }) {
   const connectedEdges = React.useMemo(() => {
     if (node == null) return [];
 
     return edges
-      .filter((edge) => getEdgeNodeKey(edge, "source") === node.key || getEdgeNodeKey(edge, "target") === node.key)
-      .map((edge) => {
-        const peerKey = getEdgeNodeKey(edge, "source") === node.key
-          ? getEdgeNodeKey(edge, "target")
-          : getEdgeNodeKey(edge, "source");
-
-        return {
-          edge,
-          peer: networkNodes.find((networkNode) => networkNode.key === peerKey),
-        };
+      .filter((e) => e.sourceId === node.key || e.targetId === node.key)
+      .map((e) => {
+        const peerKey = e.sourceId === node.key ? e.targetId : e.sourceId;
+        return { edge: e, peer: networkNodes.find((n) => n.key === peerKey) };
       });
   }, [edges, node]);
 
@@ -820,17 +319,20 @@ function NetworkDeviceDetails({ edges, node }: { edges: NetworkEdge[]; node?: Ne
     );
   }
 
+  const status = node.data?.status ?? "unknown";
+  const title = node.data?.hostname ?? node.data?.label ?? node.key;
+
   return (
     <aside className="network-device-panel">
       <div className="network-device-summary">
-        <span className={`network-device-summary-icon network-node-${node.data?.accent ?? "blue"} network-device-${node.data?.deviceType ?? "client"}`}>
-          <span />
+        <span className={`network-device-summary-icon network-node-${node.data?.category ?? "infrastructure"}`}>
+          <NetworkNodeIcon nodeType={node.type} />
         </span>
         <div>
-          <strong>{node.data?.title}</strong>
-          <span>{node.data?.subtitle}</span>
+          <strong>{title}</strong>
+          <span>{node.data?.label}</span>
         </div>
-        <em>{node.data?.statusLabel}</em>
+        <em>{getStatusLabel(status)}</em>
       </div>
 
       <div className="network-device-tabs">
@@ -846,58 +348,27 @@ function NetworkDeviceDetails({ edges, node }: { edges: NetworkEdge[]; node?: Ne
           <div><dt>IP Address</dt><dd>{node.data?.ip ?? "Unknown"}</dd></div>
           <div><dt>Vendor</dt><dd>{node.data?.vendor ?? "Unknown"}</dd></div>
           <div><dt>Model</dt><dd>{node.data?.model ?? "Unknown"}</dd></div>
-          <div><dt>Uptime</dt><dd>{node.data?.uptime ?? "Unknown"}</dd></div>
-          <div><dt>Location</dt><dd>{node.data?.location ?? "Unknown"}</dd></div>
-          <div><dt>Role</dt><dd>{node.data?.role ?? node.data?.deviceType}</dd></div>
+          <div><dt>Category</dt><dd>{node.data?.category ?? "Unknown"}</dd></div>
+          <div><dt>Description</dt><dd>{node.data?.description ?? "Unknown"}</dd></div>
         </dl>
-      </div>
-
-      <div className="network-device-section">
-        <h3>Resource Utilization</h3>
-        <div className="network-utilization-list">
-          <div>
-            <span>CPU</span>
-            <i><b style={{ width: `${node.data?.cpu ?? 0}%` }} /></i>
-            <strong>{node.data?.cpu ?? 0}%</strong>
-          </div>
-          <div>
-            <span>Memory</span>
-            <i><b style={{ width: `${node.data?.memory ?? 0}%` }} /></i>
-            <strong>{node.data?.memory ?? 0}%</strong>
-          </div>
-          <div>
-            <span>Temperature</span>
-            <i><b style={{ width: "38%" }} /></i>
-            <strong>{node.data?.temperature ?? "n/a"}</strong>
-          </div>
-        </div>
       </div>
 
       <div className="network-device-section">
         <h3>Links</h3>
         <div className="network-link-list">
-          {connectedEdges.map(({ edge, peer }) => (
+          {connectedEdges.map(({ edge: e, peer }) => (
             <div
-              className={`network-link-card network-link-card-${edge.data?.status ?? "unknown"}`}
-              key={edge.key}
+              className={`network-link-card network-link-card-${e.data?.linkStatus ?? "unknown"}`}
+              key={e.key}
             >
               <div>
-                <strong>{edge.data?.label}</strong>
-                <span>{peer?.data?.title ?? "Unknown peer"}</span>
+                <strong>{e.data?.label}</strong>
+                <span>{peer?.data?.hostname ?? peer?.data?.label ?? "Unknown peer"}</span>
               </div>
               <dl>
-                <div>
-                  <dt>State</dt>
-                  <dd>{edge.data?.status}</dd>
-                </div>
-                <div>
-                  <dt>Latency</dt>
-                  <dd>{edge.data?.latency}</dd>
-                </div>
-                <div>
-                  <dt>Traffic</dt>
-                  <dd>{edge.data?.throughput}</dd>
-                </div>
+                <div><dt>State</dt><dd>{e.data?.linkStatus}</dd></div>
+                <div><dt>Latency</dt><dd>{e.data?.latency}</dd></div>
+                <div><dt>Traffic</dt><dd>{e.data?.throughput}</dd></div>
               </dl>
             </div>
           ))}
@@ -907,16 +378,16 @@ function NetworkDeviceDetails({ edges, node }: { edges: NetworkEdge[]; node?: Ne
       <div className="network-device-section">
         <h3>Recent Alerts</h3>
         <div className="network-alert-list">
-          {(node.data?.status === "healthy"
+          {(status === "online"
             ? ["No active alerts"]
-            : node.data?.status === "critical"
+            : status === "offline"
               ? ["Interface Gi0/1 Down", "Device unreachable"]
-              : ["High CPU Utilization", "Interface errors above baseline"]
+              : ["High utilization", "Interface errors above baseline"]
           ).map((alert) => (
-            <div className={`network-alert-row network-alert-${node.data?.status ?? "unknown"}`} key={alert}>
+            <div className={`network-alert-row network-alert-${status}`} key={alert}>
               <span />
               <strong>{alert}</strong>
-              <em>{node.data?.status === "healthy" ? "OK" : node.data?.status === "critical" ? "Critical" : "Warning"}</em>
+              <em>{status === "online" ? "OK" : status === "offline" ? "Critical" : "Warning"}</em>
             </div>
           ))}
         </div>
@@ -926,72 +397,17 @@ function NetworkDeviceDetails({ edges, node }: { edges: NetworkEdge[]; node?: Ne
 }
 
 function getTopologyLegendItems(
-  nodeSummary: Record<NetworkNodeData["status"], number>,
-  linkSummary: Record<NetworkEdgeData["status"], number>
+  nodeSummary: Record<NetworkStatus, number>,
+  linkSummary: Record<DemoEdgeData["linkStatus"], number>
 ): FlowKitLegendItem[] {
   return [
-    {
-      key: "healthy-devices",
-      label: "Healthy devices",
-      value: nodeSummary.healthy,
-      color: "#57df84",
-      marker: "dot",
-    },
-    {
-      key: "degraded-devices",
-      label: "Degraded devices",
-      value: nodeSummary.degraded,
-      color: "#f6bd4a",
-      marker: "dot",
-    },
-    {
-      key: "critical-devices",
-      label: "Critical devices",
-      value: nodeSummary.critical,
-      color: "#ff6767",
-      marker: "dot",
-    },
-    {
-      key: "up-links",
-      label: "Links up",
-      value: linkSummary.up,
-      color: "#57df84",
-      marker: "line",
-    },
-    {
-      key: "degraded-links",
-      label: "Links degraded",
-      value: linkSummary.degraded,
-      color: "#f6bd4a",
-      marker: "line",
-    },
-    {
-      key: "down-links",
-      label: "Links down",
-      value: linkSummary.down,
-      color: "#ff6767",
-      marker: "line",
-    },
+    { key: "online-devices",  label: "Online devices",  value: nodeSummary.online,  color: "#57df84", marker: "dot" },
+    { key: "warning-devices", label: "Warning devices", value: nodeSummary.warning, color: "#f6bd4a", marker: "dot" },
+    { key: "offline-devices", label: "Offline devices", value: nodeSummary.offline, color: "#ff6767", marker: "dot" },
+    { key: "up-links",        label: "Links up",        value: linkSummary.up,       color: "#57df84", marker: "line" },
+    { key: "degraded-links",  label: "Links degraded",  value: linkSummary.degraded, color: "#f6bd4a", marker: "line" },
+    { key: "down-links",      label: "Links down",      value: linkSummary.down,     color: "#ff6767", marker: "line" },
   ];
-}
-
-function NetworkNode(props: NetworkNodeType) {
-  const accent = props.data?.accent ?? "blue";
-  const deviceType = props.data?.deviceType ?? "client";
-  const status = props.data?.status ?? "unknown";
-
-  return (
-    <div className={`network-node network-node-${accent} network-device-${deviceType} network-status-${status}`}>
-      <span className="network-node-icon" aria-hidden="true">
-        <span />
-      </span>
-      <span className="network-node-status" />
-      <small>{deviceType}</small>
-      <strong>{props.data?.title}</strong>
-      <span>{props.data?.subtitle}</span>
-      <em>{props.data?.statusLabel} - {props.data?.metric}</em>
-    </div>
-  );
 }
 
 type NetworkDiagramProps = {
@@ -1001,68 +417,51 @@ type NetworkDiagramProps = {
 };
 
 export function NetworkDiagram({ animatedEdges, collapsibleEdges, edgePathType }: NetworkDiagramProps) {
-  const [nodes, setNodes] = React.useState<NetworkNodeType[]>(networkNodes);
+  const [nodes, setNodes] = React.useState<NetworkPresetNode[]>(networkNodes);
   const [containers, setContainers] = React.useState<INodeContainer[]>(networkContainers);
-  const [edges, setEdges] = React.useState<NetworkEdge[]>(networkEdges);
+  const [edges, setEdges] = React.useState<DemoEdge[]>(networkEdges);
   const [selectedDeviceKey, setSelectedDeviceKey] = React.useState<string | null>("network-core-rtr-01");
+
   const nodeSummary = React.useMemo(() => {
-    const counts = { critical: 0, degraded: 0, healthy: 0, unknown: 0 };
-
-    networkNodes.forEach((node) => {
-      counts[node.data?.status ?? "unknown"] += 1;
-    });
-
+    const counts: Record<NetworkStatus, number> = { online: 0, offline: 0, warning: 0, unknown: 0 };
+    networkNodes.forEach((node) => { counts[node.data?.status ?? "unknown"] += 1; });
     return counts;
   }, []);
+
   const linkSummary = React.useMemo(() => {
     const counts = { degraded: 0, down: 0, unknown: 0, up: 0 };
-
-    edges.forEach((edge) => {
-      counts[edge.data?.status ?? "unknown"] += 1;
-    });
-
+    edges.forEach((e) => { counts[e.data?.linkStatus ?? "unknown"] += 1; });
     return counts;
   }, [edges]);
+
   const legendItems = React.useMemo(
     () => getTopologyLegendItems(nodeSummary, linkSummary),
     [linkSummary, nodeSummary]
   );
+
   const selectedDevice = React.useMemo(
     () => nodes.find((node) => node.key === selectedDeviceKey),
     [nodes, selectedDeviceKey]
   );
+
   const displayEdges = React.useMemo(
-    () =>
-      edges.map((edge) => ({
-        ...edge,
-        animated: animatedEdges,
-        label: collapsibleEdges ? undefined : edge.label,
-      })),
+    () => edges.map((e) => ({
+      ...e,
+      animated: animatedEdges,
+      label: collapsibleEdges ? undefined : e.label,
+    })),
     [animatedEdges, collapsibleEdges, edges]
   );
 
   React.useEffect(() => {
     if (collapsibleEdges) return;
-
-    setEdges((currentEdges) =>
-      currentEdges.map((edge) => ({
-        ...edge,
-        collapsed: false,
-        collapseMode: undefined,
-      }))
-    );
+    setEdges((curr) => curr.map((e) => ({ ...e, collapsed: false, collapseMode: undefined })));
   }, [collapsibleEdges]);
 
   const onEdgeCollapsedChange = React.useCallback((edgeKey: string, collapsed: boolean, mode: EdgeCollapseMode) => {
-    setEdges((currentEdges) =>
-      currentEdges.map((edge) =>
-        edge.key === edgeKey
-          ? {
-              ...edge,
-              collapsed,
-              collapseMode: collapsed ? mode : undefined,
-            }
-          : edge
+    setEdges((curr) =>
+      curr.map((e) =>
+        e.key === edgeKey ? { ...e, collapsed, collapseMode: collapsed ? mode : undefined } : e
       )
     );
   }, []);
@@ -1080,7 +479,7 @@ export function NetworkDiagram({ animatedEdges, collapsibleEdges, edgePathType }
           edges={displayEdges}
           nodes={nodes}
           nodeTypes={networkNodeTypes}
-          onEdgeCollapsedChange={({ collapsed, edge, mode }) => onEdgeCollapsedChange(edge.key, collapsed, mode)}
+          onEdgeCollapsedChange={({ collapsed, edge: e, mode }) => onEdgeCollapsedChange(e.key, collapsed, mode)}
           zoomMax={1.35}
           zoomMin={0.45}
         >
@@ -1097,17 +496,21 @@ export function NetworkDiagram({ animatedEdges, collapsibleEdges, edgePathType }
             nodes={nodes}
             position="bottom-left"
             width={190}
-            nodeClassName={(node) => `network-mini-map-node-${node.data?.deviceType ?? "unknown"}`}
+            nodeClassName={(node) => `network-mini-map-node-${node.data?.category ?? "unknown"}`}
           />
           <FlowKitControls />
           <FlowKitEvents
             onContainersChange={(changes) => setContainers((c) => applyContainerChanges(c, changes))}
             onNodesChange={(changes) => {
-              changes.forEach((change) => {
-                if (change.type === "select") setSelectedDeviceKey(change.selected ? change.key : null);
-              });
-              setNodes((currentNodes) => {
-                let next = currentNodes;
+              const selectChanges = changes.filter((c) => c.type === "select");
+              const positiveSelect = selectChanges.find((c) => c.selected);
+              if (positiveSelect) {
+                setSelectedDeviceKey(positiveSelect.key);
+              } else if (selectChanges.length > 0) {
+                setSelectedDeviceKey(null);
+              }
+              setNodes((curr) => {
+                let next = curr;
                 changes.forEach((change) => {
                   if (change.type === "position") {
                     next = next.map((n) => n.key === change.key ? { ...n, offset: change.offset } : n);

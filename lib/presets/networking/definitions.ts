@@ -1,7 +1,7 @@
 import { NetworkCategory, NetworkPreset } from "./types";
 
-export const networkNodeWidth = 110;
-export const networkNodeHeight = 100;
+export const networkNodeWidth = 120;
+export const networkNodeHeight = 130;
 
 export const networkPresets: NetworkPreset[] = [
     // ── Infrastructure ──────────────────────────────────────
