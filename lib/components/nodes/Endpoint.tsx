@@ -145,18 +145,21 @@ export const Endpoint: React.FC<IProps> = (props) => {
 		}
 	};
 
+	const isSource = sourceEndpoint?.endpoint.id === props.endpoint.id;
+	const immediateValid = creatingEdge && sourceEndpoint != null && !isSource
+		? canConnect?.({ source: sourceEndpoint.endpoint, target: props.endpoint }) !== false
+			? IsValid.True
+			: IsValid.False
+		: state.valid;
+
 	let style: React.CSSProperties = {
 		top: props.endpoint.offset.y,
 		left: props.endpoint.offset.x,
 		transform: "translate(-50%, -50%)",
-		background: edgeSelected ? undefined : state.valid === IsValid.False ? "#ff615d" : "#00ff7f",
+		background: edgeSelected ? undefined : immediateValid === IsValid.False ? "#ff615d" : "#00ff7f",
 		cursor: state.usable ? "crosshair" : "auto",
 		...props.style ?? {}
 	};
-
-	if (edgeSelected === false && (state.valid == null || creatingEdge)) {
-		style.background = "";
-	}
 
   	let className: string = "flow-kit-endpoint";
 
