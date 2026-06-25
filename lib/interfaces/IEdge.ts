@@ -3,6 +3,26 @@ import * as React from "react";
 /** Controls which arrow markers FlowKit renders on the edge path. */
 export type EdgeArrow = "both" | "none" | "source" | "target";
 
+/**
+ * SVG marker shape rendered at an edge endpoint.
+ * - "arrow"           — filled triangle (default)
+ * - "open-arrow"      — half-open chevron (navigability / dependency)
+ * - "hollow-triangle" — unfilled triangle (inheritance / generalization)
+ * - "filled-diamond"  — filled diamond (composition)
+ * - "hollow-diamond"  — unfilled diamond (aggregation)
+ * - "none"            — no marker
+ */
+export type EdgeMarker =
+    | "arrow"
+    | "open-arrow"
+    | "hollow-triangle"
+    | "filled-diamond"
+    | "hollow-diamond"
+    | "none";
+
+/** Stroke rendering style for the edge path. */
+export type EdgeStrokeStyle = "solid" | "dashed" | "dotted";
+
 /** Selects whether an edge connects fixed endpoints or floats against node bounds. */
 export type EdgeAnchorMode = "endpoint" | "floating";
 
@@ -60,4 +80,16 @@ export interface IEdge<T> {
     routing?: EdgeRoutingOptions;
     /** Inline styles applied to the built-in visible path. */
     style?: React.CSSProperties;
+    /**
+     * SVG marker shape at the source end of the edge.
+     * Supersedes the source side of the legacy `arrows` prop when set.
+     */
+    markerStart?: EdgeMarker;
+    /**
+     * SVG marker shape at the target end of the edge.
+     * Supersedes the target side of the legacy `arrows` prop when set.
+     */
+    markerEnd?: EdgeMarker;
+    /** Stroke dash pattern for the edge path. Defaults to "solid". */
+    strokeStyle?: EdgeStrokeStyle;
 }

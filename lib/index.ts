@@ -26,7 +26,7 @@ export {
 } from "./components/presets/shapes";
 
 export type { IConnection } from "./interfaces/IConnection";
-export type { EdgeAnchorMode, EdgeArrow, EdgeCollapseMode, EdgePathType, EdgeRoutingOptions } from "./interfaces/IEdge";
+export type { EdgeAnchorMode, EdgeArrow, EdgeCollapseMode, EdgeMarker, EdgePathType, EdgeRoutingOptions, EdgeStrokeStyle } from "./interfaces/IEdge";
 export type { IEdge } from "./interfaces/IEdge";
 export type { IEndpoint } from "./interfaces/IEndpoint";
 export type { INode } from "./interfaces/INode";

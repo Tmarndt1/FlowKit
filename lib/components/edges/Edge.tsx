@@ -12,7 +12,7 @@ import {
 } from "../../contexts/NodeFlowContext";
 import { useFlowKitConfig } from "../../contexts/FlowKitConfigContext";
 import { EdgeFoldControl } from "./EdgeFoldControl";
-import { hasSourceArrow, hasTargetArrow } from "../../functions/edgeMarkers";
+import { resolveMarkerEnd, resolveMarkerStart } from "../../functions/edgeMarkers";
 import { resolveEdgeAnchors } from "../../functions/edgeAnchors";
 import { useEdgeFoldMetrics } from "./useEdgeFoldMetrics";
 
@@ -300,22 +300,29 @@ const EdgeComponent: React.FC<IProps> = (props) =>
     ].filter(Boolean).join(" ");
     // Directional folds keep the visible half of the original path by trimming
     // the measured SVG path with dash offsets instead of generating a new path.
+    const strokeDasharray = (() => {
+        if (directionallyFolded && pathFoldMetrics != null) {
+            return `${pathFoldMetrics.midpointLength} ${pathFoldMetrics.length}`;
+        }
+        const style = props.edge.strokeStyle ?? "solid";
+        if (style === "dashed") return "8 5";
+        if (style === "dotted") return "2 4";
+        return undefined;
+    })();
     const visualStyle: React.CSSProperties = {
         ...(props.edge.style ?? {}),
+        strokeDasharray,
         ...(directionallyFolded && pathFoldMetrics != null
-            ? {
-                strokeDasharray: `${pathFoldMetrics.midpointLength} ${pathFoldMetrics.length}`,
-                strokeDashoffset: collapseMode === "upstream" ? -pathFoldMetrics.midpointLength : 0
-            }
+            ? { strokeDashoffset: collapseMode === "upstream" ? -pathFoldMetrics.midpointLength : 0 }
             : {})
     };
     const markerStart =
-        hasSourceArrow(props.edge) && !(directionallyFolded && collapseMode === "upstream")
-            ? "url(#flow-kit-edge-arrow)"
+        !(directionallyFolded && collapseMode === "upstream")
+            ? resolveMarkerStart(props.edge)
             : undefined;
     const markerEnd =
-        hasTargetArrow(props.edge) && !(directionallyFolded && collapseMode === "downstream")
-            ? "url(#flow-kit-edge-arrow)"
+        !(directionallyFolded && collapseMode === "downstream")
+            ? resolveMarkerEnd(props.edge)
             : undefined;
     const foldMenuPortalPosition = containerRect != null && pathFoldMetrics != null
         ? {

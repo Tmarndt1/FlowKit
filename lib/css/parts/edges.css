@@ -6,6 +6,14 @@
     pointer-events: all;
 }
 
+.flow-kit-edge-path {
+    fill: none;
+    stroke: var(--flow-kit-edge-color, #67e8f9);
+    stroke-width: var(--flow-kit-edge-width, 1.5px);
+    stroke-linecap: round;
+    stroke-linejoin: round;
+}
+
 .flow-kit-edge-path.flow-kit-animated {
     stroke-dasharray: 8 4;
     animation: edge-flow 1s linear infinite;
@@ -46,6 +54,28 @@
 
 .flow-kit-edge-arrow {
     fill: var(--flow-kit-edge-arrow-color, #67e8f9);
+}
+
+/* Filled marker shapes (composition diamond, filled arrow) */
+.flow-kit-edge-marker-filled {
+    fill: var(--flow-kit-edge-arrow-color, #67e8f9);
+    stroke: var(--flow-kit-edge-arrow-color, #67e8f9);
+    stroke-width: 0;
+}
+
+/* Hollow/outline marker shapes (aggregation diamond, hollow triangle, open arrow) */
+.flow-kit-edge-marker-hollow {
+    fill: var(--flow-kit-edge-marker-hollow-fill, #111827);
+    stroke: var(--flow-kit-edge-arrow-color, #67e8f9);
+    stroke-width: 1px;
+}
+
+.flow-kit-edge-marker-open {
+    fill: none;
+    stroke: var(--flow-kit-edge-arrow-color, #67e8f9);
+    stroke-linecap: round;
+    stroke-linejoin: round;
+    stroke-width: 1.5px;
 }
 
 .flow-kit-edge-label {

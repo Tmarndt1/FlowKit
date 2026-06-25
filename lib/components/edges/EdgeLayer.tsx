@@ -460,6 +460,20 @@ export const EdgeLayer = React.forwardRef<EdgeLayerHandle, IProps>((props, ref) 
     return (
         <svg className="flow-kit-edges-container" ref={svgRef}>
             <defs>
+                {/* Legacy filled arrow — used by the arrows prop and markerStart/End: "arrow" */}
+                <marker
+                    id="flow-kit-marker-arrow"
+                    markerHeight={7}
+                    markerUnits="strokeWidth"
+                    markerWidth={7}
+                    orient="auto-start-reverse"
+                    refX={9}
+                    refY={5}
+                    viewBox="0 0 10 10"
+                >
+                    <path className="flow-kit-edge-arrow" d="M 0 0 L 10 5 L 0 10 z" />
+                </marker>
+                {/* Keep legacy id for backward compat */}
                 <marker
                     id="flow-kit-edge-arrow"
                     markerHeight={7}
@@ -471,6 +485,58 @@ export const EdgeLayer = React.forwardRef<EdgeLayerHandle, IProps>((props, ref) 
                     viewBox="0 0 10 10"
                 >
                     <path className="flow-kit-edge-arrow" d="M 0 0 L 10 5 L 0 10 z" />
+                </marker>
+                {/* Half-open chevron — navigability / dependency */}
+                <marker
+                    id="flow-kit-marker-open-arrow"
+                    markerHeight={8}
+                    markerUnits="strokeWidth"
+                    markerWidth={8}
+                    orient="auto-start-reverse"
+                    refX={8}
+                    refY={5}
+                    viewBox="0 0 10 10"
+                >
+                    <path className="flow-kit-edge-marker-open" d="M 0 0 L 10 5 L 0 10" fill="none" />
+                </marker>
+                {/* Unfilled triangle — inheritance / generalization */}
+                <marker
+                    id="flow-kit-marker-hollow-triangle"
+                    markerHeight={10}
+                    markerUnits="strokeWidth"
+                    markerWidth={10}
+                    orient="auto-start-reverse"
+                    refX={10}
+                    refY={5}
+                    viewBox="0 0 10 10"
+                >
+                    <path className="flow-kit-edge-marker-hollow" d="M 0 0 L 10 5 L 0 10 Z" fill="none" />
+                </marker>
+                {/* Filled diamond — composition */}
+                <marker
+                    id="flow-kit-marker-filled-diamond"
+                    markerHeight={8}
+                    markerUnits="strokeWidth"
+                    markerWidth={14}
+                    orient="auto-start-reverse"
+                    refX={14}
+                    refY={4}
+                    viewBox="0 0 14 8"
+                >
+                    <path className="flow-kit-edge-marker-filled" d="M 0 4 L 7 0 L 14 4 L 7 8 Z" />
+                </marker>
+                {/* Unfilled diamond — aggregation */}
+                <marker
+                    id="flow-kit-marker-hollow-diamond"
+                    markerHeight={8}
+                    markerUnits="strokeWidth"
+                    markerWidth={14}
+                    orient="auto-start-reverse"
+                    refX={14}
+                    refY={4}
+                    viewBox="0 0 14 8"
+                >
+                    <path className="flow-kit-edge-marker-hollow" d="M 0 4 L 7 0 L 14 4 L 7 8 Z" fill="none" />
                 </marker>
             </defs>
             {getEdges()}
