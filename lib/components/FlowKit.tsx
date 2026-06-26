@@ -148,7 +148,7 @@ export interface FlowKitProps {
 
 /** Imperative API exposed by FlowKit refs for external controls and topology panels. */
 export interface FlowKitHandle {
-    /** Fits all rendered nodes in view and centers the viewport around them. */
+    /** Fits all rendered nodes and containers in view and centers the viewport around them. */
     recenter: () => void;
     /** Centers the viewport around a node by key. Returns false when the node cannot be found. */
     panToNode: (nodeKey: string, options?: PanToNodeOptions) => boolean;
@@ -508,9 +508,6 @@ const FlowKitComponent = (props: FlowKitProps, ref: React.ForwardedRef<FlowKitHa
     }, []);
 
     const recenter = React.useCallback<() => void>((): void => {
-        const currentState = stateRef.current;
-
-        if (currentState.nodes.length < 1) return;
         if (contentRef.current == null) return;
         if (nodesLayerRef.current?.element == null) return;
         if (edgeLayerRef.current?.element == null) return;

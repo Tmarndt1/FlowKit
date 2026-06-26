@@ -199,6 +199,13 @@ const NodesLayerComponent = React.forwardRef<NodesLayerHandle, IProps>((props, r
         let maxRight: number = Number.NEGATIVE_INFINITY;
         let maxBottom: number = Number.NEGATIVE_INFINITY;
 
+        const includeBounds = (left: number, top: number, right: number, bottom: number): void => {
+            if (top < minTop) minTop = top;
+            if (bottom > maxBottom) maxBottom = bottom;
+            if (left < minLeft) minLeft = left;
+            if (right > maxRight) maxRight = right;
+        };
+
         propsRef.current.nodes.forEach((node: INode<any, any>) => {
             const rect = document.getElementById(node.key)?.getBoundingClientRect();
 
@@ -209,10 +216,20 @@ const NodesLayerComponent = React.forwardRef<NodesLayerHandle, IProps>((props, r
             const left: number = node.offset.x;
             const right: number = node.offset.x + rect.width / scale;
 
-            if (top < minTop) minTop = top;
-            if (bottom > maxBottom) maxBottom = bottom;
-            if (left < minLeft) minLeft = left;
-            if (right > maxRight) maxRight = right;
+            includeBounds(left, top, right, bottom);
+        });
+
+        (propsRef.current.containers ?? []).forEach((container: INodeContainer) => {
+            const bounds = getRenderedContainerBounds(container);
+
+            if (bounds == null) return;
+
+            includeBounds(
+                bounds.x,
+                bounds.y,
+                bounds.x + bounds.width,
+                bounds.y + bounds.height
+            );
         });
 
         if (
