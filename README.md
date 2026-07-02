@@ -5,6 +5,11 @@
 </p>
 
 <p align="center">
+  <a href="https://github.com/Tmarndt1/FlowKit/actions/workflows/ci.yml"><img src="https://github.com/Tmarndt1/FlowKit/actions/workflows/ci.yml/badge.svg" alt="CI" /></a>
+  <a href="./LICENSE"><img src="https://img.shields.io/badge/license-MIT-blue.svg" alt="MIT License" /></a>
+</p>
+
+<p align="center">
   A React + TypeScript library for building node editors, workflow designers, network diagrams, and flow-based applications.
 </p>
 
@@ -46,7 +51,9 @@ Use it for workflow engines, automation builders, network topology editors, ETL 
 * Bezier, smooth-step, step, and straight paths
 * Built-in route shaping for node avoidance and parallel edge offsets
 * Optional animated flow paths
-* Source, target, or bidirectional arrows
+* Marker shapes at either end: arrow, open arrow, hollow triangle, filled diamond, hollow diamond
+* Solid, dashed, or dotted stroke styles
+* Midpoint edge labels
 * Custom edge renderers
 * Edge selection
 * Collapsible edge controls
@@ -61,7 +68,7 @@ Use it for workflow engines, automation builders, network topology editors, ETL 
 
 * CSS class hooks for nodes, edges, endpoints, controls, minimap, and containers
 * CSS variables for common colors
-* Per-edge path type, animation, collapse, arrows, and styles
+* Per-edge path type, animation, collapse, markers, stroke style, and inline styles
 * Custom node, edge, and container component maps
 * Public helper for advanced fold-state derivation
 
@@ -135,6 +142,42 @@ export function App() {
     </FlowKit>
   );
 }
+```
+
+### `FlowKitProps`
+
+| Prop | Type | Description |
+|------|------|-------------|
+| `nodes` | `INode<any, any>[]` | Nodes to render (controlled application state) |
+| `edges` | `IEdge<any>[]` | Edges to render (controlled application state) |
+| `containers` | `INodeContainer[]?` | Optional group containers rendered behind nodes |
+| `nodeTypes` | `NodeTypes?` | Custom node renderer map, keyed by `node.type` |
+| `edgeTypes` | `EdgeTypes?` | Custom edge renderer map, keyed by `edge.type` |
+| `containerTypes` | `ContainerTypes?` | Custom container renderer map, keyed by `container.type` |
+| `style` | `React.CSSProperties?` | Inline style for the root element |
+| `zoomMin` / `zoomMax` | `number?` | Zoom scale bounds |
+| `centerOnLoad` | `boolean?` | Centers the initial viewport around rendered content |
+| `proximityConnect` | `boolean \| ProximityConnectOptions?` | Endpoint proximity snapping while creating connections |
+| `customNodeProps` | `NodeComponentProps?` | Extra props passed to custom node renderers |
+| `collapsibleEdges` | `boolean?` | Enables built-in edge fold controls by default |
+| `edgePathType` | `EdgePathType?` | Default edge path algorithm |
+| `edgeRouting` | `EdgeRoutingOptions?` | Default route shaping for edges |
+| `readOnly` | `boolean?` | Disables editing while preserving pan, zoom, and selection |
+| `multiSelect` | `boolean?` | Multi-selection via modifier-click and marquee (default `true`) |
+| `onEdgeCollapsedChange` | `(args) => void?` | Fold control requested a collapse state change |
+| `onEdgeCollapsePreviewChange` | `(args) => void?` | Fold menu option previewed or cleared |
+| `canConnect` | `CanConnect?` | Validator for new endpoint connections |
+
+### Connection validation
+
+Pass `canConnect` to reject invalid connections while the user drags. Endpoints highlight green or red immediately based on the result.
+
+```tsx
+<FlowKit
+  nodes={nodes}
+  edges={edges}
+  canConnect={({ source, target }) => source.data?.valueType === target.data?.valueType}
+/>
 ```
 
 ---
@@ -242,10 +285,10 @@ FlowKit derives affected nodes and edges internally. Apps only need to persist `
 Useful state classes:
 
 * `.flow-kit-node-fold-preview`
-* `.flow-kit-node-fold-hidden`
+* `.flow-kit-node-hidden`
 * `.flow-kit-edge-fold-preview`
-* `.flow-kit-edge-path.folded`
-* `.flow-kit-edge-path.fold-stub`
+* `.flow-kit-edge-path.flow-kit-folded`
+* `.flow-kit-edge-path.flow-kit-fold-stub`
 
 For advanced integrations, `getFoldGraphState` is exported.
 
@@ -347,10 +390,14 @@ The custom component receives all `INodeContainer` fields plus `className` and `
         }
       });
     }}
-    onContainersChange={setContainers}
+    onContainersChange={(changes) =>
+      setContainers((current) => applyContainerChanges(current, changes))
+    }
   />
 </FlowKit>
 ```
+
+`applyContainerChanges` is an exported helper that applies a batch of `ContainerChange` descriptors (move, resize, membership, add, remove) to a container array and returns a new array.
 
 ### `FlowKitEventsProps`
 
@@ -358,7 +405,7 @@ The custom component receives all `INodeContainer` fields plus `className` and `
 |------|------|-------------|
 | `onNodesChange` | `(changes: NodeChange[]) => void` | Called when nodes are repositioned, resized, or their selection changes |
 | `onEdgesChange` | `(changes: EdgeChange[]) => void` | Called when edges are connected, selected, added, or removed |
-| `onContainersChange` | `(containers: INodeContainer[]) => void` | Called when container membership changes after a node drag |
+| `onContainersChange` | `(changes: ContainerChange[]) => void` | Called with normalized change descriptors when containers are moved, resized, or have membership changes |
 
 ### `NodeChange`
 
@@ -384,6 +431,17 @@ type EdgeChange =
 ```
 
 `connect` replaces the old `onConnect` callback. It fires when the user successfully drops an endpoint onto a compatible target. `select` mirrors the node variant.
+
+### `ContainerChange`
+
+```ts
+type ContainerChange =
+  | { type: "move";       key: string; position: IOffset }
+  | { type: "resize";     key: string; position: IOffset; width: number; height: number }
+  | { type: "membership"; key: string; nodeKeys: string[] }
+  | { type: "add";        container: INodeContainer }
+  | { type: "remove";     key: string };
+```
 
 ### Selection hook
 
@@ -483,7 +541,7 @@ The imperative ref API exposed by `FlowKit`:
 | Method | Description |
 |--------|-------------|
 | `recenter()` | Pan and zoom to fit all nodes |
-| `panToNode(key)` | Pan the viewport so the node with the given key is centered |
+| `panToNode(key, options?)` | Pan the viewport so the node with the given key is centered. Returns `false` when the node cannot be found |
 | `zoomIn()` | Increase zoom level |
 | `zoomOut()` | Decrease zoom level |
 | `notifyLayout()` | Redraw all edges after programmatic node repositioning |
@@ -531,6 +589,57 @@ const edge = {
 ```
 
 Animation is opt-in per edge with `animated: true`.
+
+---
+
+## Edge Markers And Stroke Styles
+
+Attach marker shapes to either end of an edge with `markerStart` and `markerEnd`, and control the dash pattern with `strokeStyle`. Combined with floating anchor mode, this covers UML relationship notation out of the box.
+
+```ts
+import { EdgeMarker, EdgeStrokeStyle, IEdge } from "flowkit";
+
+// Inheritance — hollow triangle at the parent end
+const inheritance: IEdge<any> = {
+  key: "dog-extends-animal",
+  type: "edge",
+  anchorMode: "floating",
+  sourceId: "dog",
+  targetId: "animal",
+  markerEnd: "hollow-triangle",
+};
+
+// Composition — filled diamond at the owner end
+const composition: IEdge<any> = {
+  key: "order-owns-lines",
+  type: "edge",
+  anchorMode: "floating",
+  sourceId: "order",
+  targetId: "order-line",
+  markerStart: "filled-diamond",
+  markerEnd: "arrow",
+};
+
+// Dependency — dashed line with an open arrow
+const dependency: IEdge<any> = {
+  key: "service-uses-order",
+  type: "edge",
+  anchorMode: "floating",
+  sourceId: "payment-service",
+  targetId: "order",
+  markerEnd: "open-arrow",
+  strokeStyle: "dashed",
+  label: "«uses»",
+};
+```
+
+Available markers (`EdgeMarker`): `"arrow"`, `"open-arrow"`, `"hollow-triangle"`, `"filled-diamond"`, `"hollow-diamond"`, `"none"`.
+
+Available stroke styles (`EdgeStrokeStyle`): `"solid"` (default), `"dashed"`, `"dotted"`.
+
+`markerStart`/`markerEnd` take precedence over the legacy `arrows` prop, which continues to work for simple source/target arrowheads. Marker colors follow `--flow-kit-edge-arrow-color`; hollow marker fill follows `--flow-kit-edge-marker-hollow-fill`.
+
+Set `label` on any edge to render text at the path midpoint.
 
 ---
 
@@ -681,7 +790,7 @@ Example:
   stroke-width: 2.5;
 }
 
-.flow-kit-node-fold-hidden {
+.flow-kit-node-hidden {
   opacity: 0;
   pointer-events: none;
 }
@@ -691,7 +800,7 @@ Example:
 
 ## Demo
 
-The demo includes a workflow editor, a floating-edge network diagram, and an auto-layout explorer.
+The demo includes a workflow editor, a floating-edge network diagram, an auto-layout explorer, a volume-utilization dashboard, and a UML class diagram showcasing edge markers.
 
 ```bash
 npm install
@@ -702,11 +811,33 @@ npm install
 npm run dev
 ```
 
+A developer documentation site with full API reference lives in `docs-site/`:
+
+```bash
+cd docs-site
+npm install
+npm run dev   # http://localhost:5174
+```
+
+---
+
+## Testing
+
+Unit tests are written with [Vitest](https://vitest.dev) and cover the pure graph, routing, marker, container, and fold-state logic in `lib/`.
+
+```bash
+npm test            # run all tests once
+npm run test:watch  # watch mode
+npm run typecheck   # TypeScript type checking
+```
+
+Tests run automatically on pushes and pull requests via GitHub Actions.
+
 ---
 
 ## Status
 
-FlowKit is under active development. Planned areas include undo/redo, copy/paste, marquee selection, edge labels, and broader keyboard support.
+FlowKit is under active development. Planned areas include undo/redo, copy/paste, edge waypoints, multiplicity-style edge end labels, serialization helpers, and image export.
 
 ---
 
