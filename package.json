@@ -26,7 +26,8 @@
   "scripts": {
     "build": "tsup",
     "typecheck": "tsc --noEmit",
-    "test": "tsc --noEmit",
+    "test": "vitest run",
+    "test:watch": "vitest",
     "prepublishOnly": "npm run build"
   },
   "keywords": [
@@ -57,7 +58,8 @@
     "@types/react": "19.2.17",
     "react": "19.2.7",
     "tsup": "^8.5.1",
-    "typescript": "6.0.3"
+    "typescript": "6.0.3",
+    "vitest": "^4.1.9"
   },
   "dependencies": {
     "zustand": "5.0.14"

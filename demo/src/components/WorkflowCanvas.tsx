@@ -1,3 +1,4 @@
+import { DragEvent, useState } from "react";
 import {
   FlowKit,
   FlowKitControls,
@@ -19,6 +20,7 @@ import {
 } from "../../../lib/index";
 import { WorkflowContainer, WorkflowEdge, WorkflowNode as WorkflowNodeType } from "../types";
 import { categoryLabels, isWorkflowConnectionValid } from "../workflowModel";
+import { decodeWorkflowPresetDragPayload, workflowPresetDragType } from "../workflowDrag";
 
 const miniMapNodeColors = {
   input: { background: "rgba(73, 212, 230, .5)", borderColor: "rgba(73, 212, 230, .9)" },
@@ -38,6 +40,18 @@ const workflowLegendColors = {
   output: "#ff6767",
 };
 
+function getSelectionKeyFromChanges<TChange extends { key: string; selected: boolean; type: string }>(
+  changes: TChange[]
+): string | null | undefined {
+  const selectionChanges = changes.filter((change) => change.type === "select");
+
+  if (selectionChanges.length === 0) return undefined;
+
+  const selected = selectionChanges.findLast((change) => change.selected);
+
+  return selected?.key ?? null;
+}
+
 type WorkflowCanvasProps = {
   animatedEdges: boolean;
   collapsibleEdges: boolean;
@@ -48,6 +62,7 @@ type WorkflowCanvasProps = {
   nodeTypes: NodeTypes;
   onConnect: (sourceId: string, targetId: string) => void;
   onContainersChange: (changes: ContainerChange[]) => void;
+  onDropNode: (presetType: string, offset: { x: number; y: number }) => void;
   onEdgeCollapsedChange: (edgeKey: string, collapsed: boolean, mode: EdgeCollapseMode) => void;
   onNodesChange: (changes: NodeChange[]) => void;
   onRemove: (node: INode<any, any> | null, removedEdges: IEdge<any>[]) => void;
@@ -64,11 +79,13 @@ export function WorkflowCanvas({
   nodeTypes,
   onConnect,
   onContainersChange,
+  onDropNode,
   onEdgeCollapsedChange,
   onNodesChange,
   onRemove,
   onSelectionChange,
 }: WorkflowCanvasProps) {
+  const [dragOver, setDragOver] = useState(false);
   const displayEdges = edges.map((edge) => ({
     ...edge,
     animated: animatedEdges,
@@ -93,9 +110,52 @@ export function WorkflowCanvas({
       },
     ];
   }, []);
+  const getDropOffset = (event: DragEvent<HTMLElement>) => {
+    const content = event.currentTarget.querySelector<HTMLElement>(".flow-kit-content");
+
+    if (content == null) return null;
+
+    const rect = content.getBoundingClientRect();
+    const transform = getComputedStyle(content).transform;
+    const scale = transform === "none" ? 1 : new DOMMatrixReadOnly(transform).a || 1;
+
+    return {
+      x: Math.round((event.clientX - rect.left) / scale - 75),
+      y: Math.round((event.clientY - rect.top) / scale - 46),
+    };
+  };
+  const hasWorkflowPresetDragData = (event: DragEvent<HTMLElement>) =>
+    Array.from(event.dataTransfer.types).includes(workflowPresetDragType);
+
+  const onDragOver = (event: DragEvent<HTMLElement>) => {
+    if (!hasWorkflowPresetDragData(event)) return;
+
+    event.preventDefault();
+    event.dataTransfer.dropEffect = "copy";
+    setDragOver(true);
+  };
+
+  const onDrop = (event: DragEvent<HTMLElement>) => {
+    if (!hasWorkflowPresetDragData(event)) return;
+
+    event.preventDefault();
+    setDragOver(false);
+
+    const payload = decodeWorkflowPresetDragPayload(event.dataTransfer.getData(workflowPresetDragType));
+    const offset = getDropOffset(event);
+
+    if (payload == null || offset == null) return;
+
+    onDropNode(payload.presetType, offset);
+  };
 
   return (
-    <section className="canvas-panel">
+    <section
+      className={`canvas-panel${dragOver ? " canvas-panel-drop-target" : ""}`}
+      onDragLeave={() => setDragOver(false)}
+      onDragOver={onDragOver}
+      onDrop={onDrop}
+    >
       <FlowKit
         centerOnLoad
         collapsibleEdges={collapsibleEdges}
@@ -120,16 +180,25 @@ export function WorkflowCanvas({
         <FlowKitControls />
         <FlowKitEvents
           onContainersChange={onContainersChange}
-          onEdgesChange={(changes) => changes.forEach((change) => {
-            if (change.type === "connect") onConnect(change.sourceId, change.targetId);
-            if (change.type === "select") onSelectionChange(change.selected ? change.key : null);
-          })}
+          onEdgesChange={(changes) => {
+            changes.forEach((change) => {
+              if (change.type === "connect") onConnect(change.sourceId, change.targetId);
+            });
+
+            const selectedKey = getSelectionKeyFromChanges(changes);
+
+            if (selectedKey !== undefined) onSelectionChange(selectedKey);
+          }}
           onNodesChange={(changes) => {
             const forwarded: NodeChange[] = [];
+
             changes.forEach((change) => {
-              if (change.type === "select") onSelectionChange(change.selected ? change.key : null);
-              else forwarded.push(change);
+              if (change.type !== "select") forwarded.push(change);
             });
+
+            const selectedKey = getSelectionKeyFromChanges(changes);
+
+            if (selectedKey !== undefined) onSelectionChange(selectedKey);
             if (forwarded.length > 0) onNodesChange(forwarded);
           }}
         />

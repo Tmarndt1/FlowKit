@@ -26,7 +26,6 @@ import {
   WorkflowEndpointData,
   WorkflowNode as WorkflowNodeType,
   WorkflowNodeData,
-  WorkflowPreset,
 } from "./types";
 import {
   createNode,
@@ -35,6 +34,7 @@ import {
   initialEdges,
   initialNodes,
   initialRuntimeVariables,
+  presetByType,
 } from "./workflowModel";
 
 export function App() {
@@ -115,11 +115,14 @@ export function App() {
     );
   }, []);
 
-  const addNode = React.useCallback((preset: WorkflowPreset) => {
+  const addNode = React.useCallback((presetType: string, offset: { x: number; y: number }) => {
+    const preset = presetByType.get(presetType);
+
+    if (preset == null) return;
+
     setNodes((currentNodes) => {
       const nodeNumber = getNodeNumber(currentNodes);
       const nodeKey = `workflow-node-${nodeNumber}`;
-      const offset = (nodeNumber - 1) * 30;
 
       const variableDefaults =
         preset.type === "variable-input"
@@ -132,7 +135,7 @@ export function App() {
             }
           : {};
 
-      return [...currentNodes, createNode(preset.type, nodeKey, { x: 250 + offset, y: 520 + offset }, variableDefaults)];
+      return [...currentNodes, createNode(preset.type, nodeKey, offset, variableDefaults)];
     });
   }, []);
 
@@ -356,7 +359,7 @@ export function App() {
         status={executionStatus}
       />
       <div className={`demo-grid demo-grid-${demoView}`}>
-        {demoView === "workflow" ? <NodePalette onAddNode={addNode} /> : null}
+        {demoView === "workflow" ? <NodePalette /> : null}
         <div className="workspace-column">
           {demoView === "workflow" ? (
             <WorkflowCanvas
@@ -369,6 +372,7 @@ export function App() {
               nodeTypes={workflowNodeTypes}
               onConnect={onConnect}
               onContainersChange={(changes) => setContainers((c) => applyContainerChanges(c, changes))}
+              onDropNode={addNode}
               onEdgeCollapsedChange={onEdgeCollapsedChange}
               onNodesChange={onNodesChange}
               onRemove={onRemove}

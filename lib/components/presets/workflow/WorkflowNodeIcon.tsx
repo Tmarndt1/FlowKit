@@ -136,7 +136,6 @@ const SwitchIcon = () => (
 
 const IfElseIcon = () => (
     <S>
-        <diamond />
         <path d="M8 2 L14 8 L8 14 L2 8 Z" fill="none" stroke="currentColor" strokeLinejoin="round" strokeWidth="1.8" />
         <line stroke="currentColor" strokeLinecap="round" strokeWidth="1.5" x1="8" x2="8" y1="0" y2="2" />
         <line stroke="currentColor" strokeLinecap="round" strokeWidth="1.5" x1="14" x2="16" y1="8" y2="5" />

@@ -1,15 +1,12 @@
 import { WorkflowNodeIcon } from "../../../lib/components/presets/workflow/WorkflowNodeIcon";
 import { categoryLabels, groupPresets } from "../workflowModel";
-import { WorkflowCategory, WorkflowPreset } from "../types";
-
-type NodePaletteProps = {
-  onAddNode: (preset: WorkflowPreset) => void;
-};
+import { WorkflowCategory } from "../types";
+import { encodeWorkflowPresetDragPayload, workflowPresetDragType } from "../workflowDrag";
 
 const categoryOrder: WorkflowCategory[] = ["input", "math", "logic", "policy", "utility", "output", "data", "text", "trigger", "flow", "annotation"];
 const groupedPresets = groupPresets();
 
-export function NodePalette({ onAddNode }: NodePaletteProps) {
+export function NodePalette() {
   return (
     <aside className="node-palette">
       <div className="panel-title">Node Palette</div>
@@ -30,8 +27,13 @@ export function NodePalette({ onAddNode }: NodePaletteProps) {
               {groupedPresets[category].map((preset) => (
                 <button
                   className={`palette-node palette-node-${preset.category}`}
+                  draggable
                   key={preset.type}
-                  onClick={() => onAddNode(preset)}
+                  onDragStart={(event) => {
+                    event.dataTransfer.effectAllowed = "copy";
+                    event.dataTransfer.setData(workflowPresetDragType, encodeWorkflowPresetDragPayload(preset.type));
+                    event.dataTransfer.setData("text/plain", preset.title);
+                  }}
                   type="button"
                 >
                   <span className="palette-node-icon">

@@ -427,7 +427,7 @@ button {
   background: linear-gradient(180deg, #1a2330, #151d27);
   border: 0;
   border-bottom: 1px solid #243044;
-  cursor: pointer;
+  cursor: grab;
   display: grid;
   gap: 9px;
   grid-template-columns: 22px minmax(0, 1fr);
@@ -438,6 +438,10 @@ button {
 
 .palette-node:hover {
   background: #222d3d;
+}
+
+.palette-node:active {
+  cursor: grabbing;
 }
 
 .palette-node-icon {
@@ -481,6 +485,21 @@ button {
   min-height: 0;
   overflow: hidden;
   position: relative;
+}
+
+.canvas-panel::after {
+  border: 1px dashed transparent;
+  content: "";
+  inset: 12px;
+  pointer-events: none;
+  position: absolute;
+  transition: border-color 140ms ease, box-shadow 140ms ease;
+  z-index: 80;
+}
+
+.canvas-panel-drop-target::after {
+  border-color: rgba(104, 232, 255, 0.72);
+  box-shadow: inset 0 0 0 1px rgba(104, 232, 255, 0.16), 0 0 34px rgba(104, 232, 255, 0.12);
 }
 
 .canvas-panel .flow-kit {
