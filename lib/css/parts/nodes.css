@@ -1,34 +1,70 @@
+/*
+ * Node styling.
+ *
+ * Every visual value is driven by a CSS variable with a sensible dark-theme
+ * default, so applications can re-theme nodes without overriding selectors:
+ *
+ *   .flow-kit {
+ *       --flow-kit-node-background: #ffffff;
+ *       --flow-kit-node-color: #111827;
+ *       --flow-kit-node-border-color: #cbd5e1;
+ *       --flow-kit-node-selected-color: #2563eb;
+ *   }
+ *
+ * Per-node overrides remain available through node.className and node.style.
+ */
+
 .flow-kit-node {
-    min-width: 25px;
-    min-height: 25px;
-    border: 1px solid rgb(255, 255, 255, .2);
-    border-radius: 3px;
-    display: flex;
-    justify-content: center;
     align-items: center;
-    color: gainsboro;
-    font-size: .85rem;
-    position: absolute;
+    background: var(--flow-kit-node-background, #111827);
+    border: var(--flow-kit-node-border-width, 1px) solid var(--flow-kit-node-border-color, rgba(255, 255, 255, 0.2));
+    border-radius: var(--flow-kit-node-border-radius, 6px);
+    box-shadow: var(--flow-kit-node-shadow, 0 2px 8px rgba(0, 0, 0, 0.25));
+    color: var(--flow-kit-node-color, gainsboro);
     cursor: grab;
+    display: flex;
+    font-size: var(--flow-kit-node-font-size, 0.85rem);
+    justify-content: center;
+    min-height: var(--flow-kit-node-min-height, 25px);
+    min-width: var(--flow-kit-node-min-width, 25px);
+    padding: var(--flow-kit-node-padding, 8px 14px);
     pointer-events: all;
+    position: absolute;
     touch-action: none;
+    transition: border-color 0.15s ease, box-shadow 0.15s ease, opacity 0.15s ease;
     will-change: transform;
+}
+
+.flow-kit-node:hover {
+    border-color: var(--flow-kit-node-border-color-hover, rgba(255, 255, 255, 0.45));
+}
+
+.flow-kit-node:active {
+    cursor: grabbing;
 }
 
 .flow-kit-node-custom {
-    position: absolute;
     cursor: grab;
     pointer-events: all;
+    position: absolute;
     touch-action: none;
     will-change: transform;
 }
 
+.flow-kit-node-custom:active {
+    cursor: grabbing;
+}
+
 .flow-kit-node.flow-kit-selected, .flow-kit-node-custom.flow-kit-selected {
-    border: 1px solid var(--flow-kit-node-selected-color, white);
+    border: var(--flow-kit-node-border-width, 1px) solid var(--flow-kit-node-selected-color, white);
     box-shadow: 0 0 0 3px color-mix(in srgb, var(--flow-kit-node-selected-color, white) 25%, transparent);
 }
 
+.flow-kit-node-fold-preview {
+    opacity: var(--flow-kit-node-fold-preview-opacity, 0.45);
+}
+
 .flow-kit-node-hidden {
-  opacity: 0;
-  pointer-events: none;
+    opacity: 0;
+    pointer-events: none;
 }

@@ -6,8 +6,8 @@ import { IOffset } from "./IOffset";
 export interface INode<TData, TEndpoint> {
     /** Stable node identifier. Also used as the rendered DOM id. */
     key: string;
-    /** Node renderer key. Use "node" for the built-in shape renderer. */
-    type: string;
+    /** Node renderer key from nodeTypes. Defaults to the built-in node renderer when omitted. */
+    type?: string;
     /** Canvas-space position of the node's top-left corner. */
     offset: IOffset;
     /** Connection points rendered relative to this node. */

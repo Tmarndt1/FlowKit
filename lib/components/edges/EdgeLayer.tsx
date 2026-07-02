@@ -420,7 +420,7 @@ export const EdgeLayer = React.forwardRef<EdgeLayerHandle, IProps>((props, ref) 
                 parallelOffset: edge.routing?.parallelOffset ?? parallelOffsets.get(edge.key) ?? 0,
             };
 
-            if (edge.type === "edge") {
+            if (edge.type == null || edge.type === "edge") {
                 array.push(
                     <Edge
                         key={edge.key}

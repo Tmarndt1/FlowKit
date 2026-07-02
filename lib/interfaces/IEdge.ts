@@ -48,8 +48,8 @@ export interface IEdge<T> {
     targetId: string;
     /** Source endpoint id, or source node key when anchorMode is "floating". */
     sourceId: string;
-    /** Edge renderer key. Use "edge" for the built-in renderer. */
-    type: string;
+    /** Edge renderer key from edgeTypes. Defaults to the built-in edge renderer when omitted. */
+    type?: string;
     /**
      * Use "floating" to connect node bounds instead of fixed endpoint elements.
      * In floating mode, sourceId and targetId are node keys.

@@ -19,7 +19,7 @@ export function NetworkNode(props: NetworkNodeType & { selected?: boolean }) {
     return (
         <div className={`network-node network-node-${category}`}>
             <div className="network-node-icon">
-                <NetworkNodeIcon nodeType={props.type} />
+                <NetworkNodeIcon nodeType={props.type ?? ""} />
             </div>
 
             <div className="network-node-label">{data?.hostname ?? data?.label}</div>

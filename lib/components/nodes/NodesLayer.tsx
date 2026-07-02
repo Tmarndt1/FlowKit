@@ -264,7 +264,7 @@ const NodesLayerComponent = React.forwardRef<NodesLayerHandle, IProps>((props, r
         </div>
         <div className="flow-kit-nodes-container" ref={layerRef}>
             {props.nodes.map((node) => {
-                if (node.type === "node") {
+                if (node.type == null || node.type === "node") {
                     return (
                         <Node
                             key={node.key}

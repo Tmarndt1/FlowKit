@@ -1,3 +1,19 @@
+/*
+ * Edge styling.
+ *
+ * Every visual value is driven by a CSS variable with a sensible dark-theme
+ * default, so applications can re-theme edges without overriding selectors:
+ *
+ *   .flow-kit {
+ *       --flow-kit-edge-color: #94a3b8;
+ *       --flow-kit-edge-width: 2px;
+ *       --flow-kit-edge-selected-color: #f8fafc;
+ *       --flow-kit-edge-arrow-color: #94a3b8;
+ *   }
+ *
+ * Per-edge overrides remain available through edge.className and edge.style.
+ */
+
 .flow-kit line {
     stroke-linecap: round;
 }
@@ -12,20 +28,25 @@
     stroke-width: var(--flow-kit-edge-width, 1.5px);
     stroke-linecap: round;
     stroke-linejoin: round;
+    transition: stroke 0.15s ease, stroke-width 0.15s ease, opacity 0.15s ease;
+}
+
+.flow-kit-edge:hover .flow-kit-edge-path {
+    stroke: var(--flow-kit-edge-color-hover, var(--flow-kit-edge-color, #a5f3fc));
 }
 
 .flow-kit-edge-path.flow-kit-animated {
-    stroke-dasharray: 8 4;
-    animation: edge-flow 1s linear infinite;
+    stroke-dasharray: var(--flow-kit-edge-animated-dasharray, 8 4);
+    animation: edge-flow var(--flow-kit-edge-animation-duration, 1s) linear infinite;
 }
 
 .flow-kit-edge-path.flow-kit-folded {
-    opacity: 0.18;
+    opacity: var(--flow-kit-edge-folded-opacity, 0.18);
     stroke-dasharray: 3 8;
 }
 
 .flow-kit-edge-path.flow-kit-fold-stub {
-    opacity: 0.78;
+    opacity: var(--flow-kit-edge-fold-stub-opacity, 0.78);
 }
 
 .flow-kit-edge-fold-preview .flow-kit-edge-path {
@@ -33,7 +54,8 @@
 }
 
 .flow-kit-edge-path.flow-kit-selected {
-    stroke: white;
+    stroke: var(--flow-kit-edge-selected-color, #ffffff);
+    stroke-width: var(--flow-kit-edge-selected-width, var(--flow-kit-edge-width, 1.5px));
 }
 
 .flow-kit-edge-measure {
@@ -67,7 +89,7 @@
 .flow-kit-edge-marker-hollow {
     fill: var(--flow-kit-edge-marker-hollow-fill, #111827);
     stroke: var(--flow-kit-edge-arrow-color, #67e8f9);
-    stroke-width: 1px;
+    stroke-width: var(--flow-kit-edge-marker-stroke-width, 1px);
 }
 
 .flow-kit-edge-marker-open {
@@ -75,7 +97,7 @@
     stroke: var(--flow-kit-edge-arrow-color, #67e8f9);
     stroke-linecap: round;
     stroke-linejoin: round;
-    stroke-width: 1.5px;
+    stroke-width: var(--flow-kit-edge-marker-open-stroke-width, 1.5px);
 }
 
 .flow-kit-edge-label {
@@ -84,7 +106,7 @@
 
 .flow-kit-edge-label-background {
     fill: var(--flow-kit-edge-label-background, rgba(17, 24, 39, 0.92));
-    rx: 5px;
+    rx: var(--flow-kit-edge-label-radius, 5px);
     stroke: var(--flow-kit-edge-label-border, rgba(148, 163, 184, 0.36));
     stroke-width: 1px;
 }
@@ -92,7 +114,7 @@
 .flow-kit-edge-label-text {
     fill: var(--flow-kit-edge-label-color, #dbeafe);
     font-size: var(--flow-kit-edge-label-font-size, 11px);
-    font-weight: 600;
+    font-weight: var(--flow-kit-edge-label-font-weight, 600);
 }
 
 .flow-kit-edge-fold-control {

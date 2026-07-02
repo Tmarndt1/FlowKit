@@ -43,7 +43,7 @@ export function WorkflowNode(props: WorkflowNodeType & { selected?: boolean }) {
             ) : null}
             <div className="workflow-node-title">
                 <span className="workflow-node-icon">
-                    <WorkflowNodeIcon nodeType={props.type} fallback={data?.icon ?? ""} />
+                    <WorkflowNodeIcon nodeType={props.type ?? ""} fallback={data?.icon ?? ""} />
                 </span>
                 <strong>{data?.title ?? props.key}</strong>
             </div>
