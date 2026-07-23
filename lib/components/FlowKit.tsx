@@ -23,6 +23,8 @@ import {
     IEdgeCollapsedChangeArgs,
     IEdgeCollapsePreviewChangeArgs
 } from "../contexts/FlowKitConfigContext";
+import { findElementById } from "../functions/domScope";
+import { getPanToNodeOffset } from "../functions/viewport";
 
 export { useNodeFlowSelection } from "../contexts/NodeFlowContext";
 export { useNodeFlowSelectionChange } from "./FlowKitEvents";
@@ -68,8 +70,8 @@ function isInteractiveFlowElement(element: Element | null): boolean {
     );
 }
 
-function isPointInsideFlowNode(x: number, y: number): boolean {
-    const nodes = document.querySelectorAll<HTMLElement>(".flow-kit-node, .flow-kit-node-custom");
+function isPointInsideFlowNode(root: HTMLElement | null, x: number, y: number): boolean {
+    const nodes = root?.querySelectorAll<HTMLElement>(".flow-kit-node, .flow-kit-node-custom") ?? [];
 
     for (const node of nodes) {
         const rect = node.getBoundingClientRect();
@@ -167,6 +169,7 @@ export interface FlowKitHandle {
 const FlowKitComponent = (props: FlowKitProps, ref: React.ForwardedRef<FlowKitHandle>) => {
     const nodeFlowStoresRef = React.useRef<NodeFlowStores | null>(null);
     const viewportRef = React.useRef<HTMLDivElement>(null);
+    const rootRef = React.useRef<HTMLDivElement>(null);
     const contentRef = React.useRef<HTMLDivElement>(null);
     const nodesLayerRef = React.useRef<NodesLayerHandle>(null);
     const edgeLayerRef = React.useRef<EdgeLayerHandle>(null);
@@ -213,6 +216,7 @@ const FlowKitComponent = (props: FlowKitProps, ref: React.ForwardedRef<FlowKitHa
         setCollapsePreview(args.mode == null ? null : args);
         propsRef.current.onEdgeCollapsePreviewChange?.(args);
     }, []);
+    const getRootElement = React.useCallback(() => rootRef.current, []);
 
     const config: FlowKitConfigContextValue = React.useMemo<FlowKitConfigContextValue>(
         () => ({
@@ -224,6 +228,7 @@ const FlowKitComponent = (props: FlowKitProps, ref: React.ForwardedRef<FlowKitHa
             canConnect: props.canConnect,
             readOnly: props.readOnly,
             multiSelect: props.multiSelect,
+            getRootElement,
         }),
         [
             props.canConnect,
@@ -233,6 +238,7 @@ const FlowKitComponent = (props: FlowKitProps, ref: React.ForwardedRef<FlowKitHa
             props.onEdgeCollapsedChange,
             props.readOnly,
             props.multiSelect,
+            getRootElement,
             onEdgeCollapsePreviewChange
         ]
     );
@@ -241,6 +247,10 @@ const FlowKitComponent = (props: FlowKitProps, ref: React.ForwardedRef<FlowKitHa
         () => getFoldGraphState(props.nodes, props.edges, props.containers, collapsePreview),
         [collapsePreview, props.containers, props.edges, props.nodes]
     );
+
+    React.useEffect(() => {
+        selectionStore.getState().reconcileSelection(props.nodes, props.edges);
+    }, [props.edges, props.nodes, selectionStore]);
 
     // FlowKit owns viewport transforms directly so panning and edge redraws can stay
     // synchronized without requiring consumers to manage viewport state.
@@ -313,7 +323,7 @@ const FlowKitComponent = (props: FlowKitProps, ref: React.ForwardedRef<FlowKitHa
             const dy = e.clientY - cursorPosRef.current.y;
             const target = document.elementFromPoint(e.clientX, e.clientY);
 
-            if (isInteractiveFlowElement(target) || isPointInsideFlowNode(e.clientX, e.clientY)) {
+            if (isInteractiveFlowElement(target) || isPointInsideFlowNode(rootRef.current, e.clientX, e.clientY)) {
                 stopCanvasPan(false);
                 return;
             }
@@ -384,7 +394,7 @@ const FlowKitComponent = (props: FlowKitProps, ref: React.ForwardedRef<FlowKitHa
         // merges them into the selection (shift keeps existing selection additive).
         if (dragged) {
             const hits = stateRef.current.nodes.filter((node) => {
-                const bounds = document.getElementById(node.key)?.getBoundingClientRect();
+                const bounds = findElementById(rootRef.current, node.key)?.getBoundingClientRect();
 
                 if (bounds == null) return false;
 
@@ -424,7 +434,7 @@ const FlowKitComponent = (props: FlowKitProps, ref: React.ForwardedRef<FlowKitHa
         if (
             isInteractiveFlowElement(target) ||
             isInteractiveFlowElement(pointTarget) ||
-            isPointInsideFlowNode(e.clientX, e.clientY)
+            isPointInsideFlowNode(rootRef.current, e.clientX, e.clientY)
         ) {
             stopCanvasPan(false);
             return;
@@ -552,7 +562,7 @@ const FlowKitComponent = (props: FlowKitProps, ref: React.ForwardedRef<FlowKitHa
 
     const panToNode = React.useCallback<(nodeKey: string, options?: PanToNodeOptions) => boolean>((nodeKey: string, options?: PanToNodeOptions): boolean => {
         const node = stateRef.current.nodes.find((item) => item.key === nodeKey);
-        const nodeElement = document.getElementById(nodeKey);
+        const nodeElement = findElementById(rootRef.current, nodeKey);
         const viewportRect = viewportRef.current?.getBoundingClientRect();
 
         if (node == null || nodeElement == null || viewportRect == null || contentRef.current == null) {
@@ -567,11 +577,17 @@ const FlowKitComponent = (props: FlowKitProps, ref: React.ForwardedRef<FlowKitHa
 
         currentState.setScale(nextScale);
 
-        const nodeWidth = nodeElement.offsetWidth / nextScale;
-        const nodeHeight = nodeElement.offsetHeight / nextScale;
+        const nodeWidth = nodeElement.offsetWidth;
+        const nodeHeight = nodeElement.offsetHeight;
 
-        xPosRef.current = viewportRect.width / 2 - ((node.offset.x + nodeWidth / 2) * nextScale);
-        yPosRef.current = viewportRect.height / 2 - ((node.offset.y + nodeHeight / 2) * nextScale);
+        const nextOffset = getPanToNodeOffset(
+            viewportRect,
+            node.offset,
+            { width: nodeWidth, height: nodeHeight },
+            nextScale
+        );
+        xPosRef.current = nextOffset.x;
+        yPosRef.current = nextOffset.y;
         originalPosRef.current = { x: xPosRef.current, y: yPosRef.current };
 
         updateCanvasTransform(xPosRef.current, yPosRef.current, nextScale);
@@ -656,7 +672,18 @@ const FlowKitComponent = (props: FlowKitProps, ref: React.ForwardedRef<FlowKitHa
         <NodeFlowContext.Provider value={stores}>
             <FlowKitConfigContext.Provider value={config}>
                 <FlowKitControlsContext.Provider value={controls}>
-                    <div className="flow-kit" style={props.style}>
+                    <div
+                        className="flow-kit"
+                        onPointerDownCapture={(event) => {
+                            const target = event.target;
+                            if (target instanceof Element &&
+                                target.closest("input, textarea, select, button, [contenteditable='true']") != null) return;
+                            rootRef.current?.focus({ preventScroll: true });
+                        }}
+                        ref={rootRef}
+                        style={props.style}
+                        tabIndex={-1}
+                    >
                         <div
                             className="flow-kit-viewport"
                             onWheel={(event) => onZoom(event.deltaY > 0)}

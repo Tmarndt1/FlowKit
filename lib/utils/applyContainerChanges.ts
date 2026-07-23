@@ -21,7 +21,22 @@ export function applyContainerChanges<T extends INodeContainer>(containers: T[],
                 break;
             case "membership":
                 result = result.map((c) =>
-                    c.key === change.key ? { ...c, nodeKeys: change.nodeKeys } : c
+                    c.key === change.key
+                        ? {
+                            ...c,
+                            nodeKeys: change.nodeKeys,
+                            ...(change.position != null ? { position: change.position } : {}),
+                            ...(change.width != null || change.height != null
+                                ? {
+                                    style: {
+                                        ...c.style,
+                                        ...(change.width != null ? { width: change.width } : {}),
+                                        ...(change.height != null ? { height: change.height } : {}),
+                                    },
+                                }
+                                : {}),
+                        }
+                        : c
                 );
                 break;
             case "add":

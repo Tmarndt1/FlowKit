@@ -49,6 +49,8 @@ export interface FlowKitConfigContextValue {
     readOnly?: boolean;
     /** Enables multi-selection via modifier-click and shift-drag marquee. Defaults to true. */
     multiSelect?: boolean;
+    /** Resolves the root element for canvas-scoped DOM measurements. */
+    getRootElement: () => HTMLElement | null;
 }
 
 export const FlowKitConfigContext =

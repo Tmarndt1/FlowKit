@@ -36,7 +36,7 @@ export function useFlowKitControls(): FlowKitControlsContextValue {
     const controls = React.useContext(FlowKitControlsContext);
 
     if (controls == null) {
-        throw new Error("FlowKit controls must be rendered inside a NodeFlow.");
+        throw new Error("FlowKit controls must be rendered inside FlowKit.");
     }
 
     return controls;

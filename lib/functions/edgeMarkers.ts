@@ -25,26 +25,26 @@ const MARKER_IDS: Record<EdgeMarker, string | null> = {
     "none":            null,
 };
 
-function markerUrl(marker: EdgeMarker | undefined): string | undefined {
+function markerUrl(marker: EdgeMarker | undefined, prefix?: string): string | undefined {
     if (marker == null) return undefined;
     const id = MARKER_IDS[marker];
-    return id != null ? `url(#${id})` : undefined;
+    return id != null ? `url(#${prefix == null ? id : `${prefix}-${id}`})` : undefined;
 }
 
 /**
  * Resolves the SVG markerStart URL for an edge, preferring the explicit
  * `markerStart` field over the legacy `arrows` prop.
  */
-export function resolveMarkerStart(edge: IEdge<any>): string | undefined {
-    if (edge.markerStart != null) return markerUrl(edge.markerStart);
-    return hasSourceArrow(edge) ? `url(#${MARKER_IDS["arrow"]})` : undefined;
+export function resolveMarkerStart(edge: IEdge<any>, prefix?: string): string | undefined {
+    if (edge.markerStart != null) return markerUrl(edge.markerStart, prefix);
+    return hasSourceArrow(edge) ? markerUrl("arrow", prefix) : undefined;
 }
 
 /**
  * Resolves the SVG markerEnd URL for an edge, preferring the explicit
  * `markerEnd` field over the legacy `arrows` prop.
  */
-export function resolveMarkerEnd(edge: IEdge<any>): string | undefined {
-    if (edge.markerEnd != null) return markerUrl(edge.markerEnd);
-    return hasTargetArrow(edge) ? `url(#${MARKER_IDS["arrow"]})` : undefined;
+export function resolveMarkerEnd(edge: IEdge<any>, prefix?: string): string | undefined {
+    if (edge.markerEnd != null) return markerUrl(edge.markerEnd, prefix);
+    return hasTargetArrow(edge) ? markerUrl("arrow", prefix) : undefined;
 }

@@ -14,9 +14,9 @@ import {
 export interface FlowKitEventsProps {
     /** Called with normalized change descriptors when containers are moved, resized, or have membership changes. */
     onContainersChange?: (changes: ContainerChange[]) => void;
-    /** Called with normalized change descriptors when edges are connected, selected, added, or removed. */
+    /** Called when built-in interactions connect or select edges. */
     onEdgesChange?: (changes: EdgeChange[]) => void;
-    /** Called with normalized change descriptors when nodes are repositioned, resized, selected, added, or removed. */
+    /** Called when built-in interactions reposition, resize, or select nodes. */
     onNodesChange?: (changes: NodeChange[]) => void;
 }
 
@@ -62,9 +62,6 @@ export const FlowKitEvents: React.FC<FlowKitEventsProps> = (props) => {
     const endpointDropRequest = useNodeFlowInteractionStore((state) => state.endpointDropRequest);
     const containerChangeRequest = useNodeFlowRenderStore((state) => state.containerChangeRequest);
     const nodesChangeRequest = useNodeFlowRenderStore((state) => state.nodesChangeRequest);
-    const setHasContainerChangeListener = useNodeFlowRenderStore(
-        (state) => state.setHasContainerChangeListener
-    );
     const selectedNodeKeys = useNodeFlowSelectionStore((state) => state.selectedNodeKeys);
     const selectedEdgeKeys = useNodeFlowSelectionStore((state) => state.selectedEdgeKeys);
     const onContainersChangeRef = React.useRef<typeof props.onContainersChange>(props.onContainersChange);
@@ -79,16 +76,6 @@ export const FlowKitEvents: React.FC<FlowKitEventsProps> = (props) => {
     onContainersChangeRef.current = props.onContainersChange;
     onEdgesChangeRef.current = props.onEdgesChange;
     onNodesChangeRef.current = props.onNodesChange;
-
-    React.useEffect(() => {
-        const hasListener = props.onContainersChange != null;
-
-        setHasContainerChangeListener(hasListener);
-
-        return () => {
-            setHasContainerChangeListener(false);
-        };
-    }, [props.onContainersChange, setHasContainerChangeListener]);
 
     React.useEffect(() => {
         if (endpointDropRequest == null) return;

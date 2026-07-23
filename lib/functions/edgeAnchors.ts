@@ -2,6 +2,7 @@ import { Position } from "../enums/Position";
 import { getEndpointPosition } from "./getEndpointPosition";
 import { IConnectionPoint } from "../interfaces/IConnectionPoint";
 import { IEdge } from "../interfaces/IEdge";
+import { findElementById } from "./domScope";
 
 /** Pair of concrete source/target anchors resolved from an edge definition. */
 export interface IResolvedEdgeAnchors {
@@ -57,10 +58,13 @@ function getFloatingAnchor(rect: DOMRect, toward: { x: number; y: number }): ICo
 
 // Floating edges attach to the side of each node that faces the other node.
 // Endpoint edges keep using fixed endpoint elements and their declared positions.
-export function resolveEdgeAnchors(edge: IEdge<any>): IResolvedEdgeAnchors | null {
+export function resolveEdgeAnchors(
+    edge: IEdge<any>,
+    root: HTMLElement | null
+): IResolvedEdgeAnchors | null {
     if (edge.anchorMode === "floating") {
-        const sourceElement = document.getElementById(edge.sourceId);
-        const targetElement = document.getElementById(edge.targetId);
+        const sourceElement = findElementById(root, edge.sourceId);
+        const targetElement = findElementById(root, edge.targetId);
 
         if (sourceElement == null || targetElement == null) return null;
 
@@ -75,8 +79,8 @@ export function resolveEdgeAnchors(edge: IEdge<any>): IResolvedEdgeAnchors | nul
         };
     }
 
-    const sourceElement = document.getElementById(edge.sourceId);
-    const targetElement = document.getElementById(edge.targetId);
+    const sourceElement = findElementById(root, edge.sourceId);
+    const targetElement = findElementById(root, edge.targetId);
 
     if (sourceElement == null || targetElement == null) return null;
 

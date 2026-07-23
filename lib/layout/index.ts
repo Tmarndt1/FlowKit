@@ -11,14 +11,21 @@ export { buildAdjacency, topoRanks } from "./graph";
 import { INode } from "../interfaces/INode";
 import { IEdge } from "../interfaces/IEdge";
 import { LayoutEdge, LayoutNode, LayoutResult } from "./types";
+import { findElementById } from "../functions/domScope";
 
 /**
  * Converts FlowKit nodes to LayoutNodes. Measures rendered size from the DOM
  * when width/height are not provided, falling back to 0.
  */
-export function toLayoutNodes(nodes: INode<any, any>[]): LayoutNode[] {
+export function toLayoutNodes(
+    nodes: INode<any, any>[],
+    scope?: ParentNode | null
+): LayoutNode[] {
+    const measurementScope =
+        scope ?? (typeof document === "undefined" ? null : document);
+
     return nodes.map((node) => {
-        const el = document.getElementById(node.key);
+        const el = findElementById(measurementScope, node.key);
         return {
             key: node.key,
             x: node.offset.x,

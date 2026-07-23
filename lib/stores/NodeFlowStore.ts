@@ -82,6 +82,8 @@ export interface NodeFlowSelectionState {
     setSelection: (nodes: INode<any, any>[], edges?: IEdge<any>[]) => void;
     /** Merges the provided nodes and edges into the current selection. */
     addToSelection: (nodes: INode<any, any>[], edges?: IEdge<any>[]) => void;
+    /** Refreshes selected objects from the latest controlled node and edge arrays. */
+    reconcileSelection: (nodes: INode<any, any>[], edges: IEdge<any>[]) => void;
     /** Clears all selected nodes and edges. */
     clearSelection: () => void;
 }
@@ -91,12 +93,10 @@ export interface NodeFlowRenderState {
     nodesChangeRequest: NodesChangeRequest | null;
     endpointUpdate: EndpointUpdate | null;
     edgeRenderRequest: EdgeRenderRequest | null;
-    hasContainerChangeListener: boolean;
     notifyEndpointsChanged: (endpoints: IEndpoint<any>[]) => void;
     requestContainersChange: (changes: ContainerChange[]) => void;
     requestNodesChange: (changes: NodeChange[]) => void;
     requestEdgeRender: (edge: IEdge<any>) => void;
-    setHasContainerChangeListener: (hasContainerChangeListener: boolean) => void;
 }
 
 export interface NodeFlowSnapState {
@@ -270,6 +270,24 @@ export function createNodeFlowSelectionStore(): NodeFlowSelectionStore {
                 mergeByKey(current.selectedEdges, edges)
             ));
         },
+        reconcileSelection: (nodes, edges) => {
+            const current = get();
+            const nodesByKey = new Map(nodes.map((node) => [node.key, node]));
+            const edgesByKey = new Map(edges.map((edge) => [edge.key, edge]));
+            const nextNodes = current.selectedNodes
+                .map((node) => nodesByKey.get(node.key))
+                .filter((node): node is INode<any, any> => node != null);
+            const nextEdges = current.selectedEdges
+                .map((edge) => edgesByKey.get(edge.key))
+                .filter((edge): edge is IEdge<any> => edge != null);
+            const unchanged =
+                nextNodes.length === current.selectedNodes.length &&
+                nextEdges.length === current.selectedEdges.length &&
+                nextNodes.every((node, index) => node === current.selectedNodes[index]) &&
+                nextEdges.every((edge, index) => edge === current.selectedEdges[index]);
+
+            if (!unchanged) set(buildSelection(nextNodes, nextEdges));
+        },
         clearSelection: () => {
             if (get().selectedNodes.length === 0 && get().selectedEdges.length === 0) return;
             set(buildSelection([], []));
@@ -283,7 +301,6 @@ export function createNodeFlowRenderStore(): NodeFlowRenderStore {
         nodesChangeRequest: null,
         endpointUpdate: null,
         edgeRenderRequest: null,
-        hasContainerChangeListener: false,
         notifyEndpointsChanged: (endpoints) =>
             set({
                 endpointUpdate: {
@@ -312,10 +329,6 @@ export function createNodeFlowRenderStore(): NodeFlowRenderStore {
                     version: (get().edgeRenderRequest?.version ?? 0) + 1,
                 },
             }),
-        setHasContainerChangeListener: (hasContainerChangeListener) => {
-            if (get().hasContainerChangeListener === hasContainerChangeListener) return;
-            set({ hasContainerChangeListener });
-        },
     }));
 }
 

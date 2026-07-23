@@ -7,6 +7,8 @@ import {
 	useNodeFlowSelectionStore,
 } from "../../contexts/NodeFlowContext";
 import { useFlowKitConfig } from "../../contexts/FlowKitConfigContext";
+import { findElementById } from "../../functions/domScope";
+import { canStartEndpointConnection } from "../../functions/interactionGuards";
 
 enum IsValid {
 	None,
@@ -29,7 +31,7 @@ interface IState {
 }
 
 export const Endpoint: React.FC<IProps> = (props) => {
-	const { canConnect } = useFlowKitConfig();
+	const { canConnect, getRootElement, readOnly } = useFlowKitConfig();
 	const stores = React.useContext(NodeFlowContext);
 	const sourceEndpoint = useNodeFlowInteractionStore((state) => state.sourceEndpoint);
 	const edgeSelected = useNodeFlowSelectionStore(
@@ -48,9 +50,9 @@ export const Endpoint: React.FC<IProps> = (props) => {
 	const creatingEdge = sourceEndpoint != null;
 
 	const startEdge = (): void => {
-		if (typeof props.canDrag === "function" && props.canDrag() === false) return;
+		if (!canStartEndpointConnection(readOnly, props.canDrag)) return;
 
-		const html: HTMLElement | null = document.getElementById(props.endpoint.id);
+		const html = findElementById(getRootElement(), props.endpoint.id);
 
 		if (html == null) return;
 
@@ -63,6 +65,7 @@ export const Endpoint: React.FC<IProps> = (props) => {
 	};
 
 	const releaseEdge = (): void => {
+		if (readOnly) return;
         const currentSourceEndpoint = stores?.interaction.getState().sourceEndpoint;
 
 		if (

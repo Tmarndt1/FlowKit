@@ -5,6 +5,8 @@ import { INode } from "../interfaces/INode";
 import { FlowElement } from "../types/FlowElement";
 import { useNodeFlowSelectionStore } from "../contexts/NodeFlowContext";
 import { useFlowKitConfig } from "../contexts/FlowKitConfigContext";
+import { isEditableOrInteractiveTarget } from "../functions/domScope";
+import { getFlowKitKeyboardCommand } from "../functions/keyboardCommands";
 
 /** Props for built-in keyboard shortcuts scoped to the current FlowKit selection. */
 export interface FlowKitKeyboardCommandsProps {
@@ -34,6 +36,7 @@ export const FlowKitKeyboardCommands: React.FC<FlowKitKeyboardCommandsProps> = (
     const selectedNodes = useNodeFlowSelectionStore((state) => state.selectedNodes);
     const selectedEdges = useNodeFlowSelectionStore((state) => state.selectedEdges);
     const copyRef = React.useRef<FlowElement | null>(null);
+    const markerRef = React.useRef<HTMLSpanElement>(null);
     const propsRef = React.useRef<FlowKitKeyboardCommandsProps>(props);
     const selectionRef = React.useRef<{ selectedEdge: typeof selectedEdge; selectedNode: typeof selectedNode; selectedNodes: typeof selectedNodes; selectedEdges: typeof selectedEdges }>({ selectedEdge, selectedNode, selectedNodes, selectedEdges });
 
@@ -43,10 +46,26 @@ export const FlowKitKeyboardCommands: React.FC<FlowKitKeyboardCommandsProps> = (
     const onKeyDown = React.useCallback<(e: KeyboardEvent) => void>((e: KeyboardEvent): void => {
         const currentProps = propsRef.current;
         const currentSelectionState = selectionRef.current;
-        const key: number = e.which || e.keyCode;
-        const ctrl: boolean = e.ctrlKey ? e.ctrlKey : key === 17 ? true : false;
+        const root = markerRef.current?.closest<HTMLElement>(".flow-kit");
+        const target = e.target;
+        const targetElement = target instanceof globalThis.Node ? target : null;
+        const eventBelongsToFlow =
+            root != null &&
+            ((targetElement != null && root.contains(targetElement)) ||
+                (document.activeElement != null && root.contains(document.activeElement)));
 
-        if (!readOnly && key === 86 && ctrl && currentProps.paste !== false) {
+        if (!eventBelongsToFlow || isEditableOrInteractiveTarget(target)) return;
+
+        const command = getFlowKitKeyboardCommand(e.key, {
+            copy: currentProps.copy !== false,
+            deleteSelection: currentProps.deleteSelection !== false,
+            paste: currentProps.paste !== false,
+            readOnly: readOnly === true,
+            ctrlKey: e.ctrlKey,
+            metaKey: e.metaKey,
+        });
+
+        if (command === "paste") {
             if (currentProps.onPaste != null && copyRef.current != null) {
                 currentProps.onPaste(copyRef.current);
             }
@@ -59,13 +78,13 @@ export const FlowKitKeyboardCommands: React.FC<FlowKitKeyboardCommandsProps> = (
 
         if (selectedObj == null) return;
 
-        if (key === 67 && ctrl && currentProps.copy !== false) {
+        if (command === "copy") {
             copyRef.current = selectedObj;
             currentProps.onCopy?.(copyRef.current);
             return;
         }
 
-        if (!readOnly && e.key?.toLocaleLowerCase() === "backspace" && currentProps.deleteSelection !== false) {
+        if (command === "delete") {
             if (typeof currentProps.onRemove !== "function") return;
 
             if (currentSelectionState.selectedNodes.length > 0) {
@@ -124,5 +143,5 @@ export const FlowKitKeyboardCommands: React.FC<FlowKitKeyboardCommandsProps> = (
         };
     }, [onKeyDown]);
 
-    return null;
+    return <span aria-hidden="true" hidden ref={markerRef} />;
 };

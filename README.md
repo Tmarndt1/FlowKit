@@ -403,8 +403,8 @@ The custom component receives all `INodeContainer` fields plus `className` and `
 
 | Prop | Type | Description |
 |------|------|-------------|
-| `onNodesChange` | `(changes: NodeChange[]) => void` | Called when nodes are repositioned, resized, or their selection changes |
-| `onEdgesChange` | `(changes: EdgeChange[]) => void` | Called when edges are connected, selected, added, or removed |
+| `onNodesChange` | `(changes: NodeChange[]) => void` | Called when built-in interactions reposition, resize, or select nodes |
+| `onEdgesChange` | `(changes: EdgeChange[]) => void` | Called when built-in interactions connect or select edges |
 | `onContainersChange` | `(changes: ContainerChange[]) => void` | Called with normalized change descriptors when containers are moved, resized, or have membership changes |
 
 ### `NodeChange`
@@ -420,6 +420,8 @@ type NodeChange =
 
 `position` fires after a drag completes and includes the final canvas-space offset for every node that moved (the entire multi-selection group when multiple nodes are dragged together). `dimensions` fires when a node's rendered size changes. `select` fires for every node whose selection status changed in the most recent interaction.
 
+`add` and `remove` are reducer-compatible descriptors available to consumer code; FlowKit's current built-in interactions do not emit them.
+
 ### `EdgeChange`
 
 ```ts
@@ -432,13 +434,15 @@ type EdgeChange =
 
 `connect` replaces the old `onConnect` callback. It fires when the user successfully drops an endpoint onto a compatible target. `select` mirrors the node variant.
 
+`add` and `remove` are reducer-compatible descriptors available to consumer code. A new interactive connection emits `connect`, allowing the application to choose the edge key and data.
+
 ### `ContainerChange`
 
 ```ts
 type ContainerChange =
   | { type: "move";       key: string; position: IOffset }
   | { type: "resize";     key: string; position: IOffset; width: number; height: number }
-  | { type: "membership"; key: string; nodeKeys: string[] }
+  | { type: "membership"; key: string; nodeKeys: string[]; position?: IOffset; width?: number; height?: number }
   | { type: "add";        container: INodeContainer }
   | { type: "remove";     key: string };
 ```
@@ -525,7 +529,7 @@ Options:
 ### Helper utilities
 
 ```ts
-toLayoutNodes(nodes)    // Convert INode[] to LayoutNode[] for algorithm input
+toLayoutNodes(nodes, flowRoot?) // Convert INode[] and optionally scope DOM measurements to one canvas
 toLayoutEdges(edges)    // Convert IEdge[] to LayoutEdge[] for algorithm input
 applyLayout(nodes, result) // Merge LayoutResult positions back into INode[]
 buildAdjacency(nodes, edges) // Build adjacency lists for custom traversals

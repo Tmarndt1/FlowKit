@@ -18,6 +18,7 @@ import { useEdgeFoldMetrics } from "./useEdgeFoldMetrics";
 
 interface IProps {
     edge: IEdge<any>;
+    markerIdPrefix?: string;
     routing?: ComputedEdgeRoutingOptions;
     stateClassName?: string;
     customEdge?: React.ComponentClass | React.FunctionComponent;
@@ -31,7 +32,8 @@ const EdgeComponent: React.FC<IProps> = (props) =>
         multiSelect,
         onEdgeCollapsedChange,
         onEdgeCollapsePreviewChange,
-        readOnly
+        readOnly,
+        getRootElement
     } = useFlowKitConfig();
     
     const containerRect = useNodeFlowViewportStore((state) => state.containerRect);
@@ -65,7 +67,7 @@ const EdgeComponent: React.FC<IProps> = (props) =>
             return;
         }
 
-        const anchors = resolveEdgeAnchors(currentProps.edge);
+        const anchors = resolveEdgeAnchors(currentProps.edge, getRootElement());
 
         if (anchors == null) return;
 
@@ -100,7 +102,7 @@ const EdgeComponent: React.FC<IProps> = (props) =>
         {
             setPath(nextPath);
         }
-    }, [edgePathType]);
+    }, [edgePathType, getRootElement]);
 
     const stopEdgeDrag = React.useCallback<(e: React.MouseEvent<SVGGElement, MouseEvent>) => void>((e: React.MouseEvent<SVGGElement, MouseEvent>): void =>
     {
@@ -318,11 +320,11 @@ const EdgeComponent: React.FC<IProps> = (props) =>
     };
     const markerStart =
         !(directionallyFolded && collapseMode === "upstream")
-            ? resolveMarkerStart(props.edge)
+            ? resolveMarkerStart(props.edge, props.markerIdPrefix)
             : undefined;
     const markerEnd =
         !(directionallyFolded && collapseMode === "downstream")
-            ? resolveMarkerEnd(props.edge)
+            ? resolveMarkerEnd(props.edge, props.markerIdPrefix)
             : undefined;
     const foldMenuPortalPosition = containerRect != null && pathFoldMetrics != null
         ? {

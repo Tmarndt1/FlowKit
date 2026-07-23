@@ -117,6 +117,12 @@ describe("resolveMarkerStart", () => {
             "url(#flow-kit-marker-hollow-triangle)"
         );
     });
+
+    it("supports canvas-scoped marker ids", () => {
+        expect(resolveMarkerStart(makeEdge({ markerStart: "arrow" }), "canvas-a")).toBe(
+            "url(#canvas-a-flow-kit-marker-arrow)"
+        );
+    });
 });
 
 // ─── resolveMarkerEnd ────────────────────────────────────────────────────────
@@ -142,6 +148,12 @@ describe("resolveMarkerEnd", () => {
     it("explicit markerEnd takes precedence over legacy arrows", () => {
         expect(resolveMarkerEnd(makeEdge({ arrows: "target", markerEnd: "filled-diamond" }))).toBe(
             "url(#flow-kit-marker-filled-diamond)"
+        );
+    });
+
+    it("supports canvas-scoped marker ids", () => {
+        expect(resolveMarkerEnd(makeEdge({ markerEnd: "filled-diamond" }), "canvas-b")).toBe(
+            "url(#canvas-b-flow-kit-marker-filled-diamond)"
         );
     });
 });

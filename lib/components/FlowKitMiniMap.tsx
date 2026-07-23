@@ -5,6 +5,7 @@ import {
     useNodeFlowSelectionStore,
     useNodeFlowViewportStore,
 } from "../contexts/NodeFlowContext";
+import { findElementById } from "../functions/domScope";
 
 /** Corner placement for the built-in minimap. */
 export type MiniMapPosition = "top-left" | "top-right" | "bottom-left" | "bottom-right";
@@ -48,8 +49,11 @@ export interface FlowKitMiniMapProps {
     width?: number;
 }
 
-function getNodeElementSize(node: INode<any, any>): { width: number; height: number } {
-    const element = document.getElementById(node.key);
+function getNodeElementSize(
+    root: HTMLElement | null,
+    node: INode<any, any>
+): { width: number; height: number } {
+    const element = findElementById(root, node.key);
 
     return {
         width: element?.offsetWidth ?? 120,
@@ -132,7 +136,7 @@ export const FlowKitMiniMap: React.FC<FlowKitMiniMapProps> = (props) => {
 
         if (viewport != null) resizeObserver.observe(viewport);
         props.nodes.forEach((node) => {
-            const nodeElement = document.getElementById(node.key);
+            const nodeElement = findElementById(flow, node.key);
 
             if (nodeElement != null) resizeObserver.observe(nodeElement);
         });
@@ -146,7 +150,10 @@ export const FlowKitMiniMap: React.FC<FlowKitMiniMapProps> = (props) => {
     const miniMapNodes = React.useMemo<MiniMapNode[]>(
         () =>
             props.nodes.map((node) => {
-                const size = getNodeElementSize(node);
+                const size = getNodeElementSize(
+                    miniMapRef.current?.closest<HTMLElement>(".flow-kit") ?? null,
+                    node
+                );
 
                 return {
                     key: node.key,

@@ -11,12 +11,16 @@ import {
     useNodeFlowViewportStore,
 } from "../../contexts/NodeFlowContext";
 import { useFlowKitConfig } from "../../contexts/FlowKitConfigContext";
+import { findElementById, getFlowKitRoot } from "../../functions/domScope";
+import { getNodeDragOffset } from "../../functions/nodeDrag";
 
 interface DragGroupItem {
     node: INode<any, any>;
     element: HTMLElement | null;
     startX: number;
     startY: number;
+    currentX: number;
+    currentY: number;
 }
 
 interface IProps {
@@ -24,10 +28,6 @@ interface IProps {
     stateClassName?: string;
     customNode?: React.ComponentClass | React.FunctionComponent;
     customNodeProps?: object;
-}
-
-function snapValue(value: number, size: number): number {
-    return Math.round(value / size) * size;
 }
 
 const NodeComponent: React.FC<IProps> = (props) => {
@@ -88,19 +88,17 @@ const NodeComponent: React.FC<IProps> = (props) => {
         // A node drag moves every selected node together, so the whole group is
         // translated by the same canvas-space delta from where each node started.
         for (const item of group) {
-            let x: number = item.startX + dx;
-            let y: number = item.startY + dy;
+            const next = getNodeDragOffset(
+                { x: item.startX, y: item.startY },
+                { x: dx, y: dy },
+                snap
+            );
 
-            if (snap.enabled) {
-                x = snapValue(x, snap.size);
-                y = snapValue(y, snap.size);
-            }
-
-            item.node.offset.x = Math.round(x);
-            item.node.offset.y = Math.round(y);
+            item.currentX = next.x;
+            item.currentY = next.y;
 
             if (item.element != null) {
-                item.element.style.transform = `translate(${x}px, ${y}px)`;
+                item.element.style.transform = `translate(${next.x}px, ${next.y}px)`;
             }
 
             for (const endpoint of item.node.endpoints) movedEndpoints.push(endpoint);
@@ -120,7 +118,7 @@ const NodeComponent: React.FC<IProps> = (props) => {
         const positionChanges = dragGroupRef.current.map((item) => ({
             type: "position" as const,
             key: item.node.key,
-            offset: { x: item.node.offset.x, y: item.node.offset.y },
+            offset: { x: item.currentX, y: item.currentY },
         }));
         if (positionChanges.length > 0) requestNodesChangeRef.current(positionChanges);
     }, [onMouseMove]);
@@ -133,11 +131,15 @@ const NodeComponent: React.FC<IProps> = (props) => {
                 ? selectedNodes
                 : [node];
 
+        const root = getFlowKitRoot(nodeRef.current);
+
         dragGroupRef.current = group.map((groupNode) => ({
             node: groupNode,
-            element: document.getElementById(groupNode.key),
+            element: findElementById(root, groupNode.key),
             startX: groupNode.offset.x,
             startY: groupNode.offset.y,
+            currentX: groupNode.offset.x,
+            currentY: groupNode.offset.y,
         }));
     }, []);
 

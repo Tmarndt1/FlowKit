@@ -15,6 +15,7 @@ import {
     useNodeFlowViewportStore
 } from "../../contexts/NodeFlowContext";
 import { useFlowKitConfig } from "../../contexts/FlowKitConfigContext";
+import { findElementById } from "../../functions/domScope";
 
 /** Imperative hooks used by FlowKit to update in-progress edge drawing. */
 export interface EdgeLayerHandle {
@@ -69,6 +70,7 @@ function getEndpointCenter(endpoint: HTMLElement): { x: number; y: number } {
 }
 
 function getEndpointElementAtPoint(
+    root: HTMLElement | null,
     x: number,
     y: number,
     options: Required<ProximityConnectOptions>,
@@ -78,13 +80,13 @@ function getEndpointElementAtPoint(
         .elementFromPoint(x, y)
         ?.closest<HTMLElement>(".flow-kit-endpoint");
 
-    if (directHit != null && directHit.id !== sourceEndpointId) return directHit;
+    if (directHit != null && root?.contains(directHit) && directHit.id !== sourceEndpointId) return directHit;
     if (!options.enabled || options.radius <= 0) return null;
 
     let closestEndpoint: HTMLElement | null = null;
     let closestDistance = Number.POSITIVE_INFINITY;
 
-    document.querySelectorAll<HTMLElement>(".flow-kit-endpoint").forEach((endpoint) => {
+    root?.querySelectorAll<HTMLElement>(".flow-kit-endpoint").forEach((endpoint) => {
         if (endpoint.id === sourceEndpointId) return;
 
         const center = getEndpointCenter(endpoint);
@@ -139,6 +141,7 @@ function getParallelEdgeOffsets(edges: IEdge<any>[], nodes: INode<any, any>[], s
 }
 
 function getNodeObstacles(
+    root: HTMLElement | null,
     edge: IEdge<any>,
     nodes: INode<any, any>[],
     containerRect: DOMRect | null,
@@ -153,7 +156,7 @@ function getNodeObstacles(
     return nodes
         .filter((node) => node.key !== sourceNodeKey && node.key !== targetNodeKey)
         .map((node) => {
-            const rect = document.getElementById(node.key)?.getBoundingClientRect();
+            const rect = findElementById(root, node.key)?.getBoundingClientRect();
 
             if (rect == null) return null;
 
@@ -175,17 +178,19 @@ function mergeEdgeRouting(globalRouting: EdgeRoutingOptions | undefined, edge: I
 }
 
 export const EdgeLayer = React.forwardRef<EdgeLayerHandle, IProps>((props, ref) => {
-    const { canConnect, edgePathType, edgeRouting, readOnly } = useFlowKitConfig();
+    const { canConnect, edgePathType, edgeRouting, getRootElement, readOnly } = useFlowKitConfig();
     const containerRect = useNodeFlowViewportStore((state) => state.containerRect);
     const scale = useNodeFlowViewportStore((state) => state.scale);
     const sourceEndpoint = useNodeFlowInteractionStore((state) => state.sourceEndpoint);
     const dropEndpoint = useNodeFlowInteractionStore((state) => state.dropEndpoint);
     const setSourceEndpoint = useNodeFlowInteractionStore((state) => state.setSourceEndpoint);
     const svgRef = React.useRef<SVGSVGElement>(null);
+    const markerIdPrefix = React.useId().replace(/:/g, "");
     const drawnEdgeRef = React.useRef<SVGPathElement>(null);
     const propsRef = React.useRef<IProps>(props);
     const containerRectRef = React.useRef<typeof containerRect>(containerRect);
     const scaleRef = React.useRef<number>(scale);
+    const readOnlyRef = React.useRef<boolean | undefined>(readOnly);
     const sourceEndpointRef = React.useRef<typeof sourceEndpoint>(sourceEndpoint);
     const dropEndpointRef = React.useRef<typeof dropEndpoint>(dropEndpoint);
     const proximityTargetRef = React.useRef<HTMLElement | null>(null);
@@ -193,6 +198,7 @@ export const EdgeLayer = React.forwardRef<EdgeLayerHandle, IProps>((props, ref) 
     propsRef.current = props;
     containerRectRef.current = containerRect;
     scaleRef.current = scale;
+    readOnlyRef.current = readOnly;
     sourceEndpointRef.current = sourceEndpoint;
     dropEndpointRef.current = dropEndpoint;
 
@@ -231,6 +237,7 @@ export const EdgeLayer = React.forwardRef<EdgeLayerHandle, IProps>((props, ref) 
         if (sourceEndpointRef.current != null) return;
 
         const target = getEndpointElementAtPoint(
+            getRootElement(),
             x,
             y,
             getProximityConnectOptions(false)
@@ -260,6 +267,7 @@ export const EdgeLayer = React.forwardRef<EdgeLayerHandle, IProps>((props, ref) 
     const getConnectionTarget = React.useCallback<(x: number, y: number) => HTMLElement | null>((x: number, y: number): HTMLElement | null => {
         const currentSourceEndpoint = sourceEndpointRef.current;
         const targetElement = getEndpointElementAtPoint(
+            getRootElement(),
             x,
             y,
             getProximityConnectOptions(propsRef.current.proximityConnect),
@@ -284,7 +292,7 @@ export const EdgeLayer = React.forwardRef<EdgeLayerHandle, IProps>((props, ref) 
         if (drawnEdgeRef.current == null || currentSourceEndpoint == null) return;
         if (currentContainerRect == null) return;
 
-        const sourceElement = document.getElementById(currentSourceEndpoint.endpoint.id);
+        const sourceElement = findElementById(getRootElement(), currentSourceEndpoint.endpoint.id);
 
         if (sourceElement == null) return;
 
@@ -340,6 +348,13 @@ export const EdgeLayer = React.forwardRef<EdgeLayerHandle, IProps>((props, ref) 
         const currentSourceEndpoint = sourceEndpointRef.current;
 
         if (currentSourceEndpoint == null) return;
+        if (readOnlyRef.current) {
+            setProximityTarget(null);
+            setDrawnEdgeVisible(false);
+            setSourceEndpoint(null);
+            sourceEndpointRef.current = null;
+            return;
+        }
 
         const target = getConnectionTarget(x, y);
 
@@ -415,7 +430,13 @@ export const EdgeLayer = React.forwardRef<EdgeLayerHandle, IProps>((props, ref) 
             const routing: ComputedEdgeRoutingOptions = {
                 avoidNodes: mergedRouting.avoidNodes,
                 obstacles: mergedRouting.avoidNodes
-                    ? getNodeObstacles(edge, currentProps.nodes, containerRectRef.current ?? null, scaleRef.current)
+                    ? getNodeObstacles(
+                        getRootElement(),
+                        edge,
+                        currentProps.nodes,
+                        containerRectRef.current ?? null,
+                        scaleRef.current
+                    )
                     : undefined,
                 parallelOffset: edge.routing?.parallelOffset ?? parallelOffsets.get(edge.key) ?? 0,
             };
@@ -425,6 +446,7 @@ export const EdgeLayer = React.forwardRef<EdgeLayerHandle, IProps>((props, ref) 
                     <Edge
                         key={edge.key}
                         edge={edge as IEdge<any>}
+                        markerIdPrefix={markerIdPrefix}
                         routing={routing}
                         stateClassName={currentProps.edgeStateClassNames?.get(edge.key)}
                     />
@@ -437,6 +459,7 @@ export const EdgeLayer = React.forwardRef<EdgeLayerHandle, IProps>((props, ref) 
                     <Edge
                         key={edge.key}
                         edge={edge as IEdge<any>}
+                        markerIdPrefix={markerIdPrefix}
                         routing={routing}
                         stateClassName={currentProps.edgeStateClassNames?.get(edge.key)}
                         customEdge={currentProps.edgeTypes[edge.type]}
@@ -447,6 +470,7 @@ export const EdgeLayer = React.forwardRef<EdgeLayerHandle, IProps>((props, ref) 
                     <Edge
                         key={edge.key}
                         edge={edge as IEdge<any>}
+                        markerIdPrefix={markerIdPrefix}
                         routing={routing}
                         stateClassName={currentProps.edgeStateClassNames?.get(edge.key)}
                     />
@@ -455,14 +479,14 @@ export const EdgeLayer = React.forwardRef<EdgeLayerHandle, IProps>((props, ref) 
         });
 
         return array;
-    }, []);
+    }, [edgeRouting, getRootElement, markerIdPrefix]);
 
     return (
         <svg className="flow-kit-edges-container" ref={svgRef}>
             <defs>
                 {/* Legacy filled arrow — used by the arrows prop and markerStart/End: "arrow" */}
                 <marker
-                    id="flow-kit-marker-arrow"
+                    id={`${markerIdPrefix}-flow-kit-marker-arrow`}
                     markerHeight={7}
                     markerUnits="strokeWidth"
                     markerWidth={7}
@@ -475,7 +499,7 @@ export const EdgeLayer = React.forwardRef<EdgeLayerHandle, IProps>((props, ref) 
                 </marker>
                 {/* Keep legacy id for backward compat */}
                 <marker
-                    id="flow-kit-edge-arrow"
+                    id={`${markerIdPrefix}-flow-kit-edge-arrow`}
                     markerHeight={7}
                     markerUnits="strokeWidth"
                     markerWidth={7}
@@ -488,7 +512,7 @@ export const EdgeLayer = React.forwardRef<EdgeLayerHandle, IProps>((props, ref) 
                 </marker>
                 {/* Half-open chevron — navigability / dependency */}
                 <marker
-                    id="flow-kit-marker-open-arrow"
+                    id={`${markerIdPrefix}-flow-kit-marker-open-arrow`}
                     markerHeight={8}
                     markerUnits="strokeWidth"
                     markerWidth={8}
@@ -501,7 +525,7 @@ export const EdgeLayer = React.forwardRef<EdgeLayerHandle, IProps>((props, ref) 
                 </marker>
                 {/* Unfilled triangle — inheritance / generalization */}
                 <marker
-                    id="flow-kit-marker-hollow-triangle"
+                    id={`${markerIdPrefix}-flow-kit-marker-hollow-triangle`}
                     markerHeight={10}
                     markerUnits="strokeWidth"
                     markerWidth={10}
@@ -514,7 +538,7 @@ export const EdgeLayer = React.forwardRef<EdgeLayerHandle, IProps>((props, ref) 
                 </marker>
                 {/* Filled diamond — composition */}
                 <marker
-                    id="flow-kit-marker-filled-diamond"
+                    id={`${markerIdPrefix}-flow-kit-marker-filled-diamond`}
                     markerHeight={8}
                     markerUnits="strokeWidth"
                     markerWidth={14}
@@ -527,7 +551,7 @@ export const EdgeLayer = React.forwardRef<EdgeLayerHandle, IProps>((props, ref) 
                 </marker>
                 {/* Unfilled diamond — aggregation */}
                 <marker
-                    id="flow-kit-marker-hollow-diamond"
+                    id={`${markerIdPrefix}-flow-kit-marker-hollow-diamond`}
                     markerHeight={8}
                     markerUnits="strokeWidth"
                     markerWidth={14}

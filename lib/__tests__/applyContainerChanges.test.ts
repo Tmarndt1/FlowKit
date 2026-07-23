@@ -62,6 +62,23 @@ describe("applyContainerChanges", () => {
         expect(result[0].nodeKeys).toEqual(["n3"]);
     });
 
+    it("preserves rendered bounds supplied with a membership change", () => {
+        const result = applyContainerChanges(
+            [makeContainer("c1", ["n1"])],
+            [{
+                type: "membership",
+                key: "c1",
+                nodeKeys: [],
+                position: { x: 30, y: 40 },
+                width: 220,
+                height: 140,
+            }]
+        );
+
+        expect(result[0].position).toEqual({ x: 30, y: 40 });
+        expect(result[0].style).toMatchObject({ width: 220, height: 140 });
+    });
+
     // ── add ──
 
     it("appends a new container on an add change", () => {
