@@ -10,6 +10,7 @@ export function WorkflowNode(props: WorkflowNodeType & { selected?: boolean }) {
     const inputEndpoints = props.endpoints.filter((endpoint) => endpoint.position === Position.Left);
     const outputEndpoints = props.endpoints.filter((endpoint) => endpoint.position === Position.Right);
     const variantClass = data?.styleVariant == null ? "" : ` workflow-node-${data.styleVariant}`;
+    const outputVariant = data?.category === "output" ? data.variant : undefined;
     const [tooltipVisible, setTooltipVisible] = React.useState(false);
     const timerRef = React.useRef<ReturnType<typeof setTimeout> | null>(null);
 
@@ -52,9 +53,9 @@ export function WorkflowNode(props: WorkflowNodeType & { selected?: boolean }) {
             {data?.variableQuery != null ? <span className="workflow-node-query">{data.variableQuery}</span> : null}
             {data?.value != null ? <span className="workflow-node-value">{data.value}</span> : null}
             {data?.valueSource != null ? <span className="workflow-node-source">{data.valueSource}</span> : null}
-            {data?.variant != null ? (
-                <span className={`workflow-node-badge workflow-node-badge-${data.variant}`}>
-                    {data.variant === "success" ? "Success" : "Too Small"}
+            {outputVariant != null ? (
+                <span className={`workflow-node-badge workflow-node-badge-${outputVariant}`}>
+                    {outputVariant === "success" ? "Success" : "Too Small"}
                 </span>
             ) : null}
 
