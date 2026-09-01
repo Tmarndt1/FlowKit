@@ -143,7 +143,9 @@ const NodesLayerComponent = React.forwardRef<NodesLayerHandle, IProps>((props, r
         const container = currentContainers.find((c) => c.key === containerKey);
         const root = getFlowKitRoot(layerRef.current);
 
-        if (container == null || container.position == null) return;
+        // A populated container may derive its initial position from its nodes.
+        // Persist the rendered position on its first drag instead of requiring a resize first.
+        if (container == null) return;
 
         const bounds = getRenderedContainerBounds(root, container);
 
