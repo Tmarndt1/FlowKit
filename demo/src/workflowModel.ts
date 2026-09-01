@@ -68,6 +68,36 @@ export const initialContainers: WorkflowContainer[] = [
   },
 ];
 
+/** Creates a visible empty container in the next available demo slot. */
+export function createEmptyContainer(containers: WorkflowContainer[]): WorkflowContainer {
+  let number = 1;
+
+  while (containers.some((container) => container.key === `container-${number}`)) {
+    number += 1;
+  }
+
+  const slot = containers.filter((container) => container.key.startsWith("container-")).length;
+  const column = slot % 3;
+  const row = Math.floor(slot / 3);
+
+  return {
+    key: `container-${number}`,
+    label: `Container ${number}`,
+    nodeKeys: [],
+    position: {
+      x: 80 + column * 360,
+      y: 650 + row * 230,
+    },
+    resizeToFit: false,
+    style: {
+      height: 180,
+      minHeight: 100,
+      minWidth: 180,
+      width: 300,
+    },
+  };
+}
+
 export const initialRuntimeVariables: RuntimeVariable[] = [
   {
     description: "Multiplier value fetched from runtime context when the workflow runs.",

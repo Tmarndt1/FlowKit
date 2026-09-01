@@ -5,12 +5,14 @@ export type DemoView = "floating" | "layout" | "uml" | "utilization" | "workflow
 type TopBarProps = {
   animatedEdges: boolean;
   collapsibleEdges: boolean;
+  containerCount: number;
   demoView: DemoView;
   edgeCount: number;
   edgePathType: EdgePathType;
   lastRunLabel: string;
   nodeCount: number;
   onAnimatedEdgesChange: (animated: boolean) => void;
+  onAddContainer: () => void;
   onCollapsibleEdgesChange: (enabled: boolean) => void;
   onDemoViewChange: (view: DemoView) => void;
   onEdgePathTypeChange: (pathType: EdgePathType) => void;
@@ -21,12 +23,14 @@ type TopBarProps = {
 export function TopBar({
   animatedEdges,
   collapsibleEdges,
+  containerCount,
   demoView,
   edgeCount,
   edgePathType,
   lastRunLabel,
   nodeCount,
   onAnimatedEdgesChange,
+  onAddContainer,
   onCollapsibleEdgesChange,
   onDemoViewChange,
   onEdgePathTypeChange,
@@ -107,6 +111,19 @@ export function TopBar({
       <div className="view-controls">
         <span>{nodeCount} nodes</span>
         <span>{edgeCount} edges</span>
+        {demoView === "workflow" ? (
+          <button
+            aria-label="Add empty container"
+            className="add-container-button"
+            onClick={onAddContainer}
+            title="Add empty container"
+            type="button"
+          >
+            <span aria-hidden="true" className="add-container-icon">+</span>
+            Container
+            <span className="add-container-count">{containerCount}</span>
+          </button>
+        ) : null}
         <button
           aria-pressed={animatedEdges}
           className={`edge-animation-toggle${animatedEdges ? " active" : ""}`}

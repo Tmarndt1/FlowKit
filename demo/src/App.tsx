@@ -28,6 +28,7 @@ import {
   WorkflowNodeData,
 } from "./types";
 import {
+  createEmptyContainer,
   createNode,
   getNodeNumber,
   initialContainers,
@@ -137,6 +138,13 @@ export function App() {
 
       return [...currentNodes, createNode(preset.type, nodeKey, offset, variableDefaults)];
     });
+  }, []);
+
+  const addContainer = React.useCallback(() => {
+    setContainers((currentContainers) => [
+      ...currentContainers,
+      createEmptyContainer(currentContainers),
+    ]);
   }, []);
 
   const onNodesChange = React.useCallback((changes: NodeChange[]) => {
@@ -349,9 +357,11 @@ export function App() {
         edgePathType={edgePathType}
         animatedEdges={animatedEdges}
         collapsibleEdges={collapsibleEdges}
+        containerCount={containers.length}
         lastRunLabel={lastRunLabel}
         nodeCount={activeNodeCount}
         onAnimatedEdgesChange={setAnimatedEdges}
+        onAddContainer={addContainer}
         onCollapsibleEdgesChange={updateCollapsibleEdges}
         onDemoViewChange={setDemoView}
         onEdgePathTypeChange={setEdgePathType}
