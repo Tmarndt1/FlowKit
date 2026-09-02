@@ -369,37 +369,32 @@ The custom component receives all `INodeContainer` fields plus `className` and `
 FlowKit treats nodes, edges, and containers as controlled data. Mutating interactions are enabled only when their matching handler is present: node dragging requires `onNodesChange`, connection creation requires `onEdgesChange`, and container drag/resize requires `onContainersChange`. Selection, pan, and zoom remain available without these handlers. Dragging a non-empty container also requires `onNodesChange` because its contained nodes move with it.
 
 ```tsx
-<FlowKit nodes={nodes} edges={edges}>
-  <FlowKitEvents
-    onNodesChange={(changes) => {
-      changes.forEach((change) => {
-        if (change.type === "position") {
-          setNodes((ns) => ns.map((n) =>
-            n.key === change.key ? { ...n, offset: change.offset } : n
-          ));
-        }
-      });
-    }}
-    onEdgesChange={(changes) => {
-      changes.forEach((change) => {
-        if (change.type === "connect") {
-          setEdges((es) => [...es, {
-            key: `edge-${change.sourceId}-${change.targetId}`,
-            type: "edge",
-            sourceId: change.sourceId,
-            targetId: change.targetId,
-          }]);
-        }
-      });
-    }}
-    onContainersChange={(changes) =>
-      setContainers((current) => applyContainerChanges(current, changes))
-    }
-  />
+const changeHandlers = useFlowKitChangeHandlers({
+  setNodes,
+  setEdges,
+  setContainers,
+  createEdge: ({ sourceId, targetId }) => ({
+    key: crypto.randomUUID(),
+    sourceId,
+    targetId,
+    type: "edge",
+  }),
+});
+
+<FlowKit nodes={nodes} edges={edges} containers={containers}>
+  <FlowKitEvents {...changeHandlers} />
 </FlowKit>
 ```
 
-`applyContainerChanges` is an exported helper that applies a batch of `ContainerChange` descriptors (move, resize, membership, add, remove) to a container array and returns a new array.
+Omit any setter to leave that part of the graph non-editable. `createEdge` is optional; without it, connections receive a key in the form `edge-{sourceId}-{targetId}`.
+
+For direct state integration or non-hook usage, FlowKit also exports `applyNodeChanges`, `applyEdgeChanges`, and `applyContainerChanges`. Each helper applies a batch of descriptors and returns a new array while preserving unchanged item references.
+
+```tsx
+setNodes((current) => applyNodeChanges(current, changes));
+setEdges((current) => applyEdgeChanges(current, changes, { createEdge }));
+setContainers((current) => applyContainerChanges(current, changes));
+```
 
 ### `FlowKitEventsProps`
 
