@@ -4,6 +4,7 @@ import { IOffset } from "../../interfaces/IOffset";
 import {
 	NodeFlowContext,
 	useNodeFlowInteractionStore,
+	useNodeFlowRenderStore,
 	useNodeFlowSelectionStore,
 } from "../../contexts/NodeFlowContext";
 import { useFlowKitConfig } from "../../contexts/FlowKitConfigContext";
@@ -41,6 +42,7 @@ export const Endpoint: React.FC<IProps> = (props) => {
 	);
 	const setSourceEndpoint = useNodeFlowInteractionStore((state) => state.setSourceEndpoint);
 	const dropEndpoint = useNodeFlowInteractionStore((state) => state.dropEndpoint);
+	const canChangeEdges = useNodeFlowRenderStore((state) => state.canChangeEdges);
 
 	const [state, setState] = useState<IState>({
 		valid: IsValid.None,
@@ -50,7 +52,7 @@ export const Endpoint: React.FC<IProps> = (props) => {
 	const creatingEdge = sourceEndpoint != null;
 
 	const startEdge = (): void => {
-		if (!canStartEndpointConnection(readOnly, props.canDrag)) return;
+		if (!canChangeEdges || !canStartEndpointConnection(readOnly, props.canDrag)) return;
 
 		const html = findElementById(getRootElement(), props.endpoint.id);
 
@@ -65,7 +67,7 @@ export const Endpoint: React.FC<IProps> = (props) => {
 	};
 
 	const releaseEdge = (): void => {
-		if (readOnly) return;
+		if (readOnly || !canChangeEdges) return;
         const currentSourceEndpoint = stores?.interaction.getState().sourceEndpoint;
 
 		if (

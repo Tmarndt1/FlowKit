@@ -12,11 +12,11 @@ import {
 
 /** Props for the event bridge component that exposes FlowKit interactions. */
 export interface FlowKitEventsProps {
-    /** Called with normalized change descriptors when containers are moved, resized, or have membership changes. */
+    /** Persists container edits and enables container drag/resize interactions. */
     onContainersChange?: (changes: ContainerChange[]) => void;
-    /** Called when built-in interactions connect or select edges. */
+    /** Receives edge changes and enables built-in connection creation. */
     onEdgesChange?: (changes: EdgeChange[]) => void;
-    /** Called when built-in interactions reposition, resize, or select nodes. */
+    /** Receives node changes and enables built-in node dragging. */
     onNodesChange?: (changes: NodeChange[]) => void;
 }
 
@@ -62,6 +62,9 @@ export const FlowKitEvents: React.FC<FlowKitEventsProps> = (props) => {
     const endpointDropRequest = useNodeFlowInteractionStore((state) => state.endpointDropRequest);
     const containerChangeRequest = useNodeFlowRenderStore((state) => state.containerChangeRequest);
     const nodesChangeRequest = useNodeFlowRenderStore((state) => state.nodesChangeRequest);
+    const setChangeHandlerAvailability = useNodeFlowRenderStore(
+        (state) => state.setChangeHandlerAvailability
+    );
     const selectedNodeKeys = useNodeFlowSelectionStore((state) => state.selectedNodeKeys);
     const selectedEdgeKeys = useNodeFlowSelectionStore((state) => state.selectedEdgeKeys);
     const onContainersChangeRef = React.useRef<typeof props.onContainersChange>(props.onContainersChange);
@@ -72,10 +75,30 @@ export const FlowKitEvents: React.FC<FlowKitEventsProps> = (props) => {
     const lastNodesChangeVersionRef = React.useRef<number>(0);
     const prevSelectedNodeKeysRef = React.useRef<Set<string>>(new Set());
     const prevSelectedEdgeKeysRef = React.useRef<Set<string>>(new Set());
+    const canChangeNodes = props.onNodesChange != null;
+    const canChangeEdges = props.onEdgesChange != null;
+    const canChangeContainers = props.onContainersChange != null;
 
     onContainersChangeRef.current = props.onContainersChange;
     onEdgesChangeRef.current = props.onEdgesChange;
     onNodesChangeRef.current = props.onNodesChange;
+
+    React.useEffect(() => {
+        setChangeHandlerAvailability({
+            nodes: canChangeNodes,
+            edges: canChangeEdges,
+            containers: canChangeContainers,
+        });
+
+        return () => {
+            setChangeHandlerAvailability({ nodes: false, edges: false, containers: false });
+        };
+    }, [
+        canChangeContainers,
+        canChangeEdges,
+        canChangeNodes,
+        setChangeHandlerAvailability,
+    ]);
 
     React.useEffect(() => {
         if (endpointDropRequest == null) return;

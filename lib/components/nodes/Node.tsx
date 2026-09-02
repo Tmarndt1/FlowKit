@@ -42,6 +42,7 @@ const NodeComponent: React.FC<IProps> = (props) => {
     const selectNode = useNodeFlowSelectionStore((state) => state.selectNode);
     const notifyEndpointsChanged = useNodeFlowRenderStore((state) => state.notifyEndpointsChanged);
     const requestNodesChange = useNodeFlowRenderStore((state) => state.requestNodesChange);
+    const canChangeNodes = useNodeFlowRenderStore((state) => state.canChangeNodes);
     const notifyNodeDrag = useNodeFlowInteractionStore((state) => state.notifyNodeDrag);
     const setDraggingNode = useNodeFlowInteractionStore((state) => state.setDraggingNode);
     const nodeRef = React.useRef<HTMLDivElement>(null);
@@ -171,7 +172,7 @@ const NodeComponent: React.FC<IProps> = (props) => {
                 selectNode(currentProps.node);
             }
 
-            if (readOnly) {
+            if (readOnly || !canChangeNodes) {
                 e.stopPropagation();
                 e.preventDefault();
                 return;
@@ -193,7 +194,7 @@ const NodeComponent: React.FC<IProps> = (props) => {
             document.addEventListener("mouseup", onMouseUp);
             document.addEventListener("mousemove", onMouseMove);
         },
-        [buildDragGroup, onMouseMove, onMouseUp, readOnly, selectNode]
+        [buildDragGroup, canChangeNodes, onMouseMove, onMouseUp, readOnly, selectNode]
     );
 
     React.useEffect(() => {

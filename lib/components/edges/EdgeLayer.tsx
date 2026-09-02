@@ -12,6 +12,7 @@ import { Edge } from "./Edge";
 import { ComputedEdgeRoutingOptions, EdgeRoutingObstacle } from "../../functions/edgeRouting";
 import {
     useNodeFlowInteractionStore,
+    useNodeFlowRenderStore,
     useNodeFlowViewportStore
 } from "../../contexts/NodeFlowContext";
 import { useFlowKitConfig } from "../../contexts/FlowKitConfigContext";
@@ -182,6 +183,7 @@ export const EdgeLayer = React.forwardRef<EdgeLayerHandle, IProps>((props, ref) 
     const containerRect = useNodeFlowViewportStore((state) => state.containerRect);
     const scale = useNodeFlowViewportStore((state) => state.scale);
     const sourceEndpoint = useNodeFlowInteractionStore((state) => state.sourceEndpoint);
+    const canChangeEdges = useNodeFlowRenderStore((state) => state.canChangeEdges);
     const dropEndpoint = useNodeFlowInteractionStore((state) => state.dropEndpoint);
     const setSourceEndpoint = useNodeFlowInteractionStore((state) => state.setSourceEndpoint);
     const svgRef = React.useRef<SVGSVGElement>(null);
@@ -233,7 +235,7 @@ export const EdgeLayer = React.forwardRef<EdgeLayerHandle, IProps>((props, ref) 
     }, []);
 
     const startEdgeAtPoint = React.useCallback<(x: number, y: number) => void>((x: number, y: number): void => {
-        if (readOnly) return;
+        if (readOnly || !canChangeEdges) return;
         if (sourceEndpointRef.current != null) return;
 
         const target = getEndpointElementAtPoint(
@@ -254,7 +256,7 @@ export const EdgeLayer = React.forwardRef<EdgeLayerHandle, IProps>((props, ref) 
         setSourceEndpoint({ endpoint, offset });
         sourceEndpointRef.current = { endpoint, offset };
         setDrawnEdgeVisible(true);
-    }, [getEndpointById, readOnly, setDrawnEdgeVisible, setSourceEndpoint]);
+    }, [canChangeEdges, getEndpointById, readOnly, setDrawnEdgeVisible, setSourceEndpoint]);
 
     const setProximityTarget = React.useCallback<(target: HTMLElement | null) => void>((target: HTMLElement | null): void => {
         if (proximityTargetRef.current === target) return;
@@ -348,7 +350,7 @@ export const EdgeLayer = React.forwardRef<EdgeLayerHandle, IProps>((props, ref) 
         const currentSourceEndpoint = sourceEndpointRef.current;
 
         if (currentSourceEndpoint == null) return;
-        if (readOnlyRef.current) {
+        if (readOnlyRef.current || !canChangeEdges) {
             setProximityTarget(null);
             setDrawnEdgeVisible(false);
             setSourceEndpoint(null);
@@ -390,7 +392,7 @@ export const EdgeLayer = React.forwardRef<EdgeLayerHandle, IProps>((props, ref) 
 
         setSourceEndpoint(null);
         sourceEndpointRef.current = null;
-    }, [getConnectionTarget, setDrawnEdgeVisible, setProximityTarget, setSourceEndpoint]);
+    }, [canChangeEdges, getConnectionTarget, setDrawnEdgeVisible, setProximityTarget, setSourceEndpoint]);
 
     React.useEffect(() => {
         const onDocumentStart = (e: MouseEvent | PointerEvent): void => {

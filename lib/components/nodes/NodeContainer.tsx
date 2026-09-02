@@ -190,6 +190,8 @@ export const NodeContainer: React.FC<IProps> = (props) => {
     const snapEnabled = useNodeFlowSnapStore((state) => state.enabled);
     const snapSize = useNodeFlowSnapStore((state) => state.size);
     const notifyEndpointsChanged = useNodeFlowRenderStore((state) => state.notifyEndpointsChanged);
+    const canChangeContainers = useNodeFlowRenderStore((state) => state.canChangeContainers);
+    const canChangeNodes = useNodeFlowRenderStore((state) => state.canChangeNodes);
     const setDraggingNode = useNodeFlowInteractionStore((state) => state.setDraggingNode);
     const containerRef = React.useRef<HTMLDivElement>(null);
     const propsRef = React.useRef<IProps>(props);
@@ -301,7 +303,9 @@ export const NodeContainer: React.FC<IProps> = (props) => {
     }, [onMouseMove]);
 
     const onMouseDown = React.useCallback<(e: React.MouseEvent<HTMLDivElement, MouseEvent>) => void>((e: React.MouseEvent<HTMLDivElement, MouseEvent>): void => {
-        if (readOnly) {
+        const movesContainedNodes = propsRef.current.container.nodeKeys.length > 0;
+
+        if (readOnly || !canChangeContainers || (movesContainedNodes && !canChangeNodes)) {
             e.stopPropagation();
             e.preventDefault();
             return;
@@ -333,12 +337,12 @@ export const NodeContainer: React.FC<IProps> = (props) => {
         e.preventDefault();
         document.addEventListener("mouseup", onMouseUp);
         document.addEventListener("mousemove", onMouseMove);
-    }, [onMouseMove, onMouseUp, readOnly]);
+    }, [canChangeContainers, canChangeNodes, onMouseMove, onMouseUp, readOnly]);
 
     const onResizeMouseDown = React.useCallback<(direction: ResizeDirection) => (e: React.MouseEvent<HTMLDivElement, MouseEvent>) => void>(
         (direction: ResizeDirection) =>
             (e: React.MouseEvent<HTMLDivElement, MouseEvent>): void => {
-                if (readOnly) {
+                if (readOnly || !canChangeContainers) {
                     e.stopPropagation();
                     e.preventDefault();
                     return;
@@ -373,7 +377,7 @@ export const NodeContainer: React.FC<IProps> = (props) => {
                 document.addEventListener("mouseup", onMouseUp);
                 document.addEventListener("mousemove", onMouseMove);
             },
-        [onMouseMove, onMouseUp, readOnly]
+        [canChangeContainers, onMouseMove, onMouseUp, readOnly]
     );
 
     React.useEffect(() => {
@@ -410,10 +414,10 @@ export const NodeContainer: React.FC<IProps> = (props) => {
         transform: `translate(${bounds.x}px, ${bounds.y}px)`,
         ...(props.container.style ?? {}),
     };
-    const isDraggingOverContainer = draggedNode != null &&
+    const isDraggingOverContainer = canChangeContainers && draggedNode != null &&
         !isDraggingContainedNode &&
         isNodeCenterInsideElement(draggedNode.key, containerRef.current, getRootElement());
-    const isDraggingOut = isDraggingContainedNode &&
+    const isDraggingOut = canChangeContainers && isDraggingContainedNode &&
         !isNodeCenterInsideElement(draggedNode.key, containerRef.current, getRootElement());
     const className = [
         "flow-kit-node-container",

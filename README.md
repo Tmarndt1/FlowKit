@@ -366,6 +366,8 @@ The custom component receives all `INodeContainer` fields plus `className` and `
 
 `FlowKitEvents` is a non-visual component placed inside `FlowKit` that forwards canvas interactions to app callbacks.
 
+FlowKit treats nodes, edges, and containers as controlled data. Mutating interactions are enabled only when their matching handler is present: node dragging requires `onNodesChange`, connection creation requires `onEdgesChange`, and container drag/resize requires `onContainersChange`. Selection, pan, and zoom remain available without these handlers. Dragging a non-empty container also requires `onNodesChange` because its contained nodes move with it.
+
 ```tsx
 <FlowKit nodes={nodes} edges={edges}>
   <FlowKitEvents

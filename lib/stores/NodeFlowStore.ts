@@ -89,6 +89,12 @@ export interface NodeFlowSelectionState {
 }
 
 export interface NodeFlowRenderState {
+    /** True when FlowKitEvents can persist node mutations into controlled state. */
+    canChangeNodes: boolean;
+    /** True when FlowKitEvents can persist edge mutations into controlled state. */
+    canChangeEdges: boolean;
+    /** True when FlowKitEvents can persist container mutations into controlled state. */
+    canChangeContainers: boolean;
     containerChangeRequest: ContainerChangeRequest | null;
     nodesChangeRequest: NodesChangeRequest | null;
     endpointUpdate: EndpointUpdate | null;
@@ -97,6 +103,11 @@ export interface NodeFlowRenderState {
     requestContainersChange: (changes: ContainerChange[]) => void;
     requestNodesChange: (changes: NodeChange[]) => void;
     requestEdgeRender: (edge: IEdge<any>) => void;
+    setChangeHandlerAvailability: (availability: {
+        nodes: boolean;
+        edges: boolean;
+        containers: boolean;
+    }) => void;
 }
 
 export interface NodeFlowSnapState {
@@ -297,6 +308,9 @@ export function createNodeFlowSelectionStore(): NodeFlowSelectionStore {
 
 export function createNodeFlowRenderStore(): NodeFlowRenderStore {
     return createStore<NodeFlowRenderState>((set, get) => ({
+        canChangeNodes: false,
+        canChangeEdges: false,
+        canChangeContainers: false,
         containerChangeRequest: null,
         nodesChangeRequest: null,
         endpointUpdate: null,
@@ -329,6 +343,21 @@ export function createNodeFlowRenderStore(): NodeFlowRenderStore {
                     version: (get().edgeRenderRequest?.version ?? 0) + 1,
                 },
             }),
+        setChangeHandlerAvailability: ({ nodes, edges, containers }) => {
+            const current = get();
+
+            if (
+                current.canChangeNodes === nodes &&
+                current.canChangeEdges === edges &&
+                current.canChangeContainers === containers
+            ) return;
+
+            set({
+                canChangeNodes: nodes,
+                canChangeEdges: edges,
+                canChangeContainers: containers,
+            });
+        },
     }));
 }
 
