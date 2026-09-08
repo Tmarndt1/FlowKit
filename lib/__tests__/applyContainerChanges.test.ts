@@ -12,6 +12,14 @@ describe("applyContainerChanges", () => {
         expect(applyContainerChanges(containers, [])).toBe(containers);
     });
 
+    it("does not mutate controlled containers for selection changes", () => {
+        const containers = [makeContainer("c1")];
+
+        expect(applyContainerChanges(containers, [
+            { type: "select", key: "c1", selected: true },
+        ])).toBe(containers);
+    });
+
     // ── move ──
 
     it("updates position on a move change", () => {

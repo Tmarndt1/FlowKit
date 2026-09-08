@@ -402,7 +402,7 @@ setContainers((current) => applyContainerChanges(current, changes));
 |------|------|-------------|
 | `onNodesChange` | `(changes: NodeChange[]) => void` | Called when built-in interactions reposition, resize, or select nodes |
 | `onEdgesChange` | `(changes: EdgeChange[]) => void` | Called when built-in interactions connect or select edges |
-| `onContainersChange` | `(changes: ContainerChange[]) => void` | Called with normalized change descriptors when containers are moved, resized, or have membership changes |
+| `onContainersChange` | `(changes: ContainerChange[]) => void` | Called with normalized change descriptors when containers are selected, moved, resized, or have membership changes |
 
 ### `NodeChange`
 
@@ -437,6 +437,7 @@ type EdgeChange =
 
 ```ts
 type ContainerChange =
+  | { type: "select";     key: string; selected: boolean }
   | { type: "move";       key: string; position: IOffset }
   | { type: "resize";     key: string; position: IOffset; width: number; height: number }
   | { type: "membership"; key: string; nodeKeys: string[]; position?: IOffset; width?: number; height?: number }
@@ -446,7 +447,7 @@ type ContainerChange =
 
 ### Selection hook
 
-For components rendered inside `FlowKit` that need the legacy selected/unselected pattern, `useNodeFlowSelectionChange` is still exported:
+For components rendered inside `FlowKit`, `useNodeFlowSelectionChange` reports the selected `FlowObject`. A flow object can be a node, edge, or container:
 
 ```tsx
 import { useNodeFlowSelectionChange } from "flowkit";
@@ -459,6 +460,9 @@ function SelectionListener() {
   return null;
 }
 ```
+
+Use `useNodeFlowSelectedNodes`, `useNodeFlowSelectedEdges`, or
+`useNodeFlowSelectedContainers` when a component needs the complete selection for one object type.
 
 ---
 

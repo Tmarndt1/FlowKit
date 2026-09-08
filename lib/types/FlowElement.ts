@@ -1,5 +1,4 @@
-import { IEdge } from "../interfaces/IEdge";
-import { INode } from "../interfaces/INode";
+import { FlowObject } from "./FlowObject";
 
-/** Selection union emitted by FlowKit selection events. */
-export declare type FlowElement = INode<any, any> | IEdge<any>;
+/** @deprecated Use FlowObject instead. */
+export type FlowElement = FlowObject;

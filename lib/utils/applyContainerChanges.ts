@@ -7,6 +7,10 @@ export function applyContainerChanges<T extends INodeContainer>(containers: T[],
 
     for (const change of changes) {
         switch (change.type) {
+            // Selection is owned by FlowKit's interaction state and does not mutate
+            // the consumer's controlled container model.
+            case "select":
+                break;
             case "move":
                 result = result.map((c) =>
                     c.key === change.key ? { ...c, position: change.position } : c

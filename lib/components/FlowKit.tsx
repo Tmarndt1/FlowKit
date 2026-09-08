@@ -249,8 +249,8 @@ const FlowKitComponent = (props: FlowKitProps, ref: React.ForwardedRef<FlowKitHa
     );
 
     React.useEffect(() => {
-        selectionStore.getState().reconcileSelection(props.nodes, props.edges);
-    }, [props.edges, props.nodes, selectionStore]);
+        selectionStore.getState().reconcileSelection(props.nodes, props.edges, props.containers ?? []);
+    }, [props.containers, props.edges, props.nodes, selectionStore]);
 
     // FlowKit owns viewport transforms directly so panning and edge redraws can stay
     // synchronized without requiring consumers to manage viewport state.

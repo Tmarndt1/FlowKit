@@ -2,7 +2,7 @@ import * as React from "react";
 import { IEdge } from "../interfaces/IEdge";
 import { IEndpoint } from "../interfaces/IEndpoint";
 import { INode } from "../interfaces/INode";
-import { FlowElement } from "../types/FlowElement";
+import { FlowObject } from "../types/FlowObject";
 import { useNodeFlowSelectionStore } from "../contexts/NodeFlowContext";
 import { useFlowKitConfig } from "../contexts/FlowKitConfigContext";
 import { isEditableOrInteractiveTarget } from "../functions/domScope";
@@ -19,9 +19,9 @@ export interface FlowKitKeyboardCommandsProps {
     /** Current nodes, used to validate selected-node deletion. */
     nodes: INode<any, any>[];
     /** Called after a selected element is copied to the internal clipboard. */
-    onCopy?: (element: FlowElement) => any;
+    onCopy?: (object: FlowObject) => any;
     /** Called when paste is requested and an element exists in the internal clipboard. */
-    onPaste?: (element: FlowElement) => any;
+    onPaste?: (object: FlowObject) => any;
     /** Called when Backspace requests removal of a selected node or edge. */
     onRemove?: (node: INode<any, any> | null, edges: IEdge<any>[]) => any;
     /** Enable Ctrl/Cmd+V behavior. Defaults to true. */
@@ -33,15 +33,22 @@ export const FlowKitKeyboardCommands: React.FC<FlowKitKeyboardCommandsProps> = (
     const { readOnly } = useFlowKitConfig();
     const selectedEdge = useNodeFlowSelectionStore((state) => state.selectedEdge);
     const selectedNode = useNodeFlowSelectionStore((state) => state.selectedNode);
+    const selectedContainer = useNodeFlowSelectionStore((state) => state.selectedContainer);
     const selectedNodes = useNodeFlowSelectionStore((state) => state.selectedNodes);
     const selectedEdges = useNodeFlowSelectionStore((state) => state.selectedEdges);
-    const copyRef = React.useRef<FlowElement | null>(null);
+    const copyRef = React.useRef<FlowObject | null>(null);
     const markerRef = React.useRef<HTMLSpanElement>(null);
     const propsRef = React.useRef<FlowKitKeyboardCommandsProps>(props);
-    const selectionRef = React.useRef<{ selectedEdge: typeof selectedEdge; selectedNode: typeof selectedNode; selectedNodes: typeof selectedNodes; selectedEdges: typeof selectedEdges }>({ selectedEdge, selectedNode, selectedNodes, selectedEdges });
+    const selectionRef = React.useRef<{
+        selectedEdge: typeof selectedEdge;
+        selectedNode: typeof selectedNode;
+        selectedContainer: typeof selectedContainer;
+        selectedNodes: typeof selectedNodes;
+        selectedEdges: typeof selectedEdges;
+    }>({ selectedEdge, selectedNode, selectedContainer, selectedNodes, selectedEdges });
 
     propsRef.current = props;
-    selectionRef.current = { selectedEdge, selectedNode, selectedNodes, selectedEdges };
+    selectionRef.current = { selectedEdge, selectedNode, selectedContainer, selectedNodes, selectedEdges };
 
     const onKeyDown = React.useCallback<(e: KeyboardEvent) => void>((e: KeyboardEvent): void => {
         const currentProps = propsRef.current;
@@ -73,8 +80,11 @@ export const FlowKitKeyboardCommands: React.FC<FlowKitKeyboardCommandsProps> = (
             return;
         }
 
-        const selectedObj: FlowElement | null =
-            currentSelectionState.selectedNode ?? currentSelectionState.selectedEdge ?? null;
+        const selectedObj: FlowObject | null =
+            currentSelectionState.selectedNode ??
+            currentSelectionState.selectedEdge ??
+            currentSelectionState.selectedContainer ??
+            null;
 
         if (selectedObj == null) return;
 

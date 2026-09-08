@@ -7,6 +7,7 @@ import {
     NodeFlowContext,
     useNodeFlowInteractionStore,
     useNodeFlowRenderStore,
+    useNodeFlowSelectionStore,
 } from "../../contexts/NodeFlowContext";
 import { useFlowKitConfig } from "../../contexts/FlowKitConfigContext";
 import { findElementById } from "../../functions/domScope";
@@ -26,6 +27,49 @@ interface IProps {
     nodes: INode<any, any>[];
     onDragEnd?: (containerKey: string, nodeOffsets: ReadonlyMap<string, IOffset>) => void;
     onResizeEnd?: (containerKey: string) => void;
+}
+
+function areStringArraysEqual(left: string[], right: string[]): boolean {
+    return left.length === right.length && left.every((value, index) => value === right[index]);
+}
+
+function areStylesEqual(left: React.CSSProperties | undefined, right: React.CSSProperties | undefined): boolean {
+    if (left === right) return true;
+    if (left == null || right == null) return false;
+
+    const leftKeys = Object.keys(left) as Array<keyof React.CSSProperties>;
+    const rightKeys = Object.keys(right) as Array<keyof React.CSSProperties>;
+
+    return leftKeys.length === rightKeys.length && leftKeys.every((key) => Object.is(left[key], right[key]));
+}
+
+function areContainersEqual(left: INodeContainer, right: INodeContainer): boolean {
+    return (
+        left.key === right.key &&
+        left.type === right.type &&
+        left.label === right.label &&
+        left.padding === right.padding &&
+        left.resizeToFit === right.resizeToFit &&
+        left.className === right.className &&
+        left.position?.x === right.position?.x &&
+        left.position?.y === right.position?.y &&
+        areStringArraysEqual(left.nodeKeys, right.nodeKeys) &&
+        areStylesEqual(left.style, right.style)
+    );
+}
+
+function areContainedNodesEqual(left: INode<any, any>[], right: INode<any, any>[]): boolean {
+    return left.length === right.length && left.every((node, index) => node === right[index]);
+}
+
+function areNodeContainerPropsEqual(left: IProps, right: IProps): boolean {
+    return (
+        areContainersEqual(left.container, right.container) &&
+        areContainedNodesEqual(left.nodes, right.nodes) &&
+        left.customContainer === right.customContainer &&
+        left.onDragEnd === right.onDragEnd &&
+        left.onResizeEnd === right.onResizeEnd
+    );
 }
 
 type ResizeDirection = "east" | "south" | "southeast";
@@ -156,7 +200,7 @@ function getContainerBounds(
     };
 }
 
-export const NodeContainer: React.FC<IProps> = (props) => {
+const NodeContainerComponent: React.FC<IProps> = (props) => {
     const { getRootElement, readOnly } = useFlowKitConfig();
     const stores = React.useContext(NodeFlowContext);
     const isDraggingContainedNode = useNodeFlowInteractionStore(
@@ -165,6 +209,10 @@ export const NodeContainer: React.FC<IProps> = (props) => {
     const notifyEndpointsChanged = useNodeFlowRenderStore((state) => state.notifyEndpointsChanged);
     const canChangeContainers = useNodeFlowRenderStore((state) => state.canChangeContainers);
     const canChangeNodes = useNodeFlowRenderStore((state) => state.canChangeNodes);
+    const selected = useNodeFlowSelectionStore(
+        (state) => state.selectedContainerKeys.has(props.container.key)
+    );
+    const selectContainer = useNodeFlowSelectionStore((state) => state.selectContainer);
     const isDraggingOverContainer = useNodeFlowRenderStore(
         (state) => state.containerDropTargetKeys.has(props.container.key)
     );
@@ -309,6 +357,8 @@ export const NodeContainer: React.FC<IProps> = (props) => {
     const onMouseDown = React.useCallback<(e: React.MouseEvent<HTMLDivElement, MouseEvent>) => void>((e: React.MouseEvent<HTMLDivElement, MouseEvent>): void => {
         const movesContainedNodes = propsRef.current.container.nodeKeys.length > 0;
 
+        selectContainer(propsRef.current.container);
+
         if (readOnly || !canChangeContainers || (movesContainedNodes && !canChangeNodes)) {
             e.stopPropagation();
             e.preventDefault();
@@ -341,11 +391,13 @@ export const NodeContainer: React.FC<IProps> = (props) => {
         e.preventDefault();
         document.addEventListener("mouseup", onMouseUp);
         document.addEventListener("mousemove", onMouseMove);
-    }, [canChangeContainers, canChangeNodes, onMouseMove, onMouseUp, readOnly]);
+    }, [canChangeContainers, canChangeNodes, onMouseMove, onMouseUp, readOnly, selectContainer]);
 
     const onResizeMouseDown = React.useCallback<(direction: ResizeDirection) => (e: React.MouseEvent<HTMLDivElement, MouseEvent>) => void>(
         (direction: ResizeDirection) =>
             (e: React.MouseEvent<HTMLDivElement, MouseEvent>): void => {
+                selectContainer(propsRef.current.container);
+
                 if (readOnly || !canChangeContainers) {
                     e.stopPropagation();
                     e.preventDefault();
@@ -381,7 +433,7 @@ export const NodeContainer: React.FC<IProps> = (props) => {
                 document.addEventListener("mouseup", onMouseUp);
                 document.addEventListener("mousemove", onMouseMove);
             },
-        [canChangeContainers, onMouseMove, onMouseUp, readOnly]
+        [canChangeContainers, onMouseMove, onMouseUp, readOnly, selectContainer]
     );
 
     React.useEffect(() => {
@@ -420,6 +472,7 @@ export const NodeContainer: React.FC<IProps> = (props) => {
     const className = [
         "flow-kit-node-container",
         props.container.className ?? "",
+        selected ? "flow-kit-selected" : "",
         isDraggingOverContainer ? "flow-kit-node-container-drop-target" : "",
         isDraggingOut ? "flow-kit-node-container-dragging-out" : "",
     ].filter(Boolean).join(" ");
@@ -467,3 +520,7 @@ export const NodeContainer: React.FC<IProps> = (props) => {
         </div>
     );
 };
+
+NodeContainerComponent.displayName = "NodeContainer";
+
+export const NodeContainer = React.memo(NodeContainerComponent, areNodeContainerPropsEqual);

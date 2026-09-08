@@ -75,6 +75,10 @@ const NodesLayerComponent = React.forwardRef<NodesLayerHandle, IProps>((props, r
     const requestContainersChangeRef = React.useRef<typeof requestContainersChange>(requestContainersChange);
     const requestNodesChangeRef = React.useRef<typeof requestNodesChange>(requestNodesChange);
     const containers = props.containers ?? [];
+    const nodesByKey = React.useMemo(
+        () => new Map(props.nodes.map((node) => [node.key, node])),
+        [props.nodes]
+    );
 
     propsRef.current = props;
     requestContainersChangeRef.current = requestContainersChange;
@@ -325,16 +329,22 @@ const NodesLayerComponent = React.forwardRef<NodesLayerHandle, IProps>((props, r
     return (
         <React.Fragment>
         <div className="flow-kit-containers-layer">
-            {containers.map((container) => (
-                <NodeContainer
-                    key={container.key}
-                    container={container}
-                    customContainer={container.type != null ? props.containerTypes?.[container.type] : undefined}
-                    nodes={props.nodes}
-                    onDragEnd={onDragEnd}
-                    onResizeEnd={onResizeEnd}
-                />
-            ))}
+            {containers.map((container) => {
+                const containedNodes = container.nodeKeys
+                    .map((key) => nodesByKey.get(key))
+                    .filter((node): node is INode<any, any> => node != null);
+
+                return (
+                    <NodeContainer
+                        key={container.key}
+                        container={container}
+                        customContainer={container.type != null ? props.containerTypes?.[container.type] : undefined}
+                        nodes={containedNodes}
+                        onDragEnd={onDragEnd}
+                        onResizeEnd={onResizeEnd}
+                    />
+                );
+            })}
         </div>
         <div className="flow-kit-nodes-container" ref={layerRef}>
             {props.nodes.map((node) => {

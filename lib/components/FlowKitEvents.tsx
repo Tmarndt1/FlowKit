@@ -1,13 +1,11 @@
 import * as React from "react";
-import { FlowElement } from "../types/FlowElement";
+import { FlowObject } from "../types/FlowObject";
 import { ContainerChange } from "../types/ContainerChange";
 import { EdgeChange } from "../types/EdgeChange";
 import { NodeChange } from "../types/NodeChange";
 import {
-    useNodeFlowInteractionStore,
-    useNodeFlowRenderStore,
+    NodeFlowContext,
     useNodeFlowSelection,
-    useNodeFlowSelectionStore,
 } from "../contexts/NodeFlowContext";
 
 /** Props for the event bridge component that exposes FlowKit interactions. */
@@ -22,12 +20,12 @@ export interface FlowKitEventsProps {
 
 /** Subscribes to selection changes for components rendered inside FlowKit. */
 export function useNodeFlowSelectionChange(
-    onSelected?: (element: FlowElement) => void,
-    onUnselected?: (element: FlowElement) => void,
-    onSelectionChange?: (selection: FlowElement | null, previousSelection: FlowElement | null) => void
+    onSelected?: (object: FlowObject) => void,
+    onUnselected?: (object: FlowObject) => void,
+    onSelectionChange?: (selection: FlowObject | null, previousSelection: FlowObject | null) => void
 ): void {
     const selected = useNodeFlowSelection();
-    const previousSelectionRef = React.useRef<FlowElement | null>(null);
+    const previousSelectionRef = React.useRef<FlowObject | null>(null);
     const onSelectedRef = React.useRef<typeof onSelected>(onSelected);
     const onUnselectedRef = React.useRef<typeof onUnselected>(onUnselected);
     const onSelectionChangeRef = React.useRef<typeof onSelectionChange>(onSelectionChange);
@@ -59,106 +57,117 @@ export function useNodeFlowSelectionChange(
 
 /** Non-visual component that forwards FlowKit interaction events to app callbacks. */
 export const FlowKitEvents: React.FC<FlowKitEventsProps> = (props) => {
-    const endpointDropRequest = useNodeFlowInteractionStore((state) => state.endpointDropRequest);
-    const containerChangeRequest = useNodeFlowRenderStore((state) => state.containerChangeRequest);
-    const nodesChangeRequest = useNodeFlowRenderStore((state) => state.nodesChangeRequest);
-    const setChangeHandlerAvailability = useNodeFlowRenderStore(
-        (state) => state.setChangeHandlerAvailability
-    );
-    const selectedNodeKeys = useNodeFlowSelectionStore((state) => state.selectedNodeKeys);
-    const selectedEdgeKeys = useNodeFlowSelectionStore((state) => state.selectedEdgeKeys);
+    const stores = React.useContext(NodeFlowContext);
     const onContainersChangeRef = React.useRef<typeof props.onContainersChange>(props.onContainersChange);
     const onEdgesChangeRef = React.useRef<typeof props.onEdgesChange>(props.onEdgesChange);
     const onNodesChangeRef = React.useRef<typeof props.onNodesChange>(props.onNodesChange);
-    const lastConnectionVersionRef = React.useRef<number>(0);
-    const lastContainerChangeVersionRef = React.useRef<number>(0);
-    const lastNodesChangeVersionRef = React.useRef<number>(0);
     const prevSelectedNodeKeysRef = React.useRef<Set<string>>(new Set());
     const prevSelectedEdgeKeysRef = React.useRef<Set<string>>(new Set());
+    const prevSelectedContainerKeysRef = React.useRef<Set<string>>(new Set());
     const canChangeNodes = props.onNodesChange != null;
     const canChangeEdges = props.onEdgesChange != null;
     const canChangeContainers = props.onContainersChange != null;
+
+    if (stores == null) {
+        throw new Error("FlowKitEvents must be rendered inside FlowKit.");
+    }
 
     onContainersChangeRef.current = props.onContainersChange;
     onEdgesChangeRef.current = props.onEdgesChange;
     onNodesChangeRef.current = props.onNodesChange;
 
-    React.useEffect(() => {
-        setChangeHandlerAvailability({
+    React.useLayoutEffect(() => {
+        const renderStore = stores.render;
+        const interactionStore = stores.interaction;
+        const selectionStore = stores.selection;
+        let lastConnectionVersion = interactionStore.getState().endpointDropRequest?.version ?? 0;
+        let lastContainerChangeVersion = renderStore.getState().containerChangeRequest?.version ?? 0;
+        let lastNodesChangeVersion = renderStore.getState().nodesChangeRequest?.version ?? 0;
+
+        renderStore.getState().setChangeHandlerAvailability({
             nodes: canChangeNodes,
             edges: canChangeEdges,
             containers: canChangeContainers,
         });
 
+        const unsubscribeInteraction = interactionStore.subscribe((state) => {
+            const request = state.endpointDropRequest;
+
+            if (request == null || request.version === lastConnectionVersion) return;
+
+            lastConnectionVersion = request.version;
+            onEdgesChangeRef.current?.([{
+                type: "connect",
+                sourceId: request.sourceEndpoint.endpoint.id,
+                targetId: request.targetId,
+            }]);
+        });
+        const unsubscribeRender = renderStore.subscribe((state) => {
+            const containerRequest = state.containerChangeRequest;
+            const nodesRequest = state.nodesChangeRequest;
+
+            if (containerRequest != null && containerRequest.version !== lastContainerChangeVersion) {
+                lastContainerChangeVersion = containerRequest.version;
+                onContainersChangeRef.current?.(containerRequest.changes);
+            }
+
+            if (nodesRequest != null && nodesRequest.version !== lastNodesChangeVersion) {
+                lastNodesChangeVersion = nodesRequest.version;
+                onNodesChangeRef.current?.(nodesRequest.changes);
+            }
+        });
+        const unsubscribeSelection = selectionStore.subscribe((state) => {
+            const previousNodeKeys = prevSelectedNodeKeysRef.current;
+            const previousEdgeKeys = prevSelectedEdgeKeysRef.current;
+            const previousContainerKeys = prevSelectedContainerKeysRef.current;
+            const nodeChanges: NodeChange[] = [];
+            const edgeChanges: EdgeChange[] = [];
+            const containerChanges: ContainerChange[] = [];
+
+            state.selectedNodeKeys.forEach((key) => {
+                if (!previousNodeKeys.has(key)) nodeChanges.push({ type: "select", key, selected: true });
+            });
+            previousNodeKeys.forEach((key) => {
+                if (!state.selectedNodeKeys.has(key)) nodeChanges.push({ type: "select", key, selected: false });
+            });
+            state.selectedEdgeKeys.forEach((key) => {
+                if (!previousEdgeKeys.has(key)) edgeChanges.push({ type: "select", key, selected: true });
+            });
+            previousEdgeKeys.forEach((key) => {
+                if (!state.selectedEdgeKeys.has(key)) edgeChanges.push({ type: "select", key, selected: false });
+            });
+            state.selectedContainerKeys.forEach((key) => {
+                if (!previousContainerKeys.has(key)) containerChanges.push({ type: "select", key, selected: true });
+            });
+            previousContainerKeys.forEach((key) => {
+                if (!state.selectedContainerKeys.has(key)) containerChanges.push({ type: "select", key, selected: false });
+            });
+
+            prevSelectedNodeKeysRef.current = state.selectedNodeKeys;
+            prevSelectedEdgeKeysRef.current = state.selectedEdgeKeys;
+            prevSelectedContainerKeysRef.current = state.selectedContainerKeys;
+
+            if (nodeChanges.length > 0) onNodesChangeRef.current?.(nodeChanges);
+            if (edgeChanges.length > 0) onEdgesChangeRef.current?.(edgeChanges);
+            if (containerChanges.length > 0) onContainersChangeRef.current?.(containerChanges);
+        });
+
         return () => {
-            setChangeHandlerAvailability({ nodes: false, edges: false, containers: false });
+            unsubscribeInteraction();
+            unsubscribeRender();
+            unsubscribeSelection();
+            renderStore.getState().setChangeHandlerAvailability({
+                nodes: false,
+                edges: false,
+                containers: false,
+            });
         };
     }, [
         canChangeContainers,
         canChangeEdges,
         canChangeNodes,
-        setChangeHandlerAvailability,
+        stores,
     ]);
-
-    React.useEffect(() => {
-        if (endpointDropRequest == null) return;
-        if (endpointDropRequest.version === lastConnectionVersionRef.current) return;
-
-        lastConnectionVersionRef.current = endpointDropRequest.version;
-        onEdgesChangeRef.current?.([{
-            type: "connect",
-            sourceId: endpointDropRequest.sourceEndpoint.endpoint.id,
-            targetId: endpointDropRequest.targetId,
-        }]);
-    }, [endpointDropRequest]);
-
-    React.useEffect(() => {
-        if (containerChangeRequest == null) return;
-        if (containerChangeRequest.version === lastContainerChangeVersionRef.current) return;
-
-        lastContainerChangeVersionRef.current = containerChangeRequest.version;
-        onContainersChangeRef.current?.(containerChangeRequest.changes);
-    }, [containerChangeRequest]);
-
-    React.useEffect(() => {
-        if (nodesChangeRequest == null) return;
-        if (nodesChangeRequest.version === lastNodesChangeVersionRef.current) return;
-
-        lastNodesChangeVersionRef.current = nodesChangeRequest.version;
-        onNodesChangeRef.current?.(nodesChangeRequest.changes);
-    }, [nodesChangeRequest]);
-
-    React.useEffect(() => {
-        const prev = prevSelectedNodeKeysRef.current;
-        const changes: NodeChange[] = [];
-
-        selectedNodeKeys.forEach((key) => {
-            if (!prev.has(key)) changes.push({ type: "select", key, selected: true });
-        });
-        prev.forEach((key) => {
-            if (!selectedNodeKeys.has(key)) changes.push({ type: "select", key, selected: false });
-        });
-
-        prevSelectedNodeKeysRef.current = selectedNodeKeys;
-
-        if (changes.length > 0) onNodesChangeRef.current?.(changes);
-    }, [selectedNodeKeys]);
-
-    React.useEffect(() => {
-        const prev = prevSelectedEdgeKeysRef.current;
-        const changes: EdgeChange[] = [];
-
-        selectedEdgeKeys.forEach((key) => {
-            if (!prev.has(key)) changes.push({ type: "select", key, selected: true });
-        });
-        prev.forEach((key) => {
-            if (!selectedEdgeKeys.has(key)) changes.push({ type: "select", key, selected: false });
-        });
-
-        prevSelectedEdgeKeysRef.current = selectedEdgeKeys;
-
-        if (changes.length > 0) onEdgesChangeRef.current?.(changes);
-    }, [selectedEdgeKeys]);
 
     return null;
 };

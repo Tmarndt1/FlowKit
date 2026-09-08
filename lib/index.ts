@@ -1,5 +1,5 @@
 export { FlowKit, useNodeFlowSelection, useNodeFlowSelectionChange } from "./components/FlowKit";
-export { useNodeFlowSelectedNodes, useNodeFlowSelectedEdges } from "./contexts/NodeFlowContext";
+export { useNodeFlowSelectedNodes, useNodeFlowSelectedEdges, useNodeFlowSelectedContainers } from "./contexts/NodeFlowContext";
 export type { FlowKitHandle, FlowKitProps, IEdgeCollapsedChangeArgs, IEdgeCollapsePreviewChangeArgs } from "./components/FlowKit";
 export { FlowKitControls, useFlowKitControls } from "./components/FlowKitControls";
 export type { PanToNodeOptions } from "./components/FlowKitControls";
@@ -43,6 +43,8 @@ export type { EdgeChange } from "./types/EdgeChange";
 export type { NodeChange } from "./types/NodeChange";
 export type { EdgeTypes } from "./types/EdgeTypes";
 export type { IFoldGraphPreview, IFoldGraphState } from "./functions/getFoldGraphState";
+export type { FlowObject } from "./types/FlowObject";
+/** @deprecated Use FlowObject instead. */
 export type { FlowElement } from "./types/FlowElement";
 export type { FlowKitLegendItem, FlowKitLegendMarker, FlowKitLegendPosition, FlowKitLegendProps } from "./components/FlowKitLegend";
 export type { NodeComponentProps } from "./types/NodeComponentProps";
