@@ -4,10 +4,9 @@ import { INodeContainer } from "../../interfaces/INodeContainer";
 import { INode } from "../../interfaces/INode";
 import { IOffset } from "../../interfaces/IOffset";
 import {
+    NodeFlowContext,
     useNodeFlowInteractionStore,
     useNodeFlowRenderStore,
-    useNodeFlowSnapStore,
-    useNodeFlowViewportStore,
 } from "../../contexts/NodeFlowContext";
 import { useFlowKitConfig } from "../../contexts/FlowKitConfigContext";
 import { findElementById } from "../../functions/domScope";
@@ -157,45 +156,25 @@ function getContainerBounds(
     };
 }
 
-function isNodeCenterInsideElement(
-    nodeKey: string,
-    element: HTMLElement | null,
-    root: HTMLElement | null
-): boolean {
-    const nodeElement = findElementById(root, nodeKey);
-    const nodeRect = nodeElement?.getBoundingClientRect();
-    const containerRect = element?.getBoundingClientRect();
-
-    if (nodeRect == null || containerRect == null) return false;
-
-    const nodeCenter = {
-        x: nodeRect.left + nodeRect.width / 2,
-        y: nodeRect.top + nodeRect.height / 2,
-    };
-
-    return (
-        nodeCenter.x >= containerRect.left &&
-        nodeCenter.x <= containerRect.right &&
-        nodeCenter.y >= containerRect.top &&
-        nodeCenter.y <= containerRect.bottom
-    );
-}
-
 export const NodeContainer: React.FC<IProps> = (props) => {
     const { getRootElement, readOnly } = useFlowKitConfig();
-    const draggedNode = useNodeFlowInteractionStore((state) => state.draggedNode);
-    const dragUpdateVersion = useNodeFlowInteractionStore((state) => state.dragUpdateVersion);
-    const scale = useNodeFlowViewportStore((state) => state.scale);
-    const snapContainers = useNodeFlowSnapStore((state) => state.containers);
-    const snapEnabled = useNodeFlowSnapStore((state) => state.enabled);
-    const snapSize = useNodeFlowSnapStore((state) => state.size);
+    const stores = React.useContext(NodeFlowContext);
+    const isDraggingContainedNode = useNodeFlowInteractionStore(
+        (state) => state.draggedNode != null && props.container.nodeKeys.includes(state.draggedNode.key)
+    );
     const notifyEndpointsChanged = useNodeFlowRenderStore((state) => state.notifyEndpointsChanged);
     const canChangeContainers = useNodeFlowRenderStore((state) => state.canChangeContainers);
     const canChangeNodes = useNodeFlowRenderStore((state) => state.canChangeNodes);
+    const isDraggingOverContainer = useNodeFlowRenderStore(
+        (state) => state.containerDropTargetKeys.has(props.container.key)
+    );
+    const isDraggingOut = useNodeFlowRenderStore(
+        (state) => state.containerDraggingOutKeys.has(props.container.key)
+    );
     const setDraggingNode = useNodeFlowInteractionStore((state) => state.setDraggingNode);
     const containerRef = React.useRef<HTMLDivElement>(null);
     const propsRef = React.useRef<IProps>(props);
-    const scaleRef = React.useRef<number>(scale);
+    const scaleRef = React.useRef<number>(stores?.viewport.getState().scale ?? 1);
     const mouseDownRef = React.useRef<boolean>(false);
     const resizingRef = React.useRef<boolean>(false);
     const resizeDirectionRef = React.useRef<ResizeDirection>("southeast");
@@ -207,16 +186,41 @@ export const NodeContainer: React.FC<IProps> = (props) => {
     const notifyEndpointsChangedRef = React.useRef<typeof notifyEndpointsChanged>(notifyEndpointsChanged);
     const onDragEndRef = React.useRef<typeof props.onDragEnd>(props.onDragEnd);
     const onResizeEndRef = React.useRef<typeof props.onResizeEnd>(props.onResizeEnd);
-    const snapRef = React.useRef<{ containers: boolean; enabled: boolean; size: number }>({ containers: snapContainers, enabled: snapEnabled, size: snapSize });
+    const snapRef = React.useRef<{ containers: boolean; enabled: boolean; size: number }>({
+        containers: stores?.snap.getState().containers ?? false,
+        enabled: stores?.snap.getState().enabled ?? false,
+        size: stores?.snap.getState().size ?? 24,
+    });
     const setDraggingNodeRef = React.useRef<typeof setDraggingNode>(setDraggingNode);
 
     propsRef.current = props;
-    scaleRef.current = scale;
     notifyEndpointsChangedRef.current = notifyEndpointsChanged;
     onDragEndRef.current = props.onDragEnd;
     onResizeEndRef.current = props.onResizeEnd;
-    snapRef.current = { containers: snapContainers, enabled: snapEnabled, size: snapSize };
     setDraggingNodeRef.current = setDraggingNode;
+
+    React.useEffect(() => {
+        if (stores == null) return;
+
+        const syncScale = (): void => {
+            scaleRef.current = stores.viewport.getState().scale;
+        };
+        const syncSnap = (): void => {
+            const snap = stores.snap.getState();
+            snapRef.current = { containers: snap.containers, enabled: snap.enabled, size: snap.size };
+        };
+
+        syncScale();
+        syncSnap();
+
+        const unsubscribeViewport = stores.viewport.subscribe(syncScale);
+        const unsubscribeSnap = stores.snap.subscribe(syncSnap);
+
+        return () => {
+            unsubscribeViewport();
+            unsubscribeSnap();
+        };
+    }, [stores]);
 
     const moveContainedNodes = React.useCallback<(dx: number, dy: number) => void>((dx: number, dy: number): void => {
         const containedNodeKeys = new Set(propsRef.current.container.nodeKeys);
@@ -389,9 +393,8 @@ export const NodeContainer: React.FC<IProps> = (props) => {
     }, [onMouseMove, onMouseUp]);
 
     const currentBounds = getContainerBounds(props.container, props.nodes, getRootElement());
-    const isDraggingContainedNode = draggedNode != null && props.container.nodeKeys.includes(draggedNode.key);
 
-    if (draggedNode == null) {
+    if (!isDraggingContainedNode) {
         frozenDragBoundsRef.current = null;
     } else if (
         props.container.resizeToFit === false &&
@@ -414,19 +417,12 @@ export const NodeContainer: React.FC<IProps> = (props) => {
         transform: `translate(${bounds.x}px, ${bounds.y}px)`,
         ...(props.container.style ?? {}),
     };
-    const isDraggingOverContainer = canChangeContainers && draggedNode != null &&
-        !isDraggingContainedNode &&
-        isNodeCenterInsideElement(draggedNode.key, containerRef.current, getRootElement());
-    const isDraggingOut = canChangeContainers && isDraggingContainedNode &&
-        !isNodeCenterInsideElement(draggedNode.key, containerRef.current, getRootElement());
     const className = [
         "flow-kit-node-container",
         props.container.className ?? "",
         isDraggingOverContainer ? "flow-kit-node-container-drop-target" : "",
         isDraggingOut ? "flow-kit-node-container-dragging-out" : "",
     ].filter(Boolean).join(" ");
-
-    void dragUpdateVersion;
 
     if (props.customContainer != null) {
         const customProps = { ...props.container, className, style };

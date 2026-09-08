@@ -27,4 +27,21 @@ describe("render store change handlers", () => {
             canChangeContainers: true,
         });
     });
+
+    it("publishes container drag previews only when highlighted keys change", () => {
+        const store = createNodeFlowRenderStore();
+        let updates = 0;
+        const unsubscribe = store.subscribe(() => {
+            updates += 1;
+        });
+
+        store.getState().setContainerDragPreview(new Set(["target"]), new Set(["source"]));
+        store.getState().setContainerDragPreview(new Set(["target"]), new Set(["source"]));
+
+        expect(updates).toBe(1);
+        expect(store.getState().containerDropTargetKeys.has("target")).toBe(true);
+        expect(store.getState().containerDraggingOutKeys.has("source")).toBe(true);
+
+        unsubscribe();
+    });
 });

@@ -497,11 +497,9 @@ const FlowKitComponent = (props: FlowKitProps, ref: React.ForwardedRef<FlowKitHa
         };
 
         document.addEventListener("mouseup", onDocumentRelease, true);
-        document.addEventListener("pointerup", onDocumentRelease, true);
 
         return () => {
             document.removeEventListener("mouseup", onDocumentRelease, true);
-            document.removeEventListener("pointerup", onDocumentRelease, true);
         };
     }, [interactionStore, stopCanvasPan]);
 

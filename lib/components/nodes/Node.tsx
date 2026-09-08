@@ -7,8 +7,6 @@ import {
     useNodeFlowInteractionStore,
     useNodeFlowRenderStore,
     useNodeFlowSelectionStore,
-    useNodeFlowSnapStore,
-    useNodeFlowViewportStore,
 } from "../../contexts/NodeFlowContext";
 import { useFlowKitConfig } from "../../contexts/FlowKitConfigContext";
 import { findElementById, getFlowKitRoot } from "../../functions/domScope";
@@ -35,9 +33,6 @@ const NodeComponent: React.FC<IProps> = (props) => {
 
     const { readOnly, multiSelect } = useFlowKitConfig();
     const stores = React.useContext(NodeFlowContext);
-    const scale = useNodeFlowViewportStore((state) => state.scale);
-    const snapEnabled = useNodeFlowSnapStore((state) => state.enabled);
-    const snapSize = useNodeFlowSnapStore((state) => state.size);
     const selected = useNodeFlowSelectionStore((state) => state.selectedNodeKeys.has(props.node.key));
     const selectNode = useNodeFlowSelectionStore((state) => state.selectNode);
     const notifyEndpointsChanged = useNodeFlowRenderStore((state) => state.notifyEndpointsChanged);
@@ -53,8 +48,11 @@ const NodeComponent: React.FC<IProps> = (props) => {
     const widthRef = React.useRef<number>(0);
     const heightRef = React.useRef<number>(0);
     const propsRef = React.useRef<IProps>(props);
-    const scaleRef = React.useRef<number>(scale);
-    const snapRef = React.useRef<{ enabled: boolean; size: number }>({ enabled: snapEnabled, size: snapSize });
+    const scaleRef = React.useRef<number>(stores?.viewport.getState().scale ?? 1);
+    const snapRef = React.useRef<{ enabled: boolean; size: number }>({
+        enabled: stores?.snap.getState().enabled ?? false,
+        size: stores?.snap.getState().size ?? 24,
+    });
     const storesRef = React.useRef<typeof stores>(stores);
     const multiSelectRef = React.useRef<boolean | undefined>(multiSelect);
     const notifyEndpointsChangedRef = React.useRef<typeof notifyEndpointsChanged>(notifyEndpointsChanged);
@@ -63,14 +61,35 @@ const NodeComponent: React.FC<IProps> = (props) => {
     const setDraggingNodeRef = React.useRef<typeof setDraggingNode>(setDraggingNode);
 
     propsRef.current = props;
-    scaleRef.current = scale;
-    snapRef.current = { enabled: snapEnabled, size: snapSize };
     storesRef.current = stores;
     multiSelectRef.current = multiSelect;
     notifyEndpointsChangedRef.current = notifyEndpointsChanged;
     requestNodesChangeRef.current = requestNodesChange;
     notifyNodeDragRef.current = notifyNodeDrag;
     setDraggingNodeRef.current = setDraggingNode;
+
+    React.useEffect(() => {
+        if (stores == null) return;
+
+        const syncScale = (): void => {
+            scaleRef.current = stores.viewport.getState().scale;
+        };
+        const syncSnap = (): void => {
+            const snap = stores.snap.getState();
+            snapRef.current = { enabled: snap.enabled, size: snap.size };
+        };
+
+        syncScale();
+        syncSnap();
+
+        const unsubscribeViewport = stores.viewport.subscribe(syncScale);
+        const unsubscribeSnap = stores.snap.subscribe(syncSnap);
+
+        return () => {
+            unsubscribeViewport();
+            unsubscribeSnap();
+        };
+    }, [stores]);
 
     const onMouseMove = React.useCallback<(e: MouseEvent) => void>((e: MouseEvent): void => {
         if (!mouseDownRef.current) return;

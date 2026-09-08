@@ -95,6 +95,10 @@ export interface NodeFlowRenderState {
     canChangeEdges: boolean;
     /** True when FlowKitEvents can persist container mutations into controlled state. */
     canChangeContainers: boolean;
+    /** Container keys currently previewed as node drop targets. */
+    containerDropTargetKeys: ReadonlySet<string>;
+    /** Container keys currently previewed as losing their dragged node. */
+    containerDraggingOutKeys: ReadonlySet<string>;
     containerChangeRequest: ContainerChangeRequest | null;
     nodesChangeRequest: NodesChangeRequest | null;
     endpointUpdate: EndpointUpdate | null;
@@ -108,6 +112,10 @@ export interface NodeFlowRenderState {
         edges: boolean;
         containers: boolean;
     }) => void;
+    setContainerDragPreview: (
+        dropTargetKeys: ReadonlySet<string>,
+        draggingOutKeys: ReadonlySet<string>
+    ) => void;
 }
 
 export interface NodeFlowSnapState {
@@ -311,6 +319,8 @@ export function createNodeFlowRenderStore(): NodeFlowRenderStore {
         canChangeNodes: false,
         canChangeEdges: false,
         canChangeContainers: false,
+        containerDropTargetKeys: new Set<string>(),
+        containerDraggingOutKeys: new Set<string>(),
         containerChangeRequest: null,
         nodesChangeRequest: null,
         endpointUpdate: null,
@@ -357,6 +367,18 @@ export function createNodeFlowRenderStore(): NodeFlowRenderStore {
                 canChangeEdges: edges,
                 canChangeContainers: containers,
             });
+        },
+        setContainerDragPreview: (dropTargetKeys, draggingOutKeys) => {
+            const current = get();
+            const setsEqual = (left: ReadonlySet<string>, right: ReadonlySet<string>): boolean =>
+                left.size === right.size && Array.from(left).every((key) => right.has(key));
+
+            if (
+                setsEqual(current.containerDropTargetKeys, dropTargetKeys) &&
+                setsEqual(current.containerDraggingOutKeys, draggingOutKeys)
+            ) return;
+
+            set({ containerDropTargetKeys: dropTargetKeys, containerDraggingOutKeys: draggingOutKeys });
         },
     }));
 }

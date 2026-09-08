@@ -6,7 +6,7 @@ import { NodeComponentProps } from "../../types/NodeComponentProps";
 import { NodeTypes } from "../../types/NodeTypes";
 import { Node } from "./Node";
 import { NodeContainer } from "./NodeContainer";
-import { useNodeFlowRenderStore } from "../../contexts/NodeFlowContext";
+import { NodeFlowContext, useNodeFlowRenderStore } from "../../contexts/NodeFlowContext";
 import { ContainerChange } from "../../types/ContainerChange";
 import { findElementById, getFlowKitRoot } from "../../functions/domScope";
 
@@ -67,6 +67,7 @@ function getRenderedContainerBounds(root: HTMLElement | null, container: INodeCo
 }
 
 const NodesLayerComponent = React.forwardRef<NodesLayerHandle, IProps>((props, ref) => {
+    const stores = React.useContext(NodeFlowContext);
     const layerRef = React.useRef<HTMLDivElement>(null);
     const requestContainersChange = useNodeFlowRenderStore((state) => state.requestContainersChange);
     const requestNodesChange = useNodeFlowRenderStore((state) => state.requestNodesChange);
@@ -78,6 +79,87 @@ const NodesLayerComponent = React.forwardRef<NodesLayerHandle, IProps>((props, r
     propsRef.current = props;
     requestContainersChangeRef.current = requestContainersChange;
     requestNodesChangeRef.current = requestNodesChange;
+
+    const updateContainerDragPreview = React.useCallback((): void => {
+        if (stores == null) return;
+
+        const renderState = stores.render.getState();
+        const draggedNode = stores.interaction.getState().draggedNode;
+        const root = getFlowKitRoot(layerRef.current);
+        const containerElements = root?.querySelectorAll<HTMLElement>(".flow-kit-node-container") ?? [];
+        const dropTargetKeys = new Set<string>();
+        const draggingOutKeys = new Set<string>();
+
+        if (renderState.canChangeContainers && draggedNode != null) {
+            const nodeRect = findElementById(root, draggedNode.key)?.getBoundingClientRect();
+
+            if (nodeRect != null) {
+                const nodeCenter = {
+                    x: nodeRect.left + nodeRect.width / 2,
+                    y: nodeRect.top + nodeRect.height / 2,
+                };
+                const containersByKey = new Map(
+                    (propsRef.current.containers ?? []).map((container) => [container.key, container])
+                );
+
+                containerElements.forEach((element) => {
+                    const key = element.dataset.containerKey;
+                    const container = key == null ? undefined : containersByKey.get(key);
+
+                    if (key == null || container == null) return;
+
+                    const rect = element.getBoundingClientRect();
+                    const containsNode = container.nodeKeys.includes(draggedNode.key);
+                    const containsCenter =
+                        nodeCenter.x >= rect.left &&
+                        nodeCenter.x <= rect.right &&
+                        nodeCenter.y >= rect.top &&
+                        nodeCenter.y <= rect.bottom;
+
+                    if (!containsNode && containsCenter) dropTargetKeys.add(key);
+                    if (containsNode && !containsCenter) draggingOutKeys.add(key);
+                });
+            }
+        }
+
+        renderState.setContainerDragPreview(dropTargetKeys, draggingOutKeys);
+    }, [stores]);
+
+    React.useEffect(() => {
+        if (stores == null) return;
+
+        let animationFrame: number | null = null;
+        const schedulePreviewUpdate = (): void => {
+            if (animationFrame != null) return;
+
+            animationFrame = window.requestAnimationFrame(() => {
+                animationFrame = null;
+                updateContainerDragPreview();
+            });
+        };
+        const unsubscribeInteraction = stores.interaction.subscribe((state, previous) => {
+            if (
+                state.dragUpdateVersion !== previous.dragUpdateVersion ||
+                state.draggedNode !== previous.draggedNode
+            ) schedulePreviewUpdate();
+        });
+        const unsubscribeRender = stores.render.subscribe((state, previous) => {
+            if (state.canChangeContainers !== previous.canChangeContainers) schedulePreviewUpdate();
+        });
+
+        schedulePreviewUpdate();
+
+        return () => {
+            if (animationFrame != null) window.cancelAnimationFrame(animationFrame);
+            unsubscribeInteraction();
+            unsubscribeRender();
+            stores.render.getState().setContainerDragPreview(new Set(), new Set());
+        };
+    }, [stores, updateContainerDragPreview]);
+
+    React.useLayoutEffect(() => {
+        updateContainerDragPreview();
+    }, [containers, updateContainerDragPreview]);
 
     const updateContainerMembership = React.useCallback<(node: INode<any, any>) => void>((node: INode<any, any>): void => {
         const currentContainers = propsRef.current.containers ?? [];
