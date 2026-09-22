@@ -10,6 +10,8 @@ import { Nullable } from "../types/Nullable";
 
 export interface EndpointUpdate {
     endpoints: IEndpoint<any>[];
+    /** Node keys whose rendered bounds moved or changed. Used by floating edges. */
+    nodeKeys: string[];
     version: number;
 }
 
@@ -113,7 +115,7 @@ export interface NodeFlowRenderState {
     nodesChangeRequest: NodesChangeRequest | null;
     endpointUpdate: EndpointUpdate | null;
     edgeRenderRequest: EdgeRenderRequest | null;
-    notifyEndpointsChanged: (endpoints: IEndpoint<any>[]) => void;
+    notifyEndpointsChanged: (endpoints: IEndpoint<any>[], nodeKeys?: string[]) => void;
     requestContainersChange: (changes: ContainerChange[]) => void;
     requestNodesChange: (changes: NodeChange[]) => void;
     requestEdgeRender: (edge: IEdge<any>) => void;
@@ -377,10 +379,11 @@ export function createNodeFlowRenderStore(): NodeFlowRenderStore {
         nodesChangeRequest: null,
         endpointUpdate: null,
         edgeRenderRequest: null,
-        notifyEndpointsChanged: (endpoints) =>
+        notifyEndpointsChanged: (endpoints, nodeKeys = []) =>
             set({
                 endpointUpdate: {
                     endpoints,
+                    nodeKeys,
                     version: (get().endpointUpdate?.version ?? 0) + 1,
                 },
             }),

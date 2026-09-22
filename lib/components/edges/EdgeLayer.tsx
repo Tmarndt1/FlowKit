@@ -102,26 +102,45 @@ function getEndpointElementAtPoint(
     return closestEndpoint;
 }
 
-function getEdgeNodeKey(edge: IEdge<any>, connectionId: string, nodes: INode<any, any>[]): string {
-    if (edge.anchorMode === "floating") return connectionId;
+function getNodeKeyByConnectionId(nodes: INode<any, any>[]): Map<string, string> {
+    const nodeKeyByConnectionId = new Map<string, string>();
 
-    return nodes.find((node) => node.endpoints.some((endpoint) => endpoint.id === connectionId))?.key ?? connectionId;
+    nodes.forEach((node) => {
+        nodeKeyByConnectionId.set(node.key, node.key);
+        node.endpoints.forEach((endpoint) => nodeKeyByConnectionId.set(endpoint.id, node.key));
+    });
+
+    return nodeKeyByConnectionId;
 }
 
-function getEdgePairKey(edge: IEdge<any>, nodes: INode<any, any>[]): string {
-    const sourceKey = getEdgeNodeKey(edge, edge.sourceId, nodes);
-    const targetKey = getEdgeNodeKey(edge, edge.targetId, nodes);
+function getEdgeNodeKey(
+    edge: IEdge<any>,
+    connectionId: string,
+    nodeKeyByConnectionId: ReadonlyMap<string, string>
+): string {
+    if (edge.anchorMode === "floating") return connectionId;
+
+    return nodeKeyByConnectionId.get(connectionId) ?? connectionId;
+}
+
+function getEdgePairKey(edge: IEdge<any>, nodeKeyByConnectionId: ReadonlyMap<string, string>): string {
+    const sourceKey = getEdgeNodeKey(edge, edge.sourceId, nodeKeyByConnectionId);
+    const targetKey = getEdgeNodeKey(edge, edge.targetId, nodeKeyByConnectionId);
 
     return [sourceKey, targetKey].sort().join("::");
 }
 
-function getParallelEdgeOffsets(edges: IEdge<any>[], nodes: INode<any, any>[], spacing: number): Map<string, number> {
+function getParallelEdgeOffsets(
+    edges: IEdge<any>[],
+    nodeKeyByConnectionId: ReadonlyMap<string, string>,
+    spacing: number
+): Map<string, number> {
     const offsets = new Map<string, number>();
 
     if (spacing <= 0) return offsets;
 
     const groups = edges.reduce<Map<string, IEdge<any>[]>>((map, edge) => {
-        const key = getEdgePairKey(edge, nodes);
+        const key = getEdgePairKey(edge, nodeKeyByConnectionId);
         const group = map.get(key) ?? [];
 
         group.push(edge);
@@ -141,34 +160,31 @@ function getParallelEdgeOffsets(edges: IEdge<any>[], nodes: INode<any, any>[], s
     return offsets;
 }
 
-function getNodeObstacles(
+function getNodeObstaclesByKey(
     root: HTMLElement | null,
-    edge: IEdge<any>,
     nodes: INode<any, any>[],
     containerRect: DOMRect | null,
     scale: number,
     margin = 24
-): EdgeRoutingObstacle[] {
-    if (containerRect == null || scale === 0) return [];
+): Map<string, EdgeRoutingObstacle> {
+    const obstacles = new Map<string, EdgeRoutingObstacle>();
 
-    const sourceNodeKey = getEdgeNodeKey(edge, edge.sourceId, nodes);
-    const targetNodeKey = getEdgeNodeKey(edge, edge.targetId, nodes);
+    if (containerRect == null || scale === 0) return obstacles;
 
-    return nodes
-        .filter((node) => node.key !== sourceNodeKey && node.key !== targetNodeKey)
-        .map((node) => {
-            const rect = findElementById(root, node.key)?.getBoundingClientRect();
+    nodes.forEach((node) => {
+        const rect = findElementById(root, node.key)?.getBoundingClientRect();
 
-            if (rect == null) return null;
-
-            return {
+        if (rect != null) {
+            obstacles.set(node.key, {
                 x: (rect.left - containerRect.left) / scale - margin,
                 y: (rect.top - containerRect.top) / scale - margin,
                 width: rect.width / scale + margin * 2,
                 height: rect.height / scale + margin * 2,
-            };
-        })
-        .filter((obstacle): obstacle is EdgeRoutingObstacle => obstacle != null);
+            });
+        }
+    });
+
+    return obstacles;
 }
 
 function mergeEdgeRouting(globalRouting: EdgeRoutingOptions | undefined, edge: IEdge<any>): EdgeRoutingOptions {
@@ -418,27 +434,36 @@ export const EdgeLayer = React.forwardRef<EdgeLayerHandle, IProps>((props, ref) 
         handlePointerRelease,
     }), [handlePointerMove, handlePointerRelease]);
 
-    const getEdges = React.useCallback<() => React.ReactElement[]>((): React.ReactElement[] => {
+    const renderedEdges = React.useMemo<React.ReactElement[]>(() => {
         const array: React.ReactElement[] = [];
-        const currentProps = propsRef.current;
+        const nodeKeyByConnectionId = getNodeKeyByConnectionId(props.nodes);
         const parallelOffsets = getParallelEdgeOffsets(
-            currentProps.edges,
-            currentProps.nodes,
+            props.edges,
+            nodeKeyByConnectionId,
             edgeRouting?.parallelOffset ?? 0
         );
+        const shouldMeasureObstacles =
+            edgeRouting?.avoidNodes === true ||
+            props.edges.some((edge) => edge.routing?.avoidNodes === true);
+        const obstaclesByNodeKey = shouldMeasureObstacles
+            ? getNodeObstaclesByKey(
+                getRootElement(),
+                props.nodes,
+                containerRect ?? null,
+                scale
+            )
+            : new Map<string, EdgeRoutingObstacle>();
 
-        currentProps.edges.forEach((edge: IEdge<any>) => {
+        props.edges.forEach((edge: IEdge<any>) => {
             const mergedRouting = mergeEdgeRouting(edgeRouting, edge);
+            const sourceNodeKey = getEdgeNodeKey(edge, edge.sourceId, nodeKeyByConnectionId);
+            const targetNodeKey = getEdgeNodeKey(edge, edge.targetId, nodeKeyByConnectionId);
             const routing: ComputedEdgeRoutingOptions = {
                 avoidNodes: mergedRouting.avoidNodes,
                 obstacles: mergedRouting.avoidNodes
-                    ? getNodeObstacles(
-                        getRootElement(),
-                        edge,
-                        currentProps.nodes,
-                        containerRectRef.current ?? null,
-                        scaleRef.current
-                    )
+                    ? Array.from(obstaclesByNodeKey)
+                        .filter(([nodeKey]) => nodeKey !== sourceNodeKey && nodeKey !== targetNodeKey)
+                        .map(([, obstacle]) => obstacle)
                     : undefined,
                 parallelOffset: edge.routing?.parallelOffset ?? parallelOffsets.get(edge.key) ?? 0,
             };
@@ -450,12 +475,12 @@ export const EdgeLayer = React.forwardRef<EdgeLayerHandle, IProps>((props, ref) 
                         edge={edge as IEdge<any>}
                         markerIdPrefix={markerIdPrefix}
                         routing={routing}
-                        stateClassName={currentProps.edgeStateClassNames?.get(edge.key)}
+                        stateClassName={props.edgeStateClassNames?.get(edge.key)}
                     />
                 );
             } else if (
-                currentProps.edgeTypes != null &&
-                currentProps.edgeTypes[edge.type] != null
+                props.edgeTypes != null &&
+                props.edgeTypes[edge.type] != null
             ) {
                 array.push(
                     <Edge
@@ -463,8 +488,8 @@ export const EdgeLayer = React.forwardRef<EdgeLayerHandle, IProps>((props, ref) 
                         edge={edge as IEdge<any>}
                         markerIdPrefix={markerIdPrefix}
                         routing={routing}
-                        stateClassName={currentProps.edgeStateClassNames?.get(edge.key)}
-                        customEdge={currentProps.edgeTypes[edge.type]}
+                        stateClassName={props.edgeStateClassNames?.get(edge.key)}
+                        customEdge={props.edgeTypes[edge.type]}
                     />
                 );
             } else if (edge.sourceId && edge.targetId) {
@@ -474,14 +499,24 @@ export const EdgeLayer = React.forwardRef<EdgeLayerHandle, IProps>((props, ref) 
                         edge={edge as IEdge<any>}
                         markerIdPrefix={markerIdPrefix}
                         routing={routing}
-                        stateClassName={currentProps.edgeStateClassNames?.get(edge.key)}
+                        stateClassName={props.edgeStateClassNames?.get(edge.key)}
                     />
                 );
             }
         });
 
         return array;
-    }, [edgeRouting, getRootElement, markerIdPrefix]);
+    }, [
+        containerRect,
+        edgeRouting,
+        getRootElement,
+        markerIdPrefix,
+        props.edgeStateClassNames,
+        props.edgeTypes,
+        props.edges,
+        props.nodes,
+        scale,
+    ]);
 
     return (
         <svg className="flow-kit-edges-container" ref={svgRef}>
@@ -565,7 +600,7 @@ export const EdgeLayer = React.forwardRef<EdgeLayerHandle, IProps>((props, ref) 
                     <path className="flow-kit-edge-marker-hollow" d="M 0 4 L 7 0 L 14 4 L 7 8 Z" fill="none" />
                 </marker>
             </defs>
-            {getEdges()}
+            {renderedEdges}
             <path className="flow-kit-edge-path" ref={drawnEdgeRef} style={{ display: "none" }} />
         </svg>
     );

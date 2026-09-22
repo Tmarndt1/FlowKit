@@ -6,7 +6,7 @@ import { getStraight } from "../../functions/getStraight";
 import { EdgeCollapseMode, IEdge } from "../../interfaces/IEdge";
 import { ComputedEdgeRoutingOptions } from "../../functions/edgeRouting";
 import {
-    useNodeFlowRenderStore,
+    NodeFlowContext,
     useNodeFlowSelectionStore,
     useNodeFlowViewportStore
 } from "../../contexts/NodeFlowContext";
@@ -35,12 +35,11 @@ const EdgeComponent: React.FC<IProps> = (props) =>
         readOnly,
         getRootElement
     } = useFlowKitConfig();
+    const stores = React.useContext(NodeFlowContext);
     
     const containerRect = useNodeFlowViewportStore((state) => state.containerRect);
     const scale = useNodeFlowViewportStore((state) => state.scale);
     const selected = useNodeFlowSelectionStore((state) => state.selectedEdgeKeys.has(props.edge.key));
-    const endpointUpdate = useNodeFlowRenderStore((state) => state.endpointUpdate);
-    const edgeRenderRequest = useNodeFlowRenderStore((state) => state.edgeRenderRequest);
     const selectEdge = useNodeFlowSelectionStore((state) => state.selectEdge);
     const toggleEdge = useNodeFlowSelectionStore((state) => state.toggleEdge);
 
@@ -248,34 +247,38 @@ const EdgeComponent: React.FC<IProps> = (props) =>
     React.useEffect(() =>
     {
         draw();
-    }, [containerRect, draw, props.routing, scale]);
+    }, [containerRect, draw, props.edge, props.routing, scale]);
 
-    React.useEffect(() =>
-    {
-        if (props.edge.anchorMode === "floating") {
-            draw();
-            return;
-        }
+    React.useEffect(() => {
+        if (stores == null) return;
 
-        if (
-            endpointUpdate?.endpoints.some(
-                (endpoint) =>
-                    endpoint.id === props.edge.sourceId ||
-                    endpoint.id === props.edge.targetId
-            )
-        )
-        {
-            draw();
-        }
-    }, [draw, endpointUpdate, props.edge.anchorMode, props.edge.sourceId, props.edge.targetId]);
+        let endpointVersion = stores.render.getState().endpointUpdate?.version ?? 0;
+        let edgeRenderVersion = stores.render.getState().edgeRenderRequest?.version ?? 0;
 
-    React.useEffect(() =>
-    {
-        if (edgeRenderRequest?.edgeKey === props.edge.key)
-        {
-            draw();
-        }
-    }, [draw, edgeRenderRequest, props.edge.key]);
+        return stores.render.subscribe((state) => {
+            const endpointUpdate = state.endpointUpdate;
+            const edgeRenderRequest = state.edgeRenderRequest;
+            const edge = propsRef.current.edge;
+            let shouldDraw = false;
+
+            if (endpointUpdate != null && endpointUpdate.version !== endpointVersion) {
+                endpointVersion = endpointUpdate.version;
+                shouldDraw = edge.anchorMode === "floating"
+                    ? endpointUpdate.nodeKeys.includes(edge.sourceId) ||
+                        endpointUpdate.nodeKeys.includes(edge.targetId)
+                    : endpointUpdate.endpoints.some(
+                        (endpoint) => endpoint.id === edge.sourceId || endpoint.id === edge.targetId
+                    );
+            }
+
+            if (edgeRenderRequest != null && edgeRenderRequest.version !== edgeRenderVersion) {
+                edgeRenderVersion = edgeRenderRequest.version;
+                shouldDraw ||= edgeRenderRequest.edgeKey === edge.key;
+            }
+
+            if (shouldDraw) draw();
+        });
+    }, [draw, stores]);
 
     const edgeGroupProps = {
         id: props.edge.key,

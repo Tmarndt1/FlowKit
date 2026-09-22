@@ -295,7 +295,10 @@ const NodeContainerComponent: React.FC<IProps> = (props) => {
             movedEndpoints.push(...node.endpoints);
         });
 
-        notifyEndpointsChangedRef.current(movedEndpoints);
+        notifyEndpointsChangedRef.current(
+            movedEndpoints,
+            propsRef.current.nodes.map((node) => node.key)
+        );
     }, []);
 
     const onMouseMove = React.useCallback<(e: MouseEvent) => void>((e: MouseEvent): void => {

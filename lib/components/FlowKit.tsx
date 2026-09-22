@@ -645,14 +645,20 @@ const FlowKitComponent = (props: FlowKitProps, ref: React.ForwardedRef<FlowKitHa
         if (stores == null) return;
         const nodes = propsRef.current.nodes ?? [];
         const endpoints = nodes.flatMap((n) => n.endpoints);
-        stores.render.getState().notifyEndpointsChanged(endpoints);
+        stores.render.getState().notifyEndpointsChanged(
+            endpoints,
+            nodes.map((node) => node.key)
+        );
     }, []);
 
     React.useLayoutEffect(() => {
         const stores = nodeFlowStoresRef.current;
         if (stores == null) return;
         const endpoints = props.nodes.flatMap((n) => n.endpoints);
-        stores.render.getState().notifyEndpointsChanged(endpoints);
+        stores.render.getState().notifyEndpointsChanged(
+            endpoints,
+            props.nodes.map((node) => node.key)
+        );
     }, [props.nodes]);
 
     const controls = React.useMemo<FlowKitHandle>(() => ({

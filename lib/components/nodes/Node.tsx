@@ -125,7 +125,10 @@ const NodeComponent: React.FC<IProps> = (props) => {
         }
 
         notifyNodeDragRef.current();
-        notifyEndpointsChangedRef.current(movedEndpoints);
+        notifyEndpointsChangedRef.current(
+            movedEndpoints,
+            group.map((item) => item.node.key)
+        );
     }, []);
 
     const onMouseUp = React.useCallback<(e: MouseEvent) => void>((e: MouseEvent): void => {
@@ -227,7 +230,10 @@ const NodeComponent: React.FC<IProps> = (props) => {
             if (newWidth !== widthRef.current || newHeight !== heightRef.current) {
                 widthRef.current = newWidth;
                 heightRef.current = newHeight;
-                notifyEndpointsChangedRef.current(propsRef.current.node.endpoints);
+                notifyEndpointsChangedRef.current(
+                    propsRef.current.node.endpoints,
+                    [propsRef.current.node.key]
+                );
                 requestNodesChangeRef.current([{
                     type: "dimensions",
                     key: propsRef.current.node.key,
