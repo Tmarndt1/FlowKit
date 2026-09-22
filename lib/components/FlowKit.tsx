@@ -193,6 +193,7 @@ const FlowKitComponent = (props: FlowKitProps, ref: React.ForwardedRef<FlowKitHa
     const marqueeMoveHandlerRef = React.useRef<((e: MouseEvent) => void) | null>(null);
     const marqueeUpHandlerRef = React.useRef<(() => void) | null>(null);
     const [collapsePreview, setCollapsePreview] = React.useState<IFoldGraphPreview | null>(null);
+    const collapsePreviewRef = React.useRef<IEdgeCollapsePreviewChangeArgs | null>(null);
     const [selectionBox, setSelectionBox] = React.useState<{
         left: number;
         top: number;
@@ -213,6 +214,13 @@ const FlowKitComponent = (props: FlowKitProps, ref: React.ForwardedRef<FlowKitHa
     stateRef.current = { nodes: props.nodes, edges: props.edges };
 
     const onEdgeCollapsePreviewChange = React.useCallback<(args: IEdgeCollapsePreviewChangeArgs) => void>((args: IEdgeCollapsePreviewChangeArgs): void => {
+        const previous = collapsePreviewRef.current;
+        if (args.mode == null) {
+            if (previous == null || previous.edge.key !== args.edge.key) return;
+        } else if (previous?.edge.key === args.edge.key && previous.mode === args.mode) {
+            return;
+        }
+        collapsePreviewRef.current = args.mode == null ? null : args;
         setCollapsePreview(args.mode == null ? null : args);
         propsRef.current.onEdgeCollapsePreviewChange?.(args);
     }, []);

@@ -241,6 +241,10 @@ const NodesLayerComponent = React.forwardRef<NodesLayerHandle, IProps>((props, r
 
         const nodePositionChanges = (propsRef.current.nodes ?? [])
             .filter((n) => container.nodeKeys.includes(n.key))
+            .filter((n) => {
+                const offset = nodeOffsets.get(n.key);
+                return offset != null && (offset.x !== n.offset.x || offset.y !== n.offset.y);
+            })
             .map((n) => ({
                 type: "position" as const,
                 key: n.key,

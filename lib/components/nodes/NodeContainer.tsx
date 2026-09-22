@@ -341,6 +341,8 @@ const NodeContainerComponent: React.FC<IProps> = (props) => {
         moveContainedNodes(dx, dy);
     }, [moveContainedNodes]);
 
+    const resizeStartSizeRef = React.useRef({ width: 0, height: 0 });
+
     const onMouseUp = React.useCallback<(e: MouseEvent) => void>((e: MouseEvent): void => {
         mouseDownRef.current = false;
         const wasResizing = resizingRef.current;
@@ -350,11 +352,22 @@ const NodeContainerComponent: React.FC<IProps> = (props) => {
         e.preventDefault();
         document.removeEventListener("mouseup", onMouseUp);
         document.removeEventListener("mousemove", onMouseMove);
-        if (wasResizing) onResizeEndRef.current?.(propsRef.current.container.key);
-        else onDragEndRef.current?.(
-            propsRef.current.container.key,
-            new Map(transientNodePositionsRef.current)
-        );
+        const original = originalBoundsRef.current;
+        const element = containerRef.current;
+        if (original == null || element == null) return;
+
+        // Compare with the rendered starting bounds, including auto-sized containers.
+        if (wasResizing) {
+            const startSize = resizeStartSizeRef.current;
+            if (element.offsetWidth !== startSize.width || element.offsetHeight !== startSize.height) {
+                onResizeEndRef.current?.(propsRef.current.container.key);
+            }
+        } else if (element.style.transform !== `translate(${original.x}px, ${original.y}px)`) {
+            onDragEndRef.current?.(
+                propsRef.current.container.key,
+                new Map(transientNodePositionsRef.current)
+            );
+        }
     }, [onMouseMove]);
 
     const onMouseDown = React.useCallback<(e: React.MouseEvent<HTMLDivElement, MouseEvent>) => void>((e: React.MouseEvent<HTMLDivElement, MouseEvent>): void => {
@@ -426,6 +439,10 @@ const NodeContainerComponent: React.FC<IProps> = (props) => {
 
                 resizeDirectionRef.current = direction;
                 originalBoundsRef.current = { ...bounds, ...nodeContentSize };
+                resizeStartSizeRef.current = {
+                    width: containerRef.current?.offsetWidth ?? bounds.width,
+                    height: containerRef.current?.offsetHeight ?? bounds.height,
+                };
                 cursorPosRef.current = { x: e.clientX, y: e.clientY };
                 mouseDownRef.current = true;
                 resizingRef.current = true;

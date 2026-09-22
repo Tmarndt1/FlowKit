@@ -387,20 +387,24 @@ export function createNodeFlowRenderStore(): NodeFlowRenderStore {
                     version: (get().endpointUpdate?.version ?? 0) + 1,
                 },
             }),
-        requestContainersChange: (changes) =>
+        requestContainersChange: (changes) => {
+            if (changes.length === 0) return;
             set({
                 containerChangeRequest: {
                     changes,
                     version: (get().containerChangeRequest?.version ?? 0) + 1,
                 },
-            }),
-        requestNodesChange: (changes) =>
+            });
+        },
+        requestNodesChange: (changes) => {
+            if (changes.length === 0) return;
             set({
                 nodesChangeRequest: {
                     changes,
                     version: (get().nodesChangeRequest?.version ?? 0) + 1,
                 },
-            }),
+            });
+        },
         requestEdgeRender: (edge) =>
             set({
                 edgeRenderRequest: {

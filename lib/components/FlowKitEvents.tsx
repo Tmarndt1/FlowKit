@@ -1,5 +1,5 @@
 import * as React from "react";
-import { FlowObject } from "../types/FlowObject";
+import { FlowObject, FlowObjectType } from "../types/FlowObject";
 import { ContainerChange } from "../types/ContainerChange";
 import { EdgeChange } from "../types/EdgeChange";
 import { NodeChange } from "../types/NodeChange";
@@ -7,6 +7,7 @@ import {
     NodeFlowContext,
     useFlowKitSelection,
 } from "../contexts/NodeFlowContext";
+import { getFlowObjectIdentity, getFlowObjectType } from "../functions/flowObjectIdentity";
 
 /** Props for the event bridge component that exposes FlowKit interactions. */
 export interface FlowKitEventsProps {
@@ -20,12 +21,18 @@ export interface FlowKitEventsProps {
 
 /** Subscribes to selection changes for components rendered inside FlowKit. */
 export function useFlowKitSelectionChange(
-    onSelected?: (object: FlowObject) => void,
-    onUnselected?: (object: FlowObject) => void,
-    onSelectionChange?: (selection: FlowObject | null, previousSelection: FlowObject | null) => void
+    onSelected?: (object: FlowObject, objectType: FlowObjectType) => void,
+    onUnselected?: (object: FlowObject, objectType: FlowObjectType) => void,
+    onSelectionChange?: (
+        selection: FlowObject | null,
+        previousSelection: FlowObject | null,
+        objectType: FlowObjectType | null,
+        previousObjectType: FlowObjectType | null
+    ) => void
 ): void {
     const selected = useFlowKitSelection();
     const previousSelectionRef = React.useRef<FlowObject | null>(null);
+    const previousSelectionIdentityRef = React.useRef<string | null>(null);
     const onSelectedRef = React.useRef<typeof onSelected>(onSelected);
     const onUnselectedRef = React.useRef<typeof onUnselected>(onUnselected);
     const onSelectionChangeRef = React.useRef<typeof onSelectionChange>(onSelectionChange);
@@ -36,22 +43,32 @@ export function useFlowKitSelectionChange(
 
     React.useEffect(() => {
         const previousSelection = previousSelectionRef.current;
+        const previousIdentity = previousSelectionIdentityRef.current;
+        const selectedIdentity = getFlowObjectIdentity(selected);
 
-        if (previousSelection === selected) return;
+        // Reconciliation may replace a selected controlled object with a newer
+        // instance. Retain that instance without reporting another selection.
+        previousSelectionRef.current = selected;
+        previousSelectionIdentityRef.current = selectedIdentity;
 
-        if (previousSelection != null && selected == null) {
-            onUnselectedRef.current?.(previousSelection);
+        if (previousIdentity === selectedIdentity) return;
+
+        if (previousSelection != null) {
+            onUnselectedRef.current?.(previousSelection, getFlowObjectType(previousSelection));
         }
 
-        if (selected != null && previousSelection !== selected) {
-            onSelectedRef.current?.(selected);
+        if (selected != null) {
+            onSelectedRef.current?.(selected, getFlowObjectType(selected));
         }
 
         if (previousSelection != null || selected != null) {
-            onSelectionChangeRef.current?.(selected, previousSelection);
+            onSelectionChangeRef.current?.(
+                selected,
+                previousSelection,
+                selected == null ? null : getFlowObjectType(selected),
+                previousSelection == null ? null : getFlowObjectType(previousSelection)
+            );
         }
-
-        previousSelectionRef.current = selected;
     }, [selected]);
 }
 
@@ -96,7 +113,7 @@ export const FlowKitEvents: React.FC<FlowKitEventsProps> = (props) => {
         const unsubscribeInteraction = interactionStore.subscribe((state) => {
             const request = state.endpointDropRequest;
 
-            if (request == null || request.version === lastConnectionVersion) return;
+            if (request == null || request.version <= lastConnectionVersion) return;
 
             lastConnectionVersion = request.version;
             onEdgesChangeRef.current?.([{
@@ -109,12 +126,14 @@ export const FlowKitEvents: React.FC<FlowKitEventsProps> = (props) => {
             const containerRequest = state.containerChangeRequest;
             const nodesRequest = state.nodesChangeRequest;
 
-            if (containerRequest != null && containerRequest.version !== lastContainerChangeVersion) {
+            if (containerRequest != null && containerRequest.version > lastContainerChangeVersion) {
                 lastContainerChangeVersion = containerRequest.version;
                 onContainersChangeRef.current?.(containerRequest.changes);
             }
 
-            if (nodesRequest != null && nodesRequest.version !== lastNodesChangeVersion) {
+            // Callbacks can synchronously publish newer requests. Never replay an
+            // older snapshot when a nested store notification returns.
+            if (nodesRequest != null && nodesRequest.version > lastNodesChangeVersion) {
                 lastNodesChangeVersion = nodesRequest.version;
                 onNodesChangeRef.current?.(nodesRequest.changes);
             }

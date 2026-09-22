@@ -56,7 +56,7 @@ export type { EdgeChange } from "./types/EdgeChange";
 export type { NodeChange } from "./types/NodeChange";
 export type { EdgeTypes } from "./types/EdgeTypes";
 export type { IFoldGraphPreview, IFoldGraphState } from "./functions/getFoldGraphState";
-export type { FlowObject } from "./types/FlowObject";
+export type { FlowObject, FlowObjectType } from "./types/FlowObject";
 /** @deprecated Use FlowObject instead. */
 export type { FlowElement } from "./types/FlowElement";
 export type { FlowKitLegendItem, FlowKitLegendMarker, FlowKitLegendPosition, FlowKitLegendProps } from "./components/FlowKitLegend";

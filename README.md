@@ -454,8 +454,16 @@ import { useFlowKitSelectionChange } from "flowkit";
 
 function SelectionListener() {
   useFlowKitSelectionChange(
-    (element) => console.log("selected", element),
-    (element) => console.log("unselected", element),
+    (object, objectType) => console.log("selected", objectType, object),
+    (object, objectType) => console.log("unselected", objectType, object),
+    (selection, previousSelection, objectType, previousObjectType) => {
+      console.log("selection changed", {
+        selection,
+        previousSelection,
+        objectType,
+        previousObjectType,
+      });
+    },
   );
   return null;
 }

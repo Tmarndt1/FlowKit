@@ -138,7 +138,9 @@ const NodeComponent: React.FC<IProps> = (props) => {
         e.preventDefault();
         document.removeEventListener("mouseup", onMouseUp);
         document.removeEventListener("mousemove", onMouseMove);
-        const positionChanges = dragGroupRef.current.map((item) => ({
+        const positionChanges = dragGroupRef.current
+            .filter((item) => item.currentX !== item.startX || item.currentY !== item.startY)
+            .map((item) => ({
             type: "position" as const,
             key: item.node.key,
             offset: { x: item.currentX, y: item.currentY },
