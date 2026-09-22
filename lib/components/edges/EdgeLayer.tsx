@@ -11,9 +11,9 @@ import { INode } from "../../interfaces/INode";
 import { Edge } from "./Edge";
 import { ComputedEdgeRoutingOptions, EdgeRoutingObstacle } from "../../functions/edgeRouting";
 import {
-    useNodeFlowInteractionStore,
-    useNodeFlowRenderStore,
-    useNodeFlowViewportStore
+    useFlowKitInteractionStore,
+    useFlowKitRenderStore,
+    useFlowKitViewportStore
 } from "../../contexts/NodeFlowContext";
 import { useFlowKitConfig } from "../../contexts/FlowKitConfigContext";
 import { findElementById } from "../../functions/domScope";
@@ -196,12 +196,12 @@ function mergeEdgeRouting(globalRouting: EdgeRoutingOptions | undefined, edge: I
 
 export const EdgeLayer = React.forwardRef<EdgeLayerHandle, IProps>((props, ref) => {
     const { canConnect, edgePathType, edgeRouting, getRootElement, readOnly } = useFlowKitConfig();
-    const containerRect = useNodeFlowViewportStore((state) => state.containerRect);
-    const scale = useNodeFlowViewportStore((state) => state.scale);
-    const sourceEndpoint = useNodeFlowInteractionStore((state) => state.sourceEndpoint);
-    const canChangeEdges = useNodeFlowRenderStore((state) => state.canChangeEdges);
-    const dropEndpoint = useNodeFlowInteractionStore((state) => state.dropEndpoint);
-    const setSourceEndpoint = useNodeFlowInteractionStore((state) => state.setSourceEndpoint);
+    const containerRect = useFlowKitViewportStore((state) => state.containerRect);
+    const scale = useFlowKitViewportStore((state) => state.scale);
+    const sourceEndpoint = useFlowKitInteractionStore((state) => state.sourceEndpoint);
+    const canChangeEdges = useFlowKitRenderStore((state) => state.canChangeEdges);
+    const dropEndpoint = useFlowKitInteractionStore((state) => state.dropEndpoint);
+    const setSourceEndpoint = useFlowKitInteractionStore((state) => state.setSourceEndpoint);
     const svgRef = React.useRef<SVGSVGElement>(null);
     const markerIdPrefix = React.useId().replace(/:/g, "");
     const drawnEdgeRef = React.useRef<SVGPathElement>(null);

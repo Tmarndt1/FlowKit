@@ -26,8 +26,8 @@ import {
 import { findElementById } from "../functions/domScope";
 import { getPanToNodeOffset } from "../functions/viewport";
 
-export { useNodeFlowSelection } from "../contexts/NodeFlowContext";
-export { useNodeFlowSelectionChange } from "./FlowKitEvents";
+export { useFlowKitSelection, useNodeFlowSelection } from "../contexts/NodeFlowContext";
+export { useFlowKitSelectionChange, useNodeFlowSelectionChange } from "./FlowKitEvents";
 export type {
     CanConnect,
     ICanConnectArgs,

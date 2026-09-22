@@ -4,9 +4,9 @@ import { IOffset } from "../../interfaces/IOffset";
 import { Endpoint } from "./Endpoint";
 import {
     NodeFlowContext,
-    useNodeFlowInteractionStore,
-    useNodeFlowRenderStore,
-    useNodeFlowSelectionStore,
+    useFlowKitInteractionStore,
+    useFlowKitRenderStore,
+    useFlowKitSelectionStore,
 } from "../../contexts/NodeFlowContext";
 import { useFlowKitConfig } from "../../contexts/FlowKitConfigContext";
 import { findElementById, getFlowKitRoot } from "../../functions/domScope";
@@ -33,13 +33,13 @@ const NodeComponent: React.FC<IProps> = (props) => {
 
     const { readOnly, multiSelect } = useFlowKitConfig();
     const stores = React.useContext(NodeFlowContext);
-    const selected = useNodeFlowSelectionStore((state) => state.selectedNodeKeys.has(props.node.key));
-    const selectNode = useNodeFlowSelectionStore((state) => state.selectNode);
-    const notifyEndpointsChanged = useNodeFlowRenderStore((state) => state.notifyEndpointsChanged);
-    const requestNodesChange = useNodeFlowRenderStore((state) => state.requestNodesChange);
-    const canChangeNodes = useNodeFlowRenderStore((state) => state.canChangeNodes);
-    const notifyNodeDrag = useNodeFlowInteractionStore((state) => state.notifyNodeDrag);
-    const setDraggingNode = useNodeFlowInteractionStore((state) => state.setDraggingNode);
+    const selected = useFlowKitSelectionStore((state) => state.selectedNodeKeys.has(props.node.key));
+    const selectNode = useFlowKitSelectionStore((state) => state.selectNode);
+    const notifyEndpointsChanged = useFlowKitRenderStore((state) => state.notifyEndpointsChanged);
+    const requestNodesChange = useFlowKitRenderStore((state) => state.requestNodesChange);
+    const canChangeNodes = useFlowKitRenderStore((state) => state.canChangeNodes);
+    const notifyNodeDrag = useFlowKitInteractionStore((state) => state.notifyNodeDrag);
+    const setDraggingNode = useFlowKitInteractionStore((state) => state.setDraggingNode);
     const nodeRef = React.useRef<HTMLDivElement>(null);
     const cursorPosRef = React.useRef<IOffset>({ x: 0, y: 0 });
     const originalPosRef = React.useRef<IOffset>({ x: 0, y: 0 });

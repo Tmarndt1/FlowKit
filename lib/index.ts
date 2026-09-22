@@ -1,5 +1,18 @@
-export { FlowKit, useNodeFlowSelection, useNodeFlowSelectionChange } from "./components/FlowKit";
-export { useNodeFlowSelectedNodes, useNodeFlowSelectedEdges, useNodeFlowSelectedContainers } from "./contexts/NodeFlowContext";
+export {
+    FlowKit,
+    useFlowKitSelection,
+    useFlowKitSelectionChange,
+    useNodeFlowSelection,
+    useNodeFlowSelectionChange,
+} from "./components/FlowKit";
+export {
+    useFlowKitSelectedNodes,
+    useFlowKitSelectedEdges,
+    useFlowKitSelectedContainers,
+    useNodeFlowSelectedNodes,
+    useNodeFlowSelectedEdges,
+    useNodeFlowSelectedContainers,
+} from "./contexts/NodeFlowContext";
 export type { FlowKitHandle, FlowKitProps, IEdgeCollapsedChangeArgs, IEdgeCollapsePreviewChangeArgs } from "./components/FlowKit";
 export { FlowKitControls, useFlowKitControls } from "./components/FlowKitControls";
 export type { PanToNodeOptions } from "./components/FlowKitControls";

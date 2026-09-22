@@ -1,9 +1,9 @@
 import * as React from "react";
 import { INode } from "../interfaces/INode";
 import {
-    useNodeFlowRenderStore,
-    useNodeFlowSelectionStore,
-    useNodeFlowViewportStore,
+    useFlowKitRenderStore,
+    useFlowKitSelectionStore,
+    useFlowKitViewportStore,
 } from "../contexts/NodeFlowContext";
 import { findElementById } from "../functions/domScope";
 
@@ -99,10 +99,10 @@ export const FlowKitMiniMap: React.FC<FlowKitMiniMapProps> = (props) => {
     const padding = props.padding ?? 48;
     const position = props.position ?? "bottom-right";
     const draggable = props.draggable === true;
-    const offset = useNodeFlowViewportStore((state) => state.offset);
-    const scale = useNodeFlowViewportStore((state) => state.scale);
-    const endpointUpdateVersion = useNodeFlowRenderStore((state) => state.endpointUpdate?.version ?? 0);
-    const selectedNodeKeys = useNodeFlowSelectionStore((state) => state.selectedNodeKeys);
+    const offset = useFlowKitViewportStore((state) => state.offset);
+    const scale = useFlowKitViewportStore((state) => state.scale);
+    const endpointUpdateVersion = useFlowKitRenderStore((state) => state.endpointUpdate?.version ?? 0);
+    const selectedNodeKeys = useFlowKitSelectionStore((state) => state.selectedNodeKeys);
     const miniMapRef = React.useRef<HTMLDivElement>(null);
     const [viewportRect, setViewportRect] = React.useState<DOMRect | null>(null);
     const [measurementVersion, setMeasurementVersion] = React.useState<number>(0);

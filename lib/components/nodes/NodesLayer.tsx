@@ -6,7 +6,7 @@ import { NodeComponentProps } from "../../types/NodeComponentProps";
 import { NodeTypes } from "../../types/NodeTypes";
 import { Node } from "./Node";
 import { NodeContainer } from "./NodeContainer";
-import { NodeFlowContext, useNodeFlowRenderStore } from "../../contexts/NodeFlowContext";
+import { NodeFlowContext, useFlowKitRenderStore } from "../../contexts/NodeFlowContext";
 import { ContainerChange } from "../../types/ContainerChange";
 import { findElementById, getFlowKitRoot } from "../../functions/domScope";
 
@@ -69,8 +69,8 @@ function getRenderedContainerBounds(root: HTMLElement | null, container: INodeCo
 const NodesLayerComponent = React.forwardRef<NodesLayerHandle, IProps>((props, ref) => {
     const stores = React.useContext(NodeFlowContext);
     const layerRef = React.useRef<HTMLDivElement>(null);
-    const requestContainersChange = useNodeFlowRenderStore((state) => state.requestContainersChange);
-    const requestNodesChange = useNodeFlowRenderStore((state) => state.requestNodesChange);
+    const requestContainersChange = useFlowKitRenderStore((state) => state.requestContainersChange);
+    const requestNodesChange = useFlowKitRenderStore((state) => state.requestNodesChange);
     const propsRef = React.useRef<IProps>(props);
     const requestContainersChangeRef = React.useRef<typeof requestContainersChange>(requestContainersChange);
     const requestNodesChangeRef = React.useRef<typeof requestNodesChange>(requestNodesChange);

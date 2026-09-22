@@ -5,9 +5,9 @@ import { INode } from "../../interfaces/INode";
 import { IOffset } from "../../interfaces/IOffset";
 import {
     NodeFlowContext,
-    useNodeFlowInteractionStore,
-    useNodeFlowRenderStore,
-    useNodeFlowSelectionStore,
+    useFlowKitInteractionStore,
+    useFlowKitRenderStore,
+    useFlowKitSelectionStore,
 } from "../../contexts/NodeFlowContext";
 import { useFlowKitConfig } from "../../contexts/FlowKitConfigContext";
 import { findElementById } from "../../functions/domScope";
@@ -203,23 +203,23 @@ function getContainerBounds(
 const NodeContainerComponent: React.FC<IProps> = (props) => {
     const { getRootElement, readOnly } = useFlowKitConfig();
     const stores = React.useContext(NodeFlowContext);
-    const isDraggingContainedNode = useNodeFlowInteractionStore(
+    const isDraggingContainedNode = useFlowKitInteractionStore(
         (state) => state.draggedNode != null && props.container.nodeKeys.includes(state.draggedNode.key)
     );
-    const notifyEndpointsChanged = useNodeFlowRenderStore((state) => state.notifyEndpointsChanged);
-    const canChangeContainers = useNodeFlowRenderStore((state) => state.canChangeContainers);
-    const canChangeNodes = useNodeFlowRenderStore((state) => state.canChangeNodes);
-    const selected = useNodeFlowSelectionStore(
+    const notifyEndpointsChanged = useFlowKitRenderStore((state) => state.notifyEndpointsChanged);
+    const canChangeContainers = useFlowKitRenderStore((state) => state.canChangeContainers);
+    const canChangeNodes = useFlowKitRenderStore((state) => state.canChangeNodes);
+    const selected = useFlowKitSelectionStore(
         (state) => state.selectedContainerKeys.has(props.container.key)
     );
-    const selectContainer = useNodeFlowSelectionStore((state) => state.selectContainer);
-    const isDraggingOverContainer = useNodeFlowRenderStore(
+    const selectContainer = useFlowKitSelectionStore((state) => state.selectContainer);
+    const isDraggingOverContainer = useFlowKitRenderStore(
         (state) => state.containerDropTargetKeys.has(props.container.key)
     );
-    const isDraggingOut = useNodeFlowRenderStore(
+    const isDraggingOut = useFlowKitRenderStore(
         (state) => state.containerDraggingOutKeys.has(props.container.key)
     );
-    const setDraggingNode = useNodeFlowInteractionStore((state) => state.setDraggingNode);
+    const setDraggingNode = useFlowKitInteractionStore((state) => state.setDraggingNode);
     const containerRef = React.useRef<HTMLDivElement>(null);
     const propsRef = React.useRef<IProps>(props);
     const scaleRef = React.useRef<number>(stores?.viewport.getState().scale ?? 1);

@@ -3,7 +3,7 @@ import { IEdge } from "../interfaces/IEdge";
 import { IEndpoint } from "../interfaces/IEndpoint";
 import { INode } from "../interfaces/INode";
 import { FlowObject } from "../types/FlowObject";
-import { useNodeFlowSelectionStore } from "../contexts/NodeFlowContext";
+import { useFlowKitSelectionStore } from "../contexts/NodeFlowContext";
 import { useFlowKitConfig } from "../contexts/FlowKitConfigContext";
 import { isEditableOrInteractiveTarget } from "../functions/domScope";
 import { getFlowKitKeyboardCommand } from "../functions/keyboardCommands";
@@ -31,11 +31,11 @@ export interface FlowKitKeyboardCommandsProps {
 /** Non-visual component that wires default copy, paste, and delete shortcuts. */
 export const FlowKitKeyboardCommands: React.FC<FlowKitKeyboardCommandsProps> = (props) => {
     const { readOnly } = useFlowKitConfig();
-    const selectedEdge = useNodeFlowSelectionStore((state) => state.selectedEdge);
-    const selectedNode = useNodeFlowSelectionStore((state) => state.selectedNode);
-    const selectedContainer = useNodeFlowSelectionStore((state) => state.selectedContainer);
-    const selectedNodes = useNodeFlowSelectionStore((state) => state.selectedNodes);
-    const selectedEdges = useNodeFlowSelectionStore((state) => state.selectedEdges);
+    const selectedEdge = useFlowKitSelectionStore((state) => state.selectedEdge);
+    const selectedNode = useFlowKitSelectionStore((state) => state.selectedNode);
+    const selectedContainer = useFlowKitSelectionStore((state) => state.selectedContainer);
+    const selectedNodes = useFlowKitSelectionStore((state) => state.selectedNodes);
+    const selectedEdges = useFlowKitSelectionStore((state) => state.selectedEdges);
     const copyRef = React.useRef<FlowObject | null>(null);
     const markerRef = React.useRef<HTMLSpanElement>(null);
     const propsRef = React.useRef<FlowKitKeyboardCommandsProps>(props);

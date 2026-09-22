@@ -447,13 +447,13 @@ type ContainerChange =
 
 ### Selection hook
 
-For components rendered inside `FlowKit`, `useNodeFlowSelectionChange` reports the selected `FlowObject`. A flow object can be a node, edge, or container:
+For components rendered inside `FlowKit`, `useFlowKitSelectionChange` reports the selected `FlowObject`. A flow object can be a node, edge, or container:
 
 ```tsx
-import { useNodeFlowSelectionChange } from "flowkit";
+import { useFlowKitSelectionChange } from "flowkit";
 
 function SelectionListener() {
-  useNodeFlowSelectionChange(
+  useFlowKitSelectionChange(
     (element) => console.log("selected", element),
     (element) => console.log("unselected", element),
   );
@@ -461,8 +461,8 @@ function SelectionListener() {
 }
 ```
 
-Use `useNodeFlowSelectedNodes`, `useNodeFlowSelectedEdges`, or
-`useNodeFlowSelectedContainers` when a component needs the complete selection for one object type.
+Use `useFlowKitSelectedNodes`, `useFlowKitSelectedEdges`, or
+`useFlowKitSelectedContainers` when a component needs the complete selection for one object type.
 
 ---
 
@@ -727,17 +727,17 @@ FlowKit supports both single and multi-selection out of the box.
 Read the current selection from components rendered inside `FlowKit`:
 
 ```tsx
-import { useNodeFlowSelectedNodes, useNodeFlowSelectedEdges } from "flowkit";
+import { useFlowKitSelectedNodes, useFlowKitSelectedEdges } from "flowkit";
 
 function SelectionCount() {
-  const nodes = useNodeFlowSelectedNodes();
-  const edges = useNodeFlowSelectedEdges();
+  const nodes = useFlowKitSelectedNodes();
+  const edges = useFlowKitSelectedEdges();
 
   return <span>{nodes.length} nodes, {edges.length} edges selected</span>;
 }
 ```
 
-`useNodeFlowSelection()` still returns the most recently selected element for single-selection use cases.
+`useFlowKitSelection()` returns the most recently selected object for single-selection use cases.
 
 Multi-selection is enabled by default. Set `multiSelect={false}` on `FlowKit` to restrict interactions to single selection:
 

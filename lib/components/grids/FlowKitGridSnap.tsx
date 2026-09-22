@@ -1,5 +1,5 @@
 import * as React from "react";
-import { useNodeFlowSnapStore } from "../../contexts/NodeFlowContext";
+import { useFlowKitSnapStore } from "../../contexts/NodeFlowContext";
 
 /** Props for configuring node/container snapping while this component is mounted. */
 export interface FlowKitGridSnapProps {
@@ -13,7 +13,7 @@ export interface FlowKitGridSnapProps {
 
 /** Non-visual component that configures drag snapping for nodes and containers. */
 export const FlowKitGridSnap: React.FC<FlowKitGridSnapProps> = (props) => {
-    const setSnapOptions = useNodeFlowSnapStore((state) => state.setSnapOptions);
+    const setSnapOptions = useFlowKitSnapStore((state) => state.setSnapOptions);
 
     React.useEffect(() => {
         setSnapOptions({

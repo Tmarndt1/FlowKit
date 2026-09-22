@@ -3,9 +3,9 @@ import { IEndpoint, IEndpointConnection } from "../../interfaces/IEndpoint";
 import { IOffset } from "../../interfaces/IOffset";
 import {
 	NodeFlowContext,
-	useNodeFlowInteractionStore,
-	useNodeFlowRenderStore,
-	useNodeFlowSelectionStore,
+	useFlowKitInteractionStore,
+	useFlowKitRenderStore,
+	useFlowKitSelectionStore,
 } from "../../contexts/NodeFlowContext";
 import { useFlowKitConfig } from "../../contexts/FlowKitConfigContext";
 import { findElementById } from "../../functions/domScope";
@@ -34,15 +34,15 @@ interface IState {
 export const Endpoint: React.FC<IProps> = (props) => {
 	const { canConnect, getRootElement, readOnly } = useFlowKitConfig();
 	const stores = React.useContext(NodeFlowContext);
-	const sourceEndpoint = useNodeFlowInteractionStore((state) => state.sourceEndpoint);
-	const edgeSelected = useNodeFlowSelectionStore(
+	const sourceEndpoint = useFlowKitInteractionStore((state) => state.sourceEndpoint);
+	const edgeSelected = useFlowKitSelectionStore(
 		(state) =>
 			state.selectedEdge?.sourceId === props.endpoint.id ||
 			state.selectedEdge?.targetId === props.endpoint.id
 	);
-	const setSourceEndpoint = useNodeFlowInteractionStore((state) => state.setSourceEndpoint);
-	const dropEndpoint = useNodeFlowInteractionStore((state) => state.dropEndpoint);
-	const canChangeEdges = useNodeFlowRenderStore((state) => state.canChangeEdges);
+	const setSourceEndpoint = useFlowKitInteractionStore((state) => state.setSourceEndpoint);
+	const dropEndpoint = useFlowKitInteractionStore((state) => state.dropEndpoint);
+	const canChangeEdges = useFlowKitRenderStore((state) => state.canChangeEdges);
 
 	const [state, setState] = useState<IState>({
 		valid: IsValid.None,

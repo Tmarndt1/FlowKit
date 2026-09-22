@@ -5,7 +5,7 @@ import { EdgeChange } from "../types/EdgeChange";
 import { NodeChange } from "../types/NodeChange";
 import {
     NodeFlowContext,
-    useNodeFlowSelection,
+    useFlowKitSelection,
 } from "../contexts/NodeFlowContext";
 
 /** Props for the event bridge component that exposes FlowKit interactions. */
@@ -19,12 +19,12 @@ export interface FlowKitEventsProps {
 }
 
 /** Subscribes to selection changes for components rendered inside FlowKit. */
-export function useNodeFlowSelectionChange(
+export function useFlowKitSelectionChange(
     onSelected?: (object: FlowObject) => void,
     onUnselected?: (object: FlowObject) => void,
     onSelectionChange?: (selection: FlowObject | null, previousSelection: FlowObject | null) => void
 ): void {
-    const selected = useNodeFlowSelection();
+    const selected = useFlowKitSelection();
     const previousSelectionRef = React.useRef<FlowObject | null>(null);
     const onSelectedRef = React.useRef<typeof onSelected>(onSelected);
     const onUnselectedRef = React.useRef<typeof onUnselected>(onUnselected);
@@ -54,6 +54,9 @@ export function useNodeFlowSelectionChange(
         previousSelectionRef.current = selected;
     }, [selected]);
 }
+
+/** @deprecated Use useFlowKitSelectionChange instead. */
+export const useNodeFlowSelectionChange = useFlowKitSelectionChange;
 
 /** Non-visual component that forwards FlowKit interaction events to app callbacks. */
 export const FlowKitEvents: React.FC<FlowKitEventsProps> = (props) => {

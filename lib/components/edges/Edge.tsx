@@ -7,8 +7,8 @@ import { EdgeCollapseMode, IEdge } from "../../interfaces/IEdge";
 import { ComputedEdgeRoutingOptions } from "../../functions/edgeRouting";
 import {
     NodeFlowContext,
-    useNodeFlowSelectionStore,
-    useNodeFlowViewportStore
+    useFlowKitSelectionStore,
+    useFlowKitViewportStore
 } from "../../contexts/NodeFlowContext";
 import { useFlowKitConfig } from "../../contexts/FlowKitConfigContext";
 import { EdgeFoldControl } from "./EdgeFoldControl";
@@ -37,11 +37,11 @@ const EdgeComponent: React.FC<IProps> = (props) =>
     } = useFlowKitConfig();
     const stores = React.useContext(NodeFlowContext);
     
-    const containerRect = useNodeFlowViewportStore((state) => state.containerRect);
-    const scale = useNodeFlowViewportStore((state) => state.scale);
-    const selected = useNodeFlowSelectionStore((state) => state.selectedEdgeKeys.has(props.edge.key));
-    const selectEdge = useNodeFlowSelectionStore((state) => state.selectEdge);
-    const toggleEdge = useNodeFlowSelectionStore((state) => state.toggleEdge);
+    const containerRect = useFlowKitViewportStore((state) => state.containerRect);
+    const scale = useFlowKitViewportStore((state) => state.scale);
+    const selected = useFlowKitSelectionStore((state) => state.selectedEdgeKeys.has(props.edge.key));
+    const selectEdge = useFlowKitSelectionStore((state) => state.selectEdge);
+    const toggleEdge = useFlowKitSelectionStore((state) => state.toggleEdge);
 
     const propsRef = React.useRef<IProps>(props);
     const containerRectRef = React.useRef<typeof containerRect>(containerRect);

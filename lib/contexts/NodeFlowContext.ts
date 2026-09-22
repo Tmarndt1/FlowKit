@@ -16,7 +16,7 @@ import {
 
 export const NodeFlowContext = React.createContext<NodeFlowStores | null>(null);
 
-function useNodeFlowStore<TStoreState, T>(
+function useFlowKitStore<TStoreState, T>(
     storeSelector: (stores: NodeFlowStores) => StoreApi<TStoreState>,
     selector: (state: TStoreState) => T
 ): T {
@@ -29,40 +29,49 @@ function useNodeFlowStore<TStoreState, T>(
     return useStore(storeSelector(stores), selector);
 }
 
-export function useNodeFlowViewportStore<T>(selector: (state: NodeFlowViewportState) => T): T {
-    return useNodeFlowStore((stores) => stores.viewport, selector);
+export function useFlowKitViewportStore<T>(selector: (state: NodeFlowViewportState) => T): T {
+    return useFlowKitStore((stores) => stores.viewport, selector);
 }
 
-export function useNodeFlowInteractionStore<T>(selector: (state: NodeFlowInteractionState) => T): T {
-    return useNodeFlowStore((stores) => stores.interaction, selector);
+export function useFlowKitInteractionStore<T>(selector: (state: NodeFlowInteractionState) => T): T {
+    return useFlowKitStore((stores) => stores.interaction, selector);
 }
 
-export function useNodeFlowSelectionStore<T>(selector: (state: NodeFlowSelectionState) => T): T {
-    return useNodeFlowStore((stores) => stores.selection, selector);
+export function useFlowKitSelectionStore<T>(selector: (state: NodeFlowSelectionState) => T): T {
+    return useFlowKitStore((stores) => stores.selection, selector);
 }
 
-export function useNodeFlowRenderStore<T>(selector: (state: NodeFlowRenderState) => T): T {
-    return useNodeFlowStore((stores) => stores.render, selector);
+export function useFlowKitRenderStore<T>(selector: (state: NodeFlowRenderState) => T): T {
+    return useFlowKitStore((stores) => stores.render, selector);
 }
 
-export function useNodeFlowSnapStore<T>(selector: (state: NodeFlowSnapState) => T): T {
-    return useNodeFlowStore((stores) => stores.snap, selector);
+export function useFlowKitSnapStore<T>(selector: (state: NodeFlowSnapState) => T): T {
+    return useFlowKitStore((stores) => stores.snap, selector);
 }
 
-export function useNodeFlowSelection(): FlowObject | null {
-    return useNodeFlowSelectionStore(
+export function useFlowKitSelection(): FlowObject | null {
+    return useFlowKitSelectionStore(
         (state) => state.selectedNode ?? state.selectedEdge ?? state.selectedContainer ?? null
     );
 }
 
-export function useNodeFlowSelectedNodes(): INode<any, any>[] {
-    return useNodeFlowSelectionStore((state) => state.selectedNodes);
+export function useFlowKitSelectedNodes(): INode<any, any>[] {
+    return useFlowKitSelectionStore((state) => state.selectedNodes);
 }
 
-export function useNodeFlowSelectedEdges(): IEdge<any>[] {
-    return useNodeFlowSelectionStore((state) => state.selectedEdges);
+export function useFlowKitSelectedEdges(): IEdge<any>[] {
+    return useFlowKitSelectionStore((state) => state.selectedEdges);
 }
 
-export function useNodeFlowSelectedContainers(): INodeContainer[] {
-    return useNodeFlowSelectionStore((state) => state.selectedContainers);
+export function useFlowKitSelectedContainers(): INodeContainer[] {
+    return useFlowKitSelectionStore((state) => state.selectedContainers);
 }
+
+/** @deprecated Use useFlowKitSelection instead. */
+export const useNodeFlowSelection = useFlowKitSelection;
+/** @deprecated Use useFlowKitSelectedNodes instead. */
+export const useNodeFlowSelectedNodes = useFlowKitSelectedNodes;
+/** @deprecated Use useFlowKitSelectedEdges instead. */
+export const useNodeFlowSelectedEdges = useFlowKitSelectedEdges;
+/** @deprecated Use useFlowKitSelectedContainers instead. */
+export const useNodeFlowSelectedContainers = useFlowKitSelectedContainers;
