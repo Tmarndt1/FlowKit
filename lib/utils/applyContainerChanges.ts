@@ -19,7 +19,7 @@ export function applyContainerChanges<T extends INodeContainer>(containers: T[],
             case "resize":
                 result = result.map((c) =>
                     c.key === change.key
-                        ? { ...c, position: change.position, style: { ...c.style, width: change.width, height: change.height } }
+                        ? { ...c, resizeToFit: false, position: change.position, style: { ...c.style, width: change.width, height: change.height } }
                         : c
                 );
                 break;

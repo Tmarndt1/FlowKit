@@ -186,10 +186,20 @@ export function getFoldGraphState(
         nodeStateClassNames,
         previewEdgeKeys,
         previewNodeKeys,
-        visibleContainers: containers?.map((container) => ({
-            ...container,
-            nodeKeys: container.nodeKeys.filter((nodeKey) => !hiddenNodeKeys.has(nodeKey)),
-        })),
+        visibleContainers: containers
+            ?.map((container) => ({
+                container,
+                visibleNodeKeys: container.nodeKeys.filter((nodeKey) => !hiddenNodeKeys.has(nodeKey)),
+            }))
+            // Keep intentionally empty containers but remove containers whose assigned
+            // nodes are all hidden by the current edge collapse state.
+            .filter(({ container, visibleNodeKeys }) => 
+                container.nodeKeys.length === 0 || visibleNodeKeys.length > 0
+            )
+            .map(({ container, visibleNodeKeys }) => ({
+                ...container,
+                nodeKeys: visibleNodeKeys
+            })),
         visibleEdges,
     };
 }

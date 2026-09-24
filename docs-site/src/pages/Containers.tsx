@@ -7,7 +7,7 @@ export function Containers() {
             <h1 className="page-title">Containers</h1>
             <p className="page-desc">
                 Containers group nodes into labelled regions on the canvas. The container automatically
-                sizes itself to fit its assigned nodes unless you provide explicit dimensions via <code>style</code>.
+                sizes itself to fit its assigned nodes. Set <code>resizeToFit: false</code> for fixed sizing.
             </p>
 
             <div className="section">
@@ -22,19 +22,22 @@ interface INodeContainer {
   type?: string;
   /** Header text rendered in the built-in container header. */
   label?: string;
-  /** Canvas-space top-left position. If omitted, FlowKit derives bounds from child nodes. */
+  /** Canvas-space top-left position for fixed or empty containers. Auto-fit derives it from nodes. */
   position?: { x: number; y: number };
   /** Node keys currently assigned to this container. */
   nodeKeys: string[];
   /** Space between container bounds and contained nodes. */
   padding?: number;
-  /** Recalculate bounds from contained nodes after membership changes. Defaults to true. */
+  /**
+   * Fit bounds to nodes and padding, respecting minimum dimensions. Defaults to true.
+   * Disabling preserves displayed bounds; manual resizing switches to false.
+   */
   resizeToFit?: boolean;
   /** Extra CSS class names applied to the rendered container element. */
   className?: string;
   /**
    * Inline styles applied to the rendered container.
-   * Use width/height/minWidth/minHeight here to set explicit dimensions.
+   * Use numeric or pixel width/height for fixed sizing; minWidth/minHeight also apply to auto-fit.
    */
   style?: React.CSSProperties;
 }`} />
@@ -121,22 +124,28 @@ export function App() {
                 <h2 className="section-title">Explicit Dimensions</h2>
                 <p className="section-desc">
                     By default, containers resize to fit their <code>nodeKeys</code>. Pass explicit dimensions via
-                    <code>style</code> and set <code>resizeToFit: false</code> to lock the size.
+                    <code>style</code> and set <code>resizeToFit: false</code> to use fixed sizing.
+                    Auto-fit ignores width and height, but respects minWidth and minHeight.
+                    Disabling auto-fit preserves the displayed bounds; dragging a resize handle switches to fixed sizing.
+                    Handle <code>onContainersChange</code> with <code>applyContainerChanges</code> to save these changes.
                 </p>
                 <CodeBlock code={`const container: INodeContainer = {
   key: "rack-a",
   label: "Rack A",
   nodeKeys: ["srv-1", "srv-2"],
   padding: 16,
-  /** Recalculate bounds from contained nodes after membership changes. Defaults to true. */
+  /**
+   * Fit bounds to nodes and padding, respecting minimum dimensions. Defaults to true.
+   * Disabling preserves displayed bounds; manual resizing switches to false.
+   */
   resizeToFit: false,
   /**
    * Inline styles applied to the rendered container.
-   * Use width/height/minWidth/minHeight here to set explicit dimensions.
+   * Use numeric or pixel width/height for fixed sizing; minWidth/minHeight also apply to auto-fit.
    */
   style: {
     width: 400,
-    minHeight: 300,
+    height: 300,
     background: "rgba(255,255,255,0.03)",
   },
 };`} />
