@@ -267,6 +267,7 @@ const NodeComponent: React.FC<IProps> = (props) => {
     }, [onMouseMove, onMouseUp]);
 
     const position: IOffset = props.node.offset;
+    const hidden = props.stateClassName?.split(" ").includes("flow-kit-node-hidden") ?? false;
 
     const style: React.CSSProperties = {
         zIndex: selected ? 10000000000 : 100,
@@ -296,6 +297,8 @@ const NodeComponent: React.FC<IProps> = (props) => {
         return (
             <div
                 id={props.node.key}
+                inert={hidden}
+                aria-hidden={hidden || undefined}
                 className={className}
                 style={style}
                 onMouseDownCapture={onMouseDown}
@@ -316,6 +319,8 @@ const NodeComponent: React.FC<IProps> = (props) => {
     return (
         <div
             id={props.node.key}
+            inert={hidden}
+            aria-hidden={hidden || undefined}
             className={className}
             style={style}
             onMouseDownCapture={onMouseDown}

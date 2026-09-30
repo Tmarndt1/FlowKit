@@ -9,7 +9,6 @@ import {
   FlowKitLegend,
   FlowKitLegendItem,
   FlowKitMiniMap,
-  applyContainerChanges,
   ContainerChange,
   EdgeCollapseMode,
   EdgePathType,
@@ -156,6 +155,21 @@ export function WorkflowCanvas({
       onDragOver={onDragOver}
       onDrop={onDrop}
     >
+      <div className="container-demo-controls" aria-label="Container visibility">
+        {containers.map((container) => (
+          <button
+            key={container.key}
+            type="button"
+            aria-expanded={!container.collapsed}
+            onClick={() => onContainersChange([{
+              type: "collapse", key: container.key, collapsed: !container.collapsed,
+            }])}
+          >
+            {container.collapsed ? "Expand" : "Collapse"} {container.label ?? container.key}
+          </button>
+        ))}
+        <span>Or use the chevron in a container header.</span>
+      </div>
       <FlowKit
         centerOnLoad
         collapsibleEdges={collapsibleEdges}

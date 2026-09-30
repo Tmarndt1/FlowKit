@@ -33,6 +33,8 @@ export interface IEdgeCollapsePreviewChangeArgs {
 
 /** Shared configuration consumed by FlowKit internals and extension components. */
 export interface FlowKitConfigContextValue {
+    /** Derived visibility shared by overview and extension components. */
+    hiddenNodeKeys?: ReadonlySet<string>;
     /** Optional validator for new endpoint connections. */
     canConnect?: CanConnect;
     /** Enables built-in edge collapse controls by default. Per-edge collapsible overrides this. */

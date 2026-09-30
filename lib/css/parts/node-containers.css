@@ -85,3 +85,18 @@
     right: 4px;
     width: 12px;
 }
+
+.flow-kit-node-container-toggle {
+    background: transparent;
+    border: 0;
+    color: inherit;
+    cursor: pointer;
+    font: inherit;
+    padding: 4px 7px;
+    margin-right: 4px;
+}
+
+.flow-kit-node-container-toggle:disabled { cursor: default; opacity: .5; }
+.flow-kit-node-container-label { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.flow-kit-node-container-count { margin-left: auto; padding-left: 8px; white-space: nowrap; }
+.flow-kit-node-container-collapsed .flow-kit-node-container-header { height: 42px; border-bottom: 0; }

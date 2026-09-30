@@ -110,7 +110,7 @@ const NodesLayerComponent = React.forwardRef<NodesLayerHandle, IProps>((props, r
                     const key = element.dataset.containerKey;
                     const container = key == null ? undefined : containersByKey.get(key);
 
-                    if (key == null || container == null) return;
+                    if (key == null || container == null || container.collapsed) return;
 
                     const rect = element.getBoundingClientRect();
                     const containsNode = container.nodeKeys.includes(draggedNode.key);
@@ -178,6 +178,7 @@ const NodesLayerComponent = React.forwardRef<NodesLayerHandle, IProps>((props, r
             y: nodeRect == null ? 0 : nodeRect.top + nodeRect.height / 2,
         };
         const targetContainer = currentContainers.find((container) => {
+            if (container.collapsed) return false;
             const element = findContainerElement(root, container.key);
             const rect = element?.getBoundingClientRect();
 
@@ -289,6 +290,7 @@ const NodesLayerComponent = React.forwardRef<NodesLayerHandle, IProps>((props, r
         };
 
         propsRef.current.nodes.forEach((node: INode<any, any>) => {
+            if (propsRef.current.nodeStateClassNames?.get(node.key)?.split(" ").includes("flow-kit-node-hidden")) return;
             const rect = findElementById(getFlowKitRoot(layerRef.current), node.key)?.getBoundingClientRect();
 
             if (rect == null) return;

@@ -26,6 +26,8 @@ interface INodeContainer {
   position?: { x: number; y: number };
   /** Node keys currently assigned to this container. */
   nodeKeys: string[];
+  /** Hide member nodes and their edges while keeping an expandable header. */
+  collapsed?: boolean;
   /** Space between container bounds and contained nodes. */
   padding?: number;
   /**
@@ -41,6 +43,38 @@ interface INodeContainer {
    */
   style?: React.CSSProperties;
 }`} />
+            </div>
+
+            <div className="section">
+                <h2 className="section-title">Collapsing Containers</h2>
+                <p>
+                    Set <code>collapsed: true</code> to hide every member node and its connected edges.
+                    The compact header stays visible with a node count. Expanding restores the layout,
+                    while nodes hidden by edge folding remain hidden. Moving a collapsed container also
+                    moves its members; resizing and dropping nodes into it are disabled while collapsed.
+                </p>
+                <CodeBlock code={`const [containers, setContainers] = useState<INodeContainer[]>([
+  { key: "validation", label: "Validation", nodeKeys: ["check", "verify"], collapsed: true },
+]);
+
+<FlowKit
+  nodes={nodes}
+  edges={edges}
+  containers={containers}
+>
+  <FlowKitEvents
+    onContainersChange={(changes) =>
+      setContainers((current) => applyContainerChanges(current, changes))
+    }
+  />
+</FlowKit>`} />
+                <p>
+                    Import <code>applyContainerChanges</code> from FlowKit. The header toggle emits
+                    <code>{' { type: "collapse", key, collapsed }'}</code> through <code>onContainersChange</code>.
+                    The toggle requires this handler and is disabled in read-only mode. Custom container
+                    renderers receive <code>collapsed</code> and <code>onCollapsedChange(boolean)</code>
+                    to render their own toggle.
+                </p>
             </div>
 
             <div className="section">

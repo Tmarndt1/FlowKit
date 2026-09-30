@@ -11,6 +11,35 @@ function edge(key: string, sourceId: string, targetId: string, extra?: Partial<I
     return { key, type: "edge", sourceId, targetId, anchorMode: "floating", ...extra };
 }
 
+describe("container collapse", () => {
+    it("hides members and all incident edges, preserving the header and membership", () => {
+        const nodes = [node("a"), node("b"), node("c"), node("d")];
+        const edges = [edge("in", "a", "b", { collapsed: true }), edge("internal", "b", "c"), edge("out", "c", "d"), edge("other", "a", "d")];
+        const container = { key: "group", nodeKeys: ["b", "c"], collapsed: true };
+        const state = getFoldGraphState(nodes, edges, [container], null);
+        expect([...state.hiddenNodeKeys]).toEqual(["b", "c"]);
+        expect(state.visibleEdges.map((e) => e.key)).toEqual(["other"]);
+        expect(state.visibleContainers).toEqual([container]);
+        expect(nodes).toHaveLength(4);
+        const expanded = getFoldGraphState(nodes, edges, [{ ...container, collapsed: false }], null);
+        expect(expanded.hiddenNodeKeys.size).toBe(0);
+        expect(expanded.visibleEdges).toEqual(edges);
+    });
+
+    it("keeps edge folding active after the container expands", () => {
+        const nodes = [node("a"), node("b"), node("c")];
+        const edges = [edge("fold", "a", "b", { collapsed: true, collapseMode: "downstream" })];
+        const state = getFoldGraphState(nodes, edges, [{ key: "group", nodeKeys: ["b", "c"], collapsed: false }], null);
+        expect([...state.hiddenNodeKeys]).toEqual(["b"]);
+        expect(state.visibleContainers?.[0].nodeKeys).toEqual(["c"]);
+    });
+
+    it("retains empty collapsed containers", () => {
+        const container = { key: "empty", nodeKeys: [], collapsed: true, position: { x: 0, y: 0 } };
+        expect(getFoldGraphState([], [], [container], null).visibleContainers).toEqual([container]);
+    });
+});
+
 describe("getFoldGraphState (no collapsed edges)", () => {
     it("returns all edges as visible when none are collapsed", () => {
         const nodes = [node("a"), node("b")];

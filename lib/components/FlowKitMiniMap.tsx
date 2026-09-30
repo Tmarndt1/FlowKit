@@ -6,6 +6,7 @@ import {
     useFlowKitViewportStore,
 } from "../contexts/NodeFlowContext";
 import { findElementById } from "../functions/domScope";
+import { useFlowKitConfig } from "../contexts/FlowKitConfigContext";
 
 /** Corner placement for the built-in minimap. */
 export type MiniMapPosition = "top-left" | "top-right" | "bottom-left" | "bottom-right";
@@ -94,6 +95,7 @@ function getViewportRect(element: HTMLElement | null): DOMRect | null {
 
 /** Built-in overview minimap that tracks node bounds and viewport position. */
 export const FlowKitMiniMap: React.FC<FlowKitMiniMapProps> = (props) => {
+    const { hiddenNodeKeys } = useFlowKitConfig();
     const width = props.width ?? 180;
     const height = props.height ?? 120;
     const padding = props.padding ?? 48;
@@ -149,7 +151,7 @@ export const FlowKitMiniMap: React.FC<FlowKitMiniMapProps> = (props) => {
 
     const miniMapNodes = React.useMemo<MiniMapNode[]>(
         () =>
-            props.nodes.map((node) => {
+            props.nodes.filter((node) => !hiddenNodeKeys?.has(node.key)).map((node) => {
                 const size = getNodeElementSize(
                     miniMapRef.current?.closest<HTMLElement>(".flow-kit") ?? null,
                     node
@@ -163,7 +165,7 @@ export const FlowKitMiniMap: React.FC<FlowKitMiniMapProps> = (props) => {
                     height: size.height,
                 };
             }),
-        [endpointUpdateVersion, measurementVersion, props.nodes]
+        [endpointUpdateVersion, measurementVersion, props.nodes, hiddenNodeKeys]
     );
     const bounds = React.useMemo<MiniMapBounds | null>(
         () => getMiniMapBounds(miniMapNodes, padding),

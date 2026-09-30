@@ -13,6 +13,8 @@ export interface INodeContainer {
     position?: IOffset;
     /** Node keys currently assigned to this container. */
     nodeKeys: string[];
+    /** Hide member nodes and their edges, retaining a compact expandable header. Defaults to false. */
+    collapsed?: boolean;
     /** Space between container bounds and contained nodes. */
     padding?: number;
     /**

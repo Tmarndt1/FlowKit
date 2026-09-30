@@ -75,8 +75,10 @@ export function getContainerLayout(
 export function getContainerStyle(container: INodeContainer, bounds: ContainerBounds): React.CSSProperties {
     return {
         ...container.style,
-        width: bounds.width,
-        height: bounds.height,
+        // Only presentation shrinks; the layout snapshot retains expanded geometry.
+        width: container.collapsed ? 240 : bounds.width,
+        height: container.collapsed ? 44 : bounds.height,
+        ...(container.collapsed ? { minWidth: 0, minHeight: 0 } : {}),
         transform: `translate(${bounds.x}px, ${bounds.y}px)`,
     };
 }

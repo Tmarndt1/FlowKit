@@ -88,6 +88,7 @@ function getEndpointElementAtPoint(
     let closestDistance = Number.POSITIVE_INFINITY;
 
     root?.querySelectorAll<HTMLElement>(".flow-kit-endpoint").forEach((endpoint) => {
+        if (endpoint.closest(".flow-kit-node-hidden")) return;
         if (endpoint.id === sourceEndpointId) return;
 
         const center = getEndpointCenter(endpoint);

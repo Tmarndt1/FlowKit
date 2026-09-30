@@ -14,7 +14,7 @@ export interface IFoldGraphPreview {
 export interface IFoldGraphState {
     /** State classes to apply to rendered edge groups, keyed by edge key. */
     edgeStateClassNames: Map<string, string>;
-    /** Node keys hidden by currently collapsed edges. */
+    /** Node keys hidden by collapsed edges or containers. */
     hiddenNodeKeys: Set<string>;
     /** State classes to apply to rendered node wrappers, keyed by node key. */
     nodeStateClassNames: Map<string, string>;
@@ -107,6 +107,13 @@ export function getFoldGraphState(
     const incoming = new Map<string, string[]>();
     const collapsedAnchorEdges = new Set<string>();
     const hiddenNodeKeys = new Set<string>();
+    const containerHiddenNodeKeys = new Set<string>();
+    containers?.forEach((container) => {
+        if (container.collapsed) container.nodeKeys.forEach((key) => {
+            containerHiddenNodeKeys.add(key);
+            hiddenNodeKeys.add(key);
+        });
+    });
     const previewNodeKeys = new Set<string>();
     const previewEdgeKeys = new Set<string>();
 
@@ -157,9 +164,11 @@ export function getFoldGraphState(
     });
 
     const visibleEdges = edges.filter((edge) => {
-        if (collapsedAnchorEdges.has(edge.key)) return true;
-
         const { sourceNodeKey, targetNodeKey } = getEdgeNodeKeys(edge, nodeKeyByConnectionId);
+        // Container collapse also hides folded anchor edges connected to its members.
+        if ((sourceNodeKey != null && containerHiddenNodeKeys.has(sourceNodeKey)) ||
+            (targetNodeKey != null && containerHiddenNodeKeys.has(targetNodeKey))) return false;
+        if (collapsedAnchorEdges.has(edge.key)) return true;
 
         return (
             sourceNodeKey != null &&
@@ -194,11 +203,11 @@ export function getFoldGraphState(
             // Keep intentionally empty containers but remove containers whose assigned
             // nodes are all hidden by the current edge collapse state.
             .filter(({ container, visibleNodeKeys }) => 
-                container.nodeKeys.length === 0 || visibleNodeKeys.length > 0
+                container.collapsed || container.nodeKeys.length === 0 || visibleNodeKeys.length > 0
             )
             .map(({ container, visibleNodeKeys }) => ({
                 ...container,
-                nodeKeys: visibleNodeKeys
+                nodeKeys: container.collapsed ? container.nodeKeys : visibleNodeKeys
             })),
         visibleEdges,
     };

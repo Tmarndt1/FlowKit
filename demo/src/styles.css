@@ -751,6 +751,43 @@ button {
   content: none;
 }
 
+.canvas-panel .flow-kit-node-container-collapsed .flow-kit-node-container-header {
+  height: 42px;
+  border-bottom: 0;
+  border-radius: 15px;
+}
+
+.container-demo-controls {
+  position: absolute;
+  top: 14px;
+  left: 14px;
+  right: 240px;
+  z-index: 90;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px;
+  pointer-events: none;
+  color: #a7bdd1;
+  font-size: 12px;
+}
+
+.container-demo-controls button {
+  pointer-events: auto;
+  padding: 8px 12px;
+  border: 1px solid #46627e;
+  border-radius: 8px;
+  background: #182838;
+  color: #deedfa;
+  cursor: pointer;
+}
+
+.container-demo-controls button:hover { background: #29405a; }
+@media (max-width: 700px) {
+  .container-demo-controls { right: 14px; }
+  .container-demo-controls span { display: none; }
+}
+
 .volume-workflow-panel {
   background:
     radial-gradient(circle at 52% 28%, rgba(37, 83, 111, 0.2), transparent 44%),

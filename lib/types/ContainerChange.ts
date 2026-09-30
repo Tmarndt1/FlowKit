@@ -2,6 +2,7 @@ import { INodeContainer } from "../interfaces/INodeContainer";
 import { IOffset } from "../interfaces/IOffset";
 
 export type ContainerChange =
+    | { type: "collapse"; key: string; collapsed: boolean }
     | { type: "select"; key: string; selected: boolean }
     | { type: "move"; key: string; position: IOffset }
     /** Saves fixed bounds and disables resizeToFit when applied with applyContainerChanges. */

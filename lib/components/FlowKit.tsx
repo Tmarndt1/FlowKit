@@ -74,6 +74,7 @@ function isPointInsideFlowNode(root: HTMLElement | null, x: number, y: number): 
     const nodes = root?.querySelectorAll<HTMLElement>(".flow-kit-node, .flow-kit-node-custom") ?? [];
 
     for (const node of nodes) {
+        if (node.classList.contains("flow-kit-node-hidden")) continue;
         const rect = node.getBoundingClientRect();
 
         if (x >= rect.left && x <= rect.right && y >= rect.top && y <= rect.bottom) {
@@ -225,9 +226,14 @@ const FlowKitComponent = (props: FlowKitProps, ref: React.ForwardedRef<FlowKitHa
         propsRef.current.onEdgeCollapsePreviewChange?.(args);
     }, []);
     const getRootElement = React.useCallback(() => rootRef.current, []);
+    const foldGraphState = React.useMemo<ReturnType<typeof getFoldGraphState>>(
+        () => getFoldGraphState(props.nodes, props.edges, props.containers, collapsePreview),
+        [collapsePreview, props.containers, props.edges, props.nodes]
+    );
 
     const config: FlowKitConfigContextValue = React.useMemo<FlowKitConfigContextValue>(
         () => ({
+            hiddenNodeKeys: foldGraphState.hiddenNodeKeys,
             collapsibleEdges: props.collapsibleEdges,
             edgePathType: props.edgePathType,
             edgeRouting: props.edgeRouting,
@@ -239,6 +245,7 @@ const FlowKitComponent = (props: FlowKitProps, ref: React.ForwardedRef<FlowKitHa
             getRootElement,
         }),
         [
+            foldGraphState.hiddenNodeKeys,
             props.canConnect,
             props.collapsibleEdges,
             props.edgePathType,
@@ -251,14 +258,13 @@ const FlowKitComponent = (props: FlowKitProps, ref: React.ForwardedRef<FlowKitHa
         ]
     );
 
-    const foldGraphState = React.useMemo<ReturnType<typeof getFoldGraphState>>(
-        () => getFoldGraphState(props.nodes, props.edges, props.containers, collapsePreview),
-        [collapsePreview, props.containers, props.edges, props.nodes]
-    );
-
     React.useEffect(() => {
-        selectionStore.getState().reconcileSelection(props.nodes, props.edges, props.containers ?? []);
-    }, [props.containers, props.edges, props.nodes, selectionStore]);
+        selectionStore.getState().reconcileSelection(
+            props.nodes.filter((node) => !foldGraphState.hiddenNodeKeys.has(node.key)),
+            foldGraphState.visibleEdges,
+            foldGraphState.visibleContainers ?? []
+        );
+    }, [foldGraphState, props.nodes, selectionStore]);
 
     // FlowKit owns viewport transforms directly so panning and edge redraws can stay
     // synchronized without requiring consumers to manage viewport state.
@@ -402,6 +408,7 @@ const FlowKitComponent = (props: FlowKitProps, ref: React.ForwardedRef<FlowKitHa
         // merges them into the selection (shift keeps existing selection additive).
         if (dragged) {
             const hits = stateRef.current.nodes.filter((node) => {
+                if (findElementById(rootRef.current, node.key)?.classList.contains("flow-kit-node-hidden")) return false;
                 const bounds = findElementById(rootRef.current, node.key)?.getBoundingClientRect();
 
                 if (bounds == null) return false;
@@ -574,6 +581,7 @@ const FlowKitComponent = (props: FlowKitProps, ref: React.ForwardedRef<FlowKitHa
         if (node == null || nodeElement == null || viewportRect == null || contentRef.current == null) {
             return false;
         }
+        if (nodeElement.classList.contains("flow-kit-node-hidden")) return false;
 
         const currentState = viewportStore.getState();
         const nextScale = options?.scale ?? currentState.scale;

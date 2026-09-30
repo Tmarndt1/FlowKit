@@ -10,6 +10,26 @@ const container: INodeContainer = {
 };
 
 describe("container sizing modes", () => {
+    it("collapses presentation without changing fixed geometry or membership", () => {
+        const expanded = getContainerLayout({ ...container, resizeToFit: false }, nodes, null);
+        const [collapsed] = applyContainerChanges([expanded.container], [{ type: "collapse", key: "c", collapsed: true }]);
+        const compact = getContainerLayout(collapsed, nodes, null, expanded);
+        expect(compact.bounds).toEqual(expanded.bounds);
+        expect(getContainerStyle(collapsed, compact.bounds!)).toMatchObject({ width: 240, height: 44, minHeight: 0 });
+        const [restored] = applyContainerChanges([collapsed], [{ type: "collapse", key: "c", collapsed: false }]);
+        expect(getContainerLayout(restored, nodes, null, compact).bounds).toEqual(expanded.bounds);
+        expect(restored.nodeKeys).toBe(container.nodeKeys);
+        expect(container.collapsed).toBeUndefined();
+    });
+
+    it("moves auto-fit collapsed geometry with its member nodes", () => {
+        const collapsed = { ...container, collapsed: true };
+        const initial = getContainerLayout(collapsed, nodes, null);
+        const moved = getContainerLayout(collapsed, [{ ...nodes[0], offset: { x: 250, y: 180 } }], null, initial);
+        expect(moved.bounds!.x - initial.bounds!.x).toBe(50);
+        expect(moved.bounds!.y - initial.bounds!.y).toBe(30);
+        expect(getContainerLayout({ ...collapsed, collapsed: false }, [{ ...nodes[0], offset: { x: 250, y: 180 } }], null, moved).bounds).toEqual(moved.bounds);
+    });
     it("fits nodes in both directions despite saved manual dimensions", () => {
         const small = getContainerLayout(container, nodes, null);
         expect(small.bounds).toMatchObject({ x: 176, y: 98, width: 188, height: 156 });

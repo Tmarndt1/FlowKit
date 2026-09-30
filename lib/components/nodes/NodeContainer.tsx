@@ -40,6 +40,7 @@ function areContainersEqual(left: INodeContainer, right: INodeContainer): boolea
         left.key === right.key &&
         left.type === right.type &&
         left.label === right.label &&
+        left.collapsed === right.collapsed &&
         left.padding === right.padding &&
         left.resizeToFit === right.resizeToFit &&
         left.className === right.className &&
@@ -76,6 +77,11 @@ const NodeContainerComponent: React.FC<IProps> = (props) => {
     const notifyEndpointsChanged = useFlowKitRenderStore((state) => state.notifyEndpointsChanged);
     const canChangeContainers = useFlowKitRenderStore((state) => state.canChangeContainers);
     const canChangeNodes = useFlowKitRenderStore((state) => state.canChangeNodes);
+    const requestContainersChange = useFlowKitRenderStore((state) => state.requestContainersChange);
+    const onCollapsedChange = (collapsed: boolean): void => {
+        if (readOnly || !canChangeContainers) return;
+        requestContainersChange([{ type: "collapse", key: props.container.key, collapsed }]);
+    };
     const selected = useFlowKitSelectionStore(
         (state) => state.selectedContainerKeys.has(props.container.key)
     );
@@ -244,6 +250,7 @@ const NodeContainerComponent: React.FC<IProps> = (props) => {
     }, [onMouseMove]);
 
     const onMouseDown = React.useCallback<(e: React.MouseEvent<HTMLDivElement, MouseEvent>) => void>((e: React.MouseEvent<HTMLDivElement, MouseEvent>): void => {
+        if (e.target instanceof Element && e.target.closest("button, input, select, textarea, a, [contenteditable='true']")) return;
         const movesContainedNodes = propsRef.current.container.nodeKeys.length > 0;
 
         selectContainer(propsRef.current.container);
@@ -327,7 +334,7 @@ const NodeContainerComponent: React.FC<IProps> = (props) => {
         layoutRef.current = layout;
         // Persist the displayed bounds when the consumer disables auto-fit.
         if (previous != null && previous.container.resizeToFit !== false &&
-            props.container.resizeToFit === false && layout.bounds != null) {
+            props.container.resizeToFit === false && !props.container.collapsed && layout.bounds != null) {
             onResizeEndRef.current?.(props.container.key);
         }
     });
@@ -338,6 +345,7 @@ const NodeContainerComponent: React.FC<IProps> = (props) => {
     const style = getContainerStyle(props.container, bounds);
     const className = [
         "flow-kit-node-container",
+        props.container.collapsed ? "flow-kit-node-container-collapsed" : "",
         props.container.className ?? "",
         selected ? "flow-kit-selected" : "",
         isDraggingOverContainer ? "flow-kit-node-container-drop-target" : "",
@@ -345,7 +353,7 @@ const NodeContainerComponent: React.FC<IProps> = (props) => {
     ].filter(Boolean).join(" ");
 
     if (props.customContainer != null) {
-        const customProps = { ...props.container, className, style };
+        const customProps = { ...props.container, className, style, onCollapsedChange };
 
         return (
             <div
@@ -370,8 +378,24 @@ const NodeContainerComponent: React.FC<IProps> = (props) => {
             style={style}
         >
             <div className="flow-kit-node-container-header" onMouseDownCapture={onMouseDown}>
-                {props.container.label ?? props.container.key}
+                <button
+                    type="button"
+                    className="flow-kit-node-container-toggle"
+                    aria-expanded={!props.container.collapsed}
+                    aria-label={`${props.container.collapsed ? "Expand" : "Collapse"} ${props.container.label ?? props.container.key}`}
+                    disabled={readOnly || !canChangeContainers}
+                    onMouseDown={(event) => event.stopPropagation()}
+                    onClick={(event) => {
+                        event.stopPropagation();
+                        onCollapsedChange(!props.container.collapsed);
+                    }}
+                >
+                    <span aria-hidden="true">{props.container.collapsed ? "▸" : "▾"}</span>
+                </button>
+                <span className="flow-kit-node-container-label">{props.container.label ?? props.container.key}</span>
+                {props.container.collapsed && <span className="flow-kit-node-container-count">{props.container.nodeKeys.length} nodes</span>}
             </div>
+            {!props.container.collapsed && <>
             <div
                 className="flow-kit-node-container-resize flow-kit-node-container-resize-east"
                 onMouseDownCapture={onResizeMouseDown("east")}
@@ -384,6 +408,7 @@ const NodeContainerComponent: React.FC<IProps> = (props) => {
                 className="flow-kit-node-container-resize flow-kit-node-container-resize-southeast"
                 onMouseDownCapture={onResizeMouseDown("southeast")}
             />
+            </>}
         </div>
     );
 };
