@@ -47,6 +47,8 @@ const EdgeComponent: React.FC<IProps> = (props) =>
     const containerRectRef = React.useRef<typeof containerRect>(containerRect);
     const scaleRef = React.useRef<number>(scale);
     const edgeGroupRef = React.useRef<SVGGElement>(null);
+    const drawFrameRef = React.useRef<number | null>(null);
+    const lastPathRef = React.useRef<string>("");
 
     const [path, setPath] = React.useState<string>("");
     const [menuOpen, setMenuOpen] = React.useState<boolean>(false);
@@ -97,11 +99,30 @@ const EdgeComponent: React.FC<IProps> = (props) =>
                         ? getStraight(...pathArgs, currentProps.routing)
                         : getBezier(...pathArgs, 80, currentProps.routing);
 
-        if (nextPath != null)
+        if (nextPath != null && nextPath !== lastPathRef.current)
         {
+            lastPathRef.current = nextPath;
             setPath(nextPath);
         }
     }, [edgePathType, getRootElement]);
+
+    const requestDraw = React.useCallback<() => void>(() => {
+        if (drawFrameRef.current != null) return;
+
+        // Layout notifications and rapid controlled updates can arrive during a
+        // React commit. Measure the latest DOM once per frame, outside that commit.
+        drawFrameRef.current = window.requestAnimationFrame(() => {
+            drawFrameRef.current = null;
+            draw();
+        });
+    }, [draw]);
+
+    React.useEffect(() => () => {
+        if (drawFrameRef.current != null) {
+            window.cancelAnimationFrame(drawFrameRef.current);
+            drawFrameRef.current = null;
+        }
+    }, [requestDraw]);
 
     const stopEdgeDrag = React.useCallback<(e: React.MouseEvent<SVGGElement, MouseEvent>) => void>((e: React.MouseEvent<SVGGElement, MouseEvent>): void =>
     {
@@ -233,7 +254,7 @@ const EdgeComponent: React.FC<IProps> = (props) =>
 
             if (containerRectRef.current != null || count > 200)
             {
-                draw();
+                requestDraw();
                 window.clearInterval(interval);
             }
         }, 20);
@@ -242,12 +263,12 @@ const EdgeComponent: React.FC<IProps> = (props) =>
         {
             window.clearInterval(interval);
         };
-    }, [draw]);
+    }, [requestDraw]);
 
     React.useEffect(() =>
     {
-        draw();
-    }, [containerRect, draw, props.edge, props.routing, scale]);
+        requestDraw();
+    }, [containerRect, requestDraw, props.edge, props.routing, scale]);
 
     React.useEffect(() => {
         if (stores == null) return;
@@ -276,9 +297,9 @@ const EdgeComponent: React.FC<IProps> = (props) =>
                 shouldDraw ||= edgeRenderRequest.edgeKey === edge.key;
             }
 
-            if (shouldDraw) draw();
+            if (shouldDraw) requestDraw();
         });
-    }, [draw, stores]);
+    }, [requestDraw, stores]);
 
     const edgeGroupProps = {
         id: props.edge.key,
