@@ -1,6 +1,6 @@
 import { EdgePathType } from "../../../lib/index";
 
-export type DemoView = "floating" | "layout" | "uml" | "utilization" | "workflow";
+export type DemoView = "floating" | "layout" | "uml" | "utilization" | "workflow" | "performance";
 
 type TopBarProps = {
   animatedEdges: boolean;
@@ -38,7 +38,7 @@ export function TopBar({
   status,
 }: TopBarProps) {
   return (
-    <header className="top-bar">
+    <header className={`top-bar${demoView === "performance" ? " top-bar-performance" : ""}`}>
       <div className="brand-lockup">
         <span className="brand-mark">G</span>
         <strong>FlowKit</strong>
@@ -91,10 +91,18 @@ export function TopBar({
           >
             UML
           </button>
+          <button
+            aria-pressed={demoView === "performance"}
+            className={demoView === "performance" ? "active" : undefined}
+            onClick={() => onDemoViewChange("performance")}
+            type="button"
+          >
+            Performance
+          </button>
         </div>
       </div>
 
-      <div className="run-controls" aria-label="Execution controls">
+      {demoView !== "performance" && <div className="run-controls" aria-label="Execution controls">
         <button className="button button-green" onClick={onRun} type="button">
           Run
         </button>
@@ -106,11 +114,12 @@ export function TopBar({
         </button>
         <span className={`idle-dot idle-dot-${status}`} />
         <span className="idle-text">{status === "success" ? `Resolved ${lastRunLabel}` : "Idle"}</span>
-      </div>
+      </div>}
 
       <div className="view-controls">
         <span>{nodeCount} nodes</span>
         <span>{edgeCount} edges</span>
+        {demoView === "performance" && <span>{containerCount} containers</span>}
         {demoView === "workflow" ? (
           <button
             aria-label="Add empty container"
@@ -132,14 +141,14 @@ export function TopBar({
         >
           Flow
         </button>
-        <button
+        {demoView !== "performance" && <button
           aria-pressed={collapsibleEdges}
           className={`edge-animation-toggle edge-fold-toggle${collapsibleEdges ? " active" : ""}`}
           onClick={() => onCollapsibleEdgesChange(!collapsibleEdges)}
           type="button"
         >
           Fold
-        </button>
+        </button>}
         <div className="edge-path-toggle" aria-label="Edge path style">
           <button
             aria-pressed={edgePathType === "bezier"}

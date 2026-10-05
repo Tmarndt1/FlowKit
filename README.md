@@ -813,7 +813,9 @@ Example:
 
 ## Demo
 
-The demo includes a workflow editor, a floating-edge network diagram, an auto-layout explorer, a volume-utilization dashboard, and a UML class diagram showcasing edge markers.
+The demo includes a workflow editor, a floating-edge network diagram, an auto-layout explorer, a volume-utilization dashboard, a UML class diagram showcasing edge markers, and a performance playground.
+
+Choose **Performance** to explore graphs with 250–5,000 nodes, up to 250 containers and 9,499 edges. Try live worker updates, animated edges, node/container dragging, and different path styles while watching the browser frame-rate meter. Open `/?demo=performance` to start directly in this view.
 
 ```bash
 npm install

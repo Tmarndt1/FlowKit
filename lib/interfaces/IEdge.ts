@@ -78,7 +78,7 @@ export interface IEdge<T> {
     pathType?: EdgePathType;
     /** Overrides global built-in route shaping for this edge. */
     routing?: EdgeRoutingOptions;
-    /** Inline styles applied to the built-in visible path. */
+    /** Inline styles applied to the built-in visible path; passed through for custom renderers to apply. */
     style?: React.CSSProperties;
     /**
      * SVG marker shape at the source end of the edge.

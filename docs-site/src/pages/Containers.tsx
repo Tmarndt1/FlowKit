@@ -38,8 +38,8 @@ interface INodeContainer {
   /** Extra CSS class names applied to the rendered container element. */
   className?: string;
   /**
-   * Inline styles applied to the rendered container.
-   * Use numeric or pixel width/height for fixed sizing; minWidth/minHeight also apply to auto-fit.
+   * Inline styles applied to the built-in container; passed through for custom renderers to apply.
+   * Numeric or pixel width/height still determine fixed layout bounds; minWidth/minHeight also apply to auto-fit.
    */
   style?: React.CSSProperties;
 }`} />

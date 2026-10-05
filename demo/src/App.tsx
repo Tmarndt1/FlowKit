@@ -13,6 +13,8 @@ import {
 import { NodeInspector } from "./components/NodeInspector";
 import { NodePalette } from "./components/NodePalette";
 import { AutoLayoutDemo } from "./components/AutoLayoutDemo";
+import { PerformanceDemo } from "./components/PerformanceDemo";
+import { getPerformanceStats } from "./performanceModel";
 import { NetworkDiagram } from "./components/NetworkDiagram";
 import { UMLDiagram } from "./components/UMLDiagram";
 import { DemoView, TopBar } from "./components/TopBar";
@@ -49,9 +51,11 @@ export function App() {
   const [edgePathType, setEdgePathType] = React.useState<EdgePathType>("bezier");
   const [animatedEdges, setAnimatedEdges] = React.useState(false);
   const [collapsibleEdges, setCollapsibleEdges] = React.useState(true);
-  const [demoView, setDemoView] = React.useState<DemoView>("workflow");
-  const activeNodeCount = demoView === "utilization" ? volumeWorkflowStats.nodeCount : demoView === "layout" ? 10 : demoView === "uml" ? 8 : nodes.length;
-  const activeEdgeCount = demoView === "utilization" ? volumeWorkflowStats.edgeCount : demoView === "layout" ? 9 : demoView === "uml" ? 8 : edges.length;
+  const [demoView, setDemoView] = React.useState<DemoView>(() =>
+    new URLSearchParams(window.location.search).get("demo") === "performance" ? "performance" : "workflow");
+  const [performanceStats, setPerformanceStats] = React.useState(() => getPerformanceStats(1000));
+  const activeNodeCount = demoView === "performance" ? performanceStats.nodes : demoView === "utilization" ? volumeWorkflowStats.nodeCount : demoView === "layout" ? 10 : demoView === "uml" ? 8 : nodes.length;
+  const activeEdgeCount = demoView === "performance" ? performanceStats.edges : demoView === "utilization" ? volumeWorkflowStats.edgeCount : demoView === "layout" ? 9 : demoView === "uml" ? 8 : edges.length;
 
   const selectedNode = React.useMemo(
     () => nodes.find((node) => node.key === selectedKey) ?? nodes.find((node) => node.key === "runtime-multiplier") ?? null,
@@ -357,7 +361,7 @@ export function App() {
         edgePathType={edgePathType}
         animatedEdges={animatedEdges}
         collapsibleEdges={collapsibleEdges}
-        containerCount={containers.length}
+        containerCount={demoView === "performance" ? performanceStats.containers : containers.length}
         lastRunLabel={lastRunLabel}
         nodeCount={activeNodeCount}
         onAnimatedEdgesChange={setAnimatedEdges}
@@ -388,6 +392,8 @@ export function App() {
               onRemove={onRemove}
               onSelectionChange={setSelectedKey}
             />
+          ) : demoView === "performance" ? (
+            <PerformanceDemo animatedEdges={animatedEdges} edgePathType={edgePathType} onStatsChange={setPerformanceStats} />
           ) : demoView === "floating" ? (
             <NetworkDiagram
               animatedEdges={animatedEdges}

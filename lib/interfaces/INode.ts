@@ -16,6 +16,6 @@ export interface INode<TData, TEndpoint> {
     className?: string;
     /** Application payload passed through to custom node renderers. */
     data?: TData;
-    /** Inline styles applied to the rendered node wrapper. */
+    /** Inline styles applied to the built-in node wrapper; passed through for custom renderers to apply. */
     style?: React.CSSProperties;
 }

@@ -1,3 +1,5 @@
+@import "./performance.css";
+
 * {
   box-sizing: border-box;
 }
@@ -262,6 +264,10 @@ button {
 }
 
 .demo-grid-uml {
+  grid-template-columns: minmax(0, 1fr);
+}
+
+.demo-grid.demo-grid-performance {
   grid-template-columns: minmax(0, 1fr);
 }
 

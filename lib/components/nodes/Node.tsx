@@ -271,7 +271,7 @@ const NodeComponent: React.FC<IProps> = (props) => {
 
     const style: React.CSSProperties = {
         zIndex: selected ? 10000000000 : 100,
-        ...(props.node?.style ?? {}),
+        ...(props.customNode == null ? props.node.style : {}),
         transform: `translate(${position.x}px, ${position.y}px)`,
     };
 

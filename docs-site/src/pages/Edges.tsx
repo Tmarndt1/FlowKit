@@ -52,7 +52,7 @@ interface IEdge<T> {
     /** Pixel spacing used to fan out multiple edges between the same node pair. */
     parallelOffset?: number;
   };
-  /** Inline styles applied to the built-in visible path. */
+  /** Inline styles applied to the built-in visible path; passed through for custom renderers to apply. */
   style?: React.CSSProperties;
   /** Additional class applied to the rendered edge group. */
   className?: string;

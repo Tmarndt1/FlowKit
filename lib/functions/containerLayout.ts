@@ -72,9 +72,13 @@ export function getContainerLayout(
     };
 }
 
-export function getContainerStyle(container: INodeContainer, bounds: ContainerBounds): React.CSSProperties {
+export function getContainerStyle(
+    container: INodeContainer,
+    bounds: ContainerBounds,
+    applyObjectStyle = true
+): React.CSSProperties {
     return {
-        ...container.style,
+        ...(applyObjectStyle ? container.style : {}),
         // Only presentation shrinks; the layout snapshot retains expanded geometry.
         width: container.collapsed ? 240 : bounds.width,
         height: container.collapsed ? 44 : bounds.height,

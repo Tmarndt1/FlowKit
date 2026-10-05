@@ -342,7 +342,7 @@ const NodeContainerComponent: React.FC<IProps> = (props) => {
     const bounds = layout.bounds;
     if (bounds == null) return null;
 
-    const style = getContainerStyle(props.container, bounds);
+    const style = getContainerStyle(props.container, bounds, props.customContainer == null);
     const className = [
         "flow-kit-node-container",
         props.container.collapsed ? "flow-kit-node-container-collapsed" : "",
@@ -353,7 +353,7 @@ const NodeContainerComponent: React.FC<IProps> = (props) => {
     ].filter(Boolean).join(" ");
 
     if (props.customContainer != null) {
-        const customProps = { ...props.container, className, style, onCollapsedChange };
+        const customProps = { ...props.container, className, onCollapsedChange };
 
         return (
             <div
