@@ -72,10 +72,13 @@ const EdgeComponent: React.FC<IProps> = (props) =>
         }
 
         const pathType = currentProps.edge.pathType ?? edgePathType ?? "bezier";
-        // Straight paths fan out by sliding floating anchors along their boundary,
-        // never by shifting fixed endpoint anchors or the entire path off the shapes.
-        const floatingOffset = pathType === "straight"
+        // Container routes fan out at the boundary for every path type. Fixed
+        // ports stay pinned, and interior points must not receive a second offset.
+        const containerRoute = currentProps.edge.renderInfo?.source.kind === "container" ||
+            currentProps.edge.renderInfo?.target.kind === "container";
+        const floatingOffset = containerRoute || pathType === "straight"
             ? (currentProps.routing?.parallelOffset ?? 0) * scaleRef.current : 0;
+        const routing = containerRoute ? { ...currentProps.routing, parallelOffset: 0 } : currentProps.routing;
         const anchors = resolveEdgeAnchors(currentProps.edge, getRootElement(), floatingOffset);
 
         if (anchors == null) return;
@@ -99,12 +102,12 @@ const EdgeComponent: React.FC<IProps> = (props) =>
         ] as const;
         const nextPath =
             pathType === "smooth-step"
-                ? getSmoothStep(...pathArgs, 32, 14, currentProps.routing)
+                ? getSmoothStep(...pathArgs, 32, 14, routing)
                 : pathType === "step"
-                    ? getOrthogonal(...pathArgs, 32, currentProps.routing)
+                    ? getOrthogonal(...pathArgs, 32, routing)
                     : pathType === "straight"
-                        ? getStraight(...pathArgs, currentProps.routing)
-                        : getBezier(...pathArgs, 80, currentProps.routing);
+                        ? getStraight(...pathArgs, routing)
+                        : getBezier(...pathArgs, 80, routing);
 
         if (nextPath != null && nextPath !== lastPathRef.current)
         {

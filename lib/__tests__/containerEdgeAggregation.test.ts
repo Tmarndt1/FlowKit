@@ -65,16 +65,34 @@ describe("collapsed container edge aggregation", () => {
         expect(edges[2].data?.status).toBe("red");
     });
 
-    it("hides internal edges and keeps opposite directions separate, including singleton summaries", () => {
+    it("hides internal edges and merges opposite directions in one arrowless summary", () => {
         const callback = vi.fn(() => ({}));
         const visible = getFoldGraphState(nodes, [
             ...edges,
             { key: "internal", sourceId: "a1-port", targetId: "a2-port" },
             { key: "reverse", sourceId: "b1-port", targetId: "a1-port" },
         ], containers(), null, { ...aggregate, aggregateContainerEdges: callback }).visibleEdges;
-        expect(visible).toHaveLength(2);
-        expect(visible.map((edge) => edge.renderInfo?.originalEdgeKeys)).toEqual([["e0", "e1", "e2"], ["reverse"]]);
-        expect(callback).toHaveBeenCalledTimes(2);
+        expect(visible).toHaveLength(1);
+        expect(visible[0].renderInfo?.originalEdgeKeys).toEqual(["e0", "e1", "e2", "reverse"]);
+        expect(visible[0].arrows).toBe("none");
+        expect(callback).toHaveBeenCalledTimes(1);
+    });
+
+    it("rolls up both directions with stable container order and summary identity", () => {
+        const originals = [edges[0], { ...edges[2], key: "reverse", sourceId: "b1-port", targetId: "a1-port" }];
+        const callback = vi.fn(({ edges }: ContainerEdgeAggregateArgs<{ status: Status }>) => ({
+            data: { status: edges.some((edge) => edge.data?.status === "red") ? "red" : "green" },
+        }));
+        const options = { ...aggregate, aggregateContainerEdges: callback };
+        const first = getFoldGraphState(nodes, originals, containers(), null, options).visibleEdges[0];
+        expect(first.data.status).toBe("red");
+        expect(callback.mock.calls[0][0]).toMatchObject({ sourceContainer: { key: "A" }, targetContainer: { key: "B" } });
+        expect(callback.mock.calls[0][0].edges).toEqual(originals);
+        const second = getFoldGraphState(nodes, [...originals].reverse(), containers().reverse(), null, options).visibleEdges[0];
+        expect(second.key).toBe(first.key);
+        expect(second.sourceId).toBe("A");
+        expect(second.targetId).toBe("B");
+        expect(second.renderInfo?.originalEdgeKeys).toHaveLength(2);
     });
 
     it.each([[true, false], [false, true]])("preserves a mixture of fixed ports and floating nodes (%s, %s)", (a, b) => {

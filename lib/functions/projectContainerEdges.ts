@@ -29,8 +29,12 @@ export function projectContainerEdges(
         }
         if (sourceContainer != null && sourceContainer === targetContainer) continue;
         if (sourceContainer != null && targetContainer != null) {
-            const pair = JSON.stringify([sourceContainer.key, targetContainer.key]);
-            const group = groups.get(pair) ?? { source: sourceContainer, target: targetContainer, edges: [] };
+            // Summaries represent a connection between containers, independent
+            // of the direction of their original node connections.
+            const [source, target] = sourceContainer.key < targetContainer.key
+                ? [sourceContainer, targetContainer] : [targetContainer, sourceContainer];
+            const pair = JSON.stringify([source.key, target.key]);
+            const group = groups.get(pair) ?? { source, target, edges: [] };
             group.edges.push(edge);
             groups.set(pair, group);
             continue;
@@ -53,6 +57,7 @@ export function projectContainerEdges(
         usedKeys.add(key);
         result.push({
             type: "edge",
+            arrows: "none",
             label: `${originals.length} connection${originals.length === 1 ? "" : "s"}`,
             ...options.aggregateContainerEdges?.({ sourceContainer: source, targetContainer: target, edges: originals }),
             key,

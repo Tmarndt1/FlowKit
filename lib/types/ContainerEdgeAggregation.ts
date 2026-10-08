@@ -15,8 +15,11 @@ export interface EdgeRenderInfo {
 }
 
 export interface ContainerEdgeAggregateArgs<T> {
+    /** Canonical first container by key; summary sides do not imply original edge direction. */
     sourceContainer: INodeContainer;
+    /** Canonical second container by key. */
     targetContainer: INodeContainer;
+    /** All original connections in both directions, with original source/target IDs intact. */
     edges: readonly IEdge<T>[];
 }
 
@@ -29,6 +32,6 @@ export type ContainerEdgeAggregateResult<T> = Pick<IEdge<T>,
 export interface ContainerEdgeAggregationOptions<T = any> {
     /** Defaults to "hide", preserving existing container collapse behavior. */
     collapsedContainerEdges?: "hide" | "aggregate";
-    /** Called for each directed pair of collapsed containers, even for a single edge. */
+    /** Called once per unordered pair of collapsed containers, combining both directions. */
     aggregateContainerEdges?: (args: ContainerEdgeAggregateArgs<T>) => ContainerEdgeAggregateResult<T>;
 }

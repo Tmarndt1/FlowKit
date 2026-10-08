@@ -73,10 +73,10 @@ describe("edge redraw scheduling", () => {
     let targetX: number;
     const edge: IEdge<never> = { key: "edge", sourceId: "source", targetId: "target", pathType: "straight" };
 
-    function render(currentEdge = edge, selectionEdges?: IEdge<any>[]) {
+    function render(currentEdge = edge, selectionEdges?: IEdge<any>[], routing?: { parallelOffset: number }) {
         harness.cursor = 0;
         // React.memo exposes the underlying component for this hook harness.
-        const rendered = (Edge as any).type({ edge: currentEdge, selectionEdges });
+        const rendered = (Edge as any).type({ edge: currentEdge, selectionEdges, routing });
         harness.effects.splice(0).forEach((effect) => effect());
         return rendered;
     }
@@ -194,6 +194,26 @@ describe("edge redraw scheduling", () => {
         harness.stores.render.getState().notifyEndpointsChanged([], ["hidden-member"]);
         flushFrame();
         expect(pathUpdates()).toHaveBeenLastCalledWith("M 0,0 L 300,0");
+    });
+
+    it.each(["bezier", "smooth-step", "step", "straight"] as const)("spreads container anchors for %s without offsetting the route twice", (pathType) => {
+        const projected: IEdge<never> = {
+            ...edge, pathType,
+            renderInfo: {
+                source: { kind: "container", key: "A" },
+                target: { kind: "endpoint", id: "target" },
+                originalEdgeKeys: [edge.key],
+            },
+        };
+        harness.stores.viewport.getState().setScale(2);
+        render(projected, [edge], { parallelOffset: 24 });
+        flushFrame();
+        expect(harness.resolveAnchors).toHaveBeenCalledWith(projected, null, 48);
+        // The mock anchors are aligned horizontally. A second interior offset
+        // would introduce nonzero y coordinates and unnecessary bends.
+        const path = pathUpdates().mock.calls.at(-1)?.[0] as string;
+        const coordinates = path.match(/-?\d+(?:\.\d+)?/g)!.map(Number);
+        expect(coordinates.filter((_, index) => index % 2 === 1).every((y) => y === 0)).toBe(true);
     });
 
     it("selects and toggles the original edges rather than persisting a summary key", () => {

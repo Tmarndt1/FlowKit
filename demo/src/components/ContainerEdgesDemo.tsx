@@ -67,7 +67,7 @@ export function ContainerEdgesDemo({ animatedEdges, edgePathType, onEdgePathType
     targetId: connections[index].target === 2 ? "B2" : `B${connections[index].target}-port`,
     sourceAnchorMode: connections[index].source === 2 ? "floating" : "endpoint",
     targetAnchorMode: connections[index].target === 2 ? "floating" : "endpoint",
-    data: { status }, label: status, className: `container-edge-status-${status}`,
+    data: { status }, className: `container-edge-status-${status}`,
     animated: animatedEdges,
     strokeStyle,
   })), [statuses, animatedEdges, strokeStyle]);
@@ -116,7 +116,7 @@ export function ContainerEdgesDemo({ animatedEdges, edgePathType, onEdgePathType
         <div className="container-edges-canvas">
           <FlowKit centerOnLoad nodes={nodes} edges={edges} containers={containers} nodeTypes={nodeTypes}
             collapsedContainerEdges="aggregate" aggregateContainerEdges={(args) => ({ ...aggregateStatus(args), animated: animatedEdges, strokeStyle })}
-            edgePathType={edgePathType} edgeRouting={{ parallelOffset: 14 }}>
+            edgePathType={edgePathType} edgeRouting={{ parallelOffset: 24 }}>
             <FlowKitDots />
             <FlowKitControls />
             <FlowKitEvents

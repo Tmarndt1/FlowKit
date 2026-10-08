@@ -83,8 +83,9 @@ interface INodeContainer {
                     Set <code>collapsedContainerEdges="aggregate"</code> to keep external connections
                     visible when containers collapse. A collapsed side attaches to the container boundary;
                     the expanded side retains its original node endpoint. Connections internal to a collapsed
-                    container disappear. When both sides collapse, FlowKit renders one summary per directed
-                    container pair. Expanding restores the original edges and their data.
+                    container disappear. When both sides collapse, FlowKit renders one summary per
+                    container pair, combining connections in both directions without arrows by default.
+                    Expanding restores the original edges and their data.
                 </p>
                 <p>
                     For connections between a fixed port and a floating node, set
@@ -132,7 +133,9 @@ function aggregateStatus({ edges }: ContainerEdgeAggregateArgs<EdgeData>) {
                     target anchors plus <code>originalEdgeKeys</code>. This metadata is for rendering;
                     do not persist it into controlled edges. Selecting a summary selects its original
                     edges, so selection and deletion callbacks use real edge keys. Reverse-direction
-                    connections remain separate summaries. Nodes hidden by edge folding remain hidden.
+                    connections contribute to the same summary. Callback source and target containers
+                    are ordered by key for a stable identity; the original edges retain their directions.
+                    Nodes hidden by edge folding remain hidden.
                     Keep each node in one container; overlapping memberships resolve to the first
                     collapsed container in array order. The default <code>"hide"</code> mode preserves
                     the existing collapse behavior.

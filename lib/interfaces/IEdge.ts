@@ -37,7 +37,7 @@ export type EdgePathType = "bezier" | "smooth-step" | "step" | "straight";
 export interface EdgeRoutingOptions {
     /** Route orthogonal/smooth-step edges around rendered node bounds when possible. */
     avoidNodes?: boolean;
-    /** Pixel spacing between parallel routes. Straight paths spread floating anchors along bounds; fixed endpoints stay pinned. */
+    /** Pixel spacing between parallel routes. Container routes and straight paths spread floating anchors along bounds; fixed endpoints stay pinned. */
     parallelOffset?: number;
 }
 
