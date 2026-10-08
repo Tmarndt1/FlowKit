@@ -35,14 +35,14 @@ export function projectContainerEdges(
             groups.set(pair, group);
             continue;
         }
-        const anchor = (id: string, container?: INodeContainer): RenderedEdgeAnchor => container != null
+        const anchor = (id: string, mode: IEdge<any>["anchorMode"], container?: INodeContainer): RenderedEdgeAnchor => container != null
             ? { kind: "container", key: container.key }
-            : edge.anchorMode === "floating" ? { kind: "node", key: id } : { kind: "endpoint", id };
+            : mode === "floating" ? { kind: "node", key: id } : { kind: "endpoint", id };
         result.push({
             ...edge,
             renderInfo: {
-                source: anchor(edge.sourceId, sourceContainer),
-                target: anchor(edge.targetId, targetContainer),
+                source: anchor(edge.sourceId, edge.sourceAnchorMode ?? edge.anchorMode, sourceContainer),
+                target: anchor(edge.targetId, edge.targetAnchorMode ?? edge.anchorMode, targetContainer),
                 originalEdgeKeys: [edge.key],
             },
         });

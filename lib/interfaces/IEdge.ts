@@ -37,7 +37,7 @@ export type EdgePathType = "bezier" | "smooth-step" | "step" | "straight";
 export interface EdgeRoutingOptions {
     /** Route orthogonal/smooth-step edges around rendered node bounds when possible. */
     avoidNodes?: boolean;
-    /** Pixel spacing used to fan out multiple edges between the same node pair. */
+    /** Pixel spacing between parallel routes. Straight paths spread floating anchors along bounds; fixed endpoints stay pinned. */
     parallelOffset?: number;
 }
 
@@ -58,6 +58,10 @@ export interface IEdge<T> {
      * In floating mode, sourceId and targetId are node keys.
      */
     anchorMode?: EdgeAnchorMode;
+    /** Overrides anchorMode for the source side; floating sourceId is a node key. */
+    sourceAnchorMode?: EdgeAnchorMode;
+    /** Overrides anchorMode for the target side; floating targetId is a node key. */
+    targetAnchorMode?: EdgeAnchorMode;
     /** Arrow placement for the built-in edge renderer. */
     arrows?: EdgeArrow | {
         source?: boolean;

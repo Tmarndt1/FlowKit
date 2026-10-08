@@ -19,7 +19,7 @@ function getRectCenter(rect: DOMRect): { x: number; y: number } {
     };
 }
 
-function getFloatingAnchor(rect: DOMRect, toward: { x: number; y: number }): IConnectionPoint {
+function getFloatingAnchorBase(rect: DOMRect, toward: { x: number; y: number }): IConnectionPoint {
     const center = getRectCenter(rect);
     const halfWidth = rect.width / 2;
     const halfHeight = rect.height / 2;
@@ -56,12 +56,32 @@ function getFloatingAnchor(rect: DOMRect, toward: { x: number; y: number }): ICo
     };
 }
 
+function getFloatingAnchor(rect: DOMRect, toward: { x: number; y: number }, offset = 0): IConnectionPoint {
+    const anchor = getFloatingAnchorBase(rect, toward);
+    if (anchor.position === Position.Left || anchor.position === Position.Right) {
+        anchor.offset.y = Math.max(rect.top, Math.min(rect.top + rect.height, anchor.offset.y + offset));
+    } else {
+        anchor.offset.x = Math.max(rect.left, Math.min(rect.left + rect.width, anchor.offset.x + offset));
+    }
+    return anchor;
+}
+
 // Floating edges attach to the side of each node that faces the other node.
 // Endpoint edges keep using fixed endpoint elements and their declared positions.
 export function resolveEdgeAnchors(
     edge: IEdge<any>,
-    root: HTMLElement | null
+    root: HTMLElement | null,
+    floatingOffset = 0
 ): IResolvedEdgeAnchors | null {
+    if (edge.renderInfo == null && (edge.sourceAnchorMode != null || edge.targetAnchorMode != null)) {
+        return resolveEdgeAnchors({ ...edge, renderInfo: {
+            source: (edge.sourceAnchorMode ?? edge.anchorMode) === "floating"
+                ? { kind: "node", key: edge.sourceId } : { kind: "endpoint", id: edge.sourceId },
+            target: (edge.targetAnchorMode ?? edge.anchorMode) === "floating"
+                ? { kind: "node", key: edge.targetId } : { kind: "endpoint", id: edge.targetId },
+            originalEdgeKeys: [edge.key],
+        } }, root, floatingOffset);
+    }
     if (edge.renderInfo != null) {
         const { source, target } = edge.renderInfo;
         const elementFor = (anchor: typeof source): HTMLElement | null => {
@@ -78,7 +98,7 @@ export function resolveEdgeAnchors(
         const sourceRect = sourceElement.getBoundingClientRect();
         const targetRect = targetElement.getBoundingClientRect();
         const resolve = (anchor: typeof source, element: HTMLElement, rect: DOMRect, other: DOMRect): IConnectionPoint | null => {
-            if (anchor.kind !== "endpoint") return getFloatingAnchor(rect, getRectCenter(other));
+            if (anchor.kind !== "endpoint") return getFloatingAnchor(rect, getRectCenter(other), floatingOffset);
             const position = getEndpointPosition(element);
             return position == null ? null : {
                 offset: { x: rect.left, y: rect.top }, position, buffer: rect.width,
@@ -101,8 +121,8 @@ export function resolveEdgeAnchors(
         const targetCenter = getRectCenter(targetRect);
 
         return {
-            source: getFloatingAnchor(sourceRect, targetCenter),
-            target: getFloatingAnchor(targetRect, sourceCenter)
+            source: getFloatingAnchor(sourceRect, targetCenter, floatingOffset),
+            target: getFloatingAnchor(targetRect, sourceCenter, floatingOffset)
         };
     }
 

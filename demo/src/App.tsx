@@ -58,7 +58,7 @@ export function App() {
   });
   const [performanceStats, setPerformanceStats] = React.useState(() => getPerformanceStats(1000));
   const activeNodeCount = demoView === "containers" ? 6 : demoView === "performance" ? performanceStats.nodes : demoView === "utilization" ? volumeWorkflowStats.nodeCount : demoView === "layout" ? 10 : demoView === "uml" ? 8 : nodes.length;
-  const activeEdgeCount = demoView === "containers" ? 3 : demoView === "performance" ? performanceStats.edges : demoView === "utilization" ? volumeWorkflowStats.edgeCount : demoView === "layout" ? 9 : demoView === "uml" ? 8 : edges.length;
+  const activeEdgeCount = demoView === "containers" ? 9 : demoView === "performance" ? performanceStats.edges : demoView === "utilization" ? volumeWorkflowStats.edgeCount : demoView === "layout" ? 9 : demoView === "uml" ? 8 : edges.length;
 
   const selectedNode = React.useMemo(
     () => nodes.find((node) => node.key === selectedKey) ?? nodes.find((node) => node.key === "runtime-multiplier") ?? null,
@@ -396,7 +396,7 @@ export function App() {
               onSelectionChange={setSelectedKey}
             />
           ) : demoView === "containers" ? (
-            <ContainerEdgesDemo animatedEdges={animatedEdges} edgePathType={edgePathType} />
+            <ContainerEdgesDemo animatedEdges={animatedEdges} edgePathType={edgePathType} onEdgePathTypeChange={setEdgePathType} />
           ) : demoView === "performance" ? (
             <PerformanceDemo animatedEdges={animatedEdges} edgePathType={edgePathType} onStatsChange={setPerformanceStats} />
           ) : demoView === "floating" ? (

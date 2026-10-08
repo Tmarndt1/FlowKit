@@ -71,11 +71,15 @@ const EdgeComponent: React.FC<IProps> = (props) =>
             return;
         }
 
-        const anchors = resolveEdgeAnchors(currentProps.edge, getRootElement());
+        const pathType = currentProps.edge.pathType ?? edgePathType ?? "bezier";
+        // Straight paths fan out by sliding floating anchors along their boundary,
+        // never by shifting fixed endpoint anchors or the entire path off the shapes.
+        const floatingOffset = pathType === "straight"
+            ? (currentProps.routing?.parallelOffset ?? 0) * scaleRef.current : 0;
+        const anchors = resolveEdgeAnchors(currentProps.edge, getRootElement(), floatingOffset);
 
         if (anchors == null) return;
 
-        const pathType = currentProps.edge.pathType ?? edgePathType ?? "bezier";
         const pathArgs = [
             {
                 x: currentContainerRect.left,
@@ -311,6 +315,8 @@ const EdgeComponent: React.FC<IProps> = (props) =>
                 // Container drag notifications include member node keys; the container
                 // boundary also moves when none of its member endpoints are visible.
                 shouldDraw ||= edge.renderInfo != null;
+                shouldDraw ||= (edge.sourceAnchorMode === "floating" && endpointUpdate.nodeKeys.includes(edge.sourceId)) ||
+                    (edge.targetAnchorMode === "floating" && endpointUpdate.nodeKeys.includes(edge.targetId));
             }
 
             if (edgeRenderRequest != null && edgeRenderRequest.version !== edgeRenderVersion) {

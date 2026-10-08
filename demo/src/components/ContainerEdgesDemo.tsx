@@ -4,7 +4,7 @@ import {
   FlowKitDots, FlowKitEvents, Position,
 } from "../../../lib/index";
 import type {
-  ContainerEdgeAggregateArgs, EdgePathType, IEdge, IEndpoint, INode, INodeContainer,
+  ContainerEdgeAggregateArgs, EdgePathType, EdgeStrokeStyle, IEdge, IEndpoint, INode, INodeContainer,
 } from "../../../lib/index";
 import "../containerEdges.css";
 
@@ -13,7 +13,8 @@ type EdgeData = { status: Status };
 type NodeData = { label: string; group: string; floating: boolean };
 const colors: Record<Status, string> = { green: "#22c55e", yellow: "#eab308", red: "#ef4444" };
 const severity: Record<Status, number> = { green: 0, yellow: 1, red: 2 };
-const initialStatuses: Status[] = ["green", "yellow", "red"];
+const connections = [1, 2, 3].flatMap((source) => [1, 2, 3].map((target) => ({ source, target })));
+const initialStatuses: Status[] = connections.map(({ target }) => (["green", "yellow", "red"] as Status[])[target - 1]);
 
 function StatusNode({ data, endpoints }: { data: NodeData; endpoints: IEndpoint<never>[] }) {
   return (
@@ -48,21 +49,28 @@ function aggregateStatus({ edges }: ContainerEdgeAggregateArgs<EdgeData>) {
     const current = edge.data?.status ?? "green";
     return severity[current] > severity[worst] ? current : worst;
   }, "green");
-  return { data: { status }, style: { stroke: colors[status], strokeWidth: 3 }, label: `${edges.length} links · ${status}` };
+  return { data: { status }, className: `container-edge-status-${status}`, label: `${edges.length} links · ${status}` };
 }
 
-export function ContainerEdgesDemo({ animatedEdges, edgePathType }: { animatedEdges: boolean; edgePathType: EdgePathType }) {
+export function ContainerEdgesDemo({ animatedEdges, edgePathType, onEdgePathTypeChange }: {
+  animatedEdges: boolean;
+  edgePathType: EdgePathType;
+  onEdgePathTypeChange: (pathType: EdgePathType) => void;
+}) {
   const [nodes, setNodes] = React.useState(initialNodes);
   const [containers, setContainers] = React.useState(initialContainers);
   const [statuses, setStatuses] = React.useState(initialStatuses);
+  const [strokeStyle, setStrokeStyle] = React.useState<EdgeStrokeStyle>("solid");
   const edges = React.useMemo<IEdge<EdgeData>[]>(() => statuses.map((status, index) => ({
-    key: `link-${index + 1}`,
-    sourceId: index === 1 ? "A2" : `A${index + 1}-port`,
-    targetId: index === 1 ? "B2" : `B${index + 1}-port`,
-    anchorMode: index === 1 ? "floating" : "endpoint",
-    data: { status }, label: status, style: { stroke: colors[status], strokeWidth: 3 },
+    key: `link-A${connections[index].source}-B${connections[index].target}`,
+    sourceId: connections[index].source === 2 ? "A2" : `A${connections[index].source}-port`,
+    targetId: connections[index].target === 2 ? "B2" : `B${connections[index].target}-port`,
+    sourceAnchorMode: connections[index].source === 2 ? "floating" : "endpoint",
+    targetAnchorMode: connections[index].target === 2 ? "floating" : "endpoint",
+    data: { status }, label: status, className: `container-edge-status-${status}`,
     animated: animatedEdges,
-  })), [statuses, animatedEdges]);
+    strokeStyle,
+  })), [statuses, animatedEdges, strokeStyle]);
   const bothCollapsed = containers.every((container) => container.collapsed);
   const rolledUpStatus = statuses.reduce((worst, current) => severity[current] > severity[worst] ? current : worst, "green" as Status);
   const collapsedCount = containers.filter((container) => container.collapsed).length;
@@ -72,9 +80,26 @@ export function ContainerEdgesDemo({ animatedEdges, edgePathType }: { animatedEd
       <div className="container-edges-toolbar">
         <div>
           <h1>Container connections</h1>
-          <p>Collapse a group to keep its connections visible. Collapse both to see their worst status.</p>
+          <p>Each node connects to all three nodes in the other group. Collapse both groups to see their worst status.</p>
         </div>
         <div className="container-edges-actions">
+          <label className="container-edges-line-control">
+            Line type
+            <select value={edgePathType} onChange={(event) => onEdgePathTypeChange(event.target.value as EdgePathType)}>
+              <option value="bezier">Bezier</option>
+              <option value="smooth-step">Smooth step</option>
+              <option value="step">Step</option>
+              <option value="straight">Straight</option>
+            </select>
+          </label>
+          <label className="container-edges-line-control">
+            Stroke
+            <select value={strokeStyle} onChange={(event) => setStrokeStyle(event.target.value as EdgeStrokeStyle)}>
+              <option value="solid">Solid</option>
+              <option value="dashed">Dashed</option>
+              <option value="dotted">Dotted</option>
+            </select>
+          </label>
           {containers.map((container) => (
             <button key={container.key} type="button" className="button"
               aria-pressed={container.collapsed}
@@ -90,8 +115,8 @@ export function ContainerEdgesDemo({ animatedEdges, edgePathType }: { animatedEd
       <div className="container-edges-body">
         <div className="container-edges-canvas">
           <FlowKit centerOnLoad nodes={nodes} edges={edges} containers={containers} nodeTypes={nodeTypes}
-            collapsedContainerEdges="aggregate" aggregateContainerEdges={(args) => ({ ...aggregateStatus(args), animated: animatedEdges })}
-            edgePathType={edgePathType}>
+            collapsedContainerEdges="aggregate" aggregateContainerEdges={(args) => ({ ...aggregateStatus(args), animated: animatedEdges, strokeStyle })}
+            edgePathType={edgePathType} edgeRouting={{ parallelOffset: 14 }}>
             <FlowKitDots />
             <FlowKitControls />
             <FlowKitEvents
@@ -100,7 +125,7 @@ export function ContainerEdgesDemo({ animatedEdges, edgePathType }: { animatedEd
             />
           </FlowKit>
           <div className="container-edges-caption" aria-live="polite">
-            {bothCollapsed ? `1 summary edge · ${rolledUpStatus}` : collapsedCount === 1 ? "3 connections · one collapsed group" : "3 connections · 2 fixed ports, 1 floating"}
+            {bothCollapsed ? `1 summary edge · 9 links · ${rolledUpStatus}` : collapsedCount === 1 ? "9 connections · one collapsed group" : "9 connections · 3 per node"}
           </div>
         </div>
         <aside className="container-edges-status-panel">
@@ -109,8 +134,8 @@ export function ContainerEdgesDemo({ animatedEdges, edgePathType }: { animatedEd
           <p>A1 / B1 and A3 / B3 use fixed ports. A2 / B2 float on their node boundaries. Collapsed groups always float.</p>
           {statuses.map((status, index) => (
             <label key={index} className="container-edges-status-row">
-              <span><i style={{ background: colors[status] }} aria-hidden="true" />A{index + 1} → B{index + 1}</span>
-              <select aria-label={`Status for A${index + 1} to B${index + 1}`} value={status}
+              <span><i style={{ background: colors[status] }} aria-hidden="true" />A{connections[index].source} → B{connections[index].target}</span>
+              <select aria-label={`Status for A${connections[index].source} to B${connections[index].target}`} value={status}
                 onChange={(event) => {
                   const value = event.target.value as Status;
                   setStatuses((current) => current.map((item, row) => row === index ? value : item));

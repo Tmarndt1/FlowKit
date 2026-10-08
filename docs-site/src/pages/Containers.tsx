@@ -86,6 +86,12 @@ interface INodeContainer {
                     container disappear. When both sides collapse, FlowKit renders one summary per directed
                     container pair. Expanding restores the original edges and their data.
                 </p>
+                <p>
+                    For connections between a fixed port and a floating node, set
+                    <code>sourceAnchorMode</code> and <code>targetAnchorMode</code> independently.
+                    Each side uses an endpoint ID for <code>"endpoint"</code> or a node key for
+                    <code>"floating"</code>. Omitted side modes inherit <code>anchorMode</code>.
+                </p>
                 <CodeBlock code={`import type { ContainerEdgeAggregateArgs } from "@flowkit";
 
 type Status = "green" | "yellow" | "red";
@@ -131,6 +137,22 @@ function aggregateStatus({ edges }: ContainerEdgeAggregateArgs<EdgeData>) {
                     collapsed container in array order. The default <code>"hide"</code> mode preserves
                     the existing collapse behavior.
                 </p>
+                <p>
+                    To color summaries with CSS, return <code>className</code> instead of an inline
+                    <code>style.stroke</code>. The class is applied to the edge group; set the edge color
+                    variables on it so the path and hover state use the status color.
+                </p>
+                <CodeBlock code={`// In aggregateStatus, after computing status:
+return {
+  data: { status },
+  className: "edge-status-" + status,
+  label: edges.length + " connections",
+};
+
+/* Application CSS */
+.edge-status-green { --flow-kit-edge-color: #22c55e; --flow-kit-edge-color-hover: #22c55e; }
+.edge-status-yellow { --flow-kit-edge-color: #eab308; --flow-kit-edge-color-hover: #eab308; }
+.edge-status-red { --flow-kit-edge-color: #ef4444; --flow-kit-edge-color-hover: #ef4444; }`} />
             </div>
 
             <div className="section">

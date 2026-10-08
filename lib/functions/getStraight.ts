@@ -16,20 +16,9 @@ export function getStraight(
 
     if (sourcePoint == null || targetPoint == null) return null;
 
-    const parallelOffset = routing?.parallelOffset ?? 0;
-
-    if (parallelOffset !== 0) {
-        const dx = targetPoint.x - sourcePoint.x;
-        const dy = targetPoint.y - sourcePoint.y;
-        const length = Math.max(1, Math.sqrt(dx * dx + dy * dy));
-        const offsetX = (-dy / length) * parallelOffset;
-        const offsetY = (dx / length) * parallelOffset;
-
-        sourcePoint.x += offsetX;
-        sourcePoint.y += offsetY;
-        targetPoint.x += offsetX;
-        targetPoint.y += offsetY;
-    }
+    // A straight segment has no interior control points to offset. Translating
+    // the whole segment detaches both ends from their resolved anchors, so keep
+    // straight paths pinned; floating fan-out happens during anchor resolution.
 
     return `M ${sourcePoint.x},${sourcePoint.y} L ${targetPoint.x},${targetPoint.y}`;
 }

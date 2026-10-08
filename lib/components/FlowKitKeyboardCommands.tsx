@@ -121,8 +121,8 @@ export const FlowKitKeyboardCommands: React.FC<FlowKitKeyboardCommandsProps> = (
                     currentProps.edges
                         .filter(
                             (edge) =>
-                                edge.anchorMode === "floating" &&
-                                (edge.sourceId === node.key || edge.targetId === node.key)
+                                ((edge.sourceAnchorMode ?? edge.anchorMode) === "floating" && edge.sourceId === node.key) ||
+                                ((edge.targetAnchorMode ?? edge.anchorMode) === "floating" && edge.targetId === node.key)
                         )
                         .forEach((edge) => {
                             if (!seenEdgeKeys.has(edge.key)) {

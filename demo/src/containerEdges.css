@@ -9,12 +9,18 @@
 .container-edges-toolbar { display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 16px; padding: 20px 24px; border-bottom: 1px solid #243044; background: #111925; }
 .container-edges-toolbar h1 { margin: 0 0 6px; font-size: 18px; }
 .container-edges-toolbar p { margin: 0; color: #9caec4; font-size: 13px; line-height: 1.6; }
-.container-edges-actions { display: flex; gap: 8px; flex-wrap: wrap; }
+.container-edges-actions { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
+.container-edges-line-control { display: flex; align-items: center; gap: 8px; color: #9caec4; font-size: 12px; }
+.container-edges-line-control select { font: inherit; color: #edf1f8; background: #1a2636; border: 1px solid #35465c; border-radius: 6px; padding: 8px; }
 .container-edges-actions [aria-pressed="true"] { border-color: #67e8f9; }
 .container-edges-body { flex: 1; min-height: 0; display: grid; grid-template-columns: minmax(0, 1fr) 280px; }
 .container-edges-canvas { position: relative; min-height: 340px; overflow: hidden; }
 .container-edges-canvas .flow-kit { height: 100%; border: 0; border-radius: 0; background: #0b1119; }
 .container-edges-canvas .flow-kit-viewport { background: #0b1119; }
+.container-edges-canvas .flow-kit-edge { --flow-kit-edge-width: 3px; }
+.container-edges-canvas .container-edge-status-green { --flow-kit-edge-color: #22c55e; --flow-kit-edge-color-hover: #22c55e; }
+.container-edges-canvas .container-edge-status-yellow { --flow-kit-edge-color: #eab308; --flow-kit-edge-color-hover: #eab308; }
+.container-edges-canvas .container-edge-status-red { --flow-kit-edge-color: #ef4444; --flow-kit-edge-color-hover: #ef4444; }
 .container-edges-canvas .flow-kit-selected .container-edge-node { border-color: #67e8f9; }
 .container-edges-status-panel { background: #111925; padding: 24px 20px; overflow-y: auto; border-left: 1px solid #243044; }
 .container-edges-status-panel h2 { margin: 0 0 10px; font-size: 15px; }
