@@ -17,6 +17,7 @@ import { PerformanceDemo } from "./components/PerformanceDemo";
 import { getPerformanceStats } from "./performanceModel";
 import { NetworkDiagram } from "./components/NetworkDiagram";
 import { UMLDiagram } from "./components/UMLDiagram";
+import { ContainerEdgesDemo } from "./components/ContainerEdgesDemo";
 import { DemoView, TopBar } from "./components/TopBar";
 import { VolumeUtilizationWorkflow, volumeWorkflowStats } from "./components/VolumeUtilizationWorkflow";
 import { WorkflowCanvas } from "./components/WorkflowCanvas";
@@ -51,11 +52,13 @@ export function App() {
   const [edgePathType, setEdgePathType] = React.useState<EdgePathType>("bezier");
   const [animatedEdges, setAnimatedEdges] = React.useState(false);
   const [collapsibleEdges, setCollapsibleEdges] = React.useState(true);
-  const [demoView, setDemoView] = React.useState<DemoView>(() =>
-    new URLSearchParams(window.location.search).get("demo") === "performance" ? "performance" : "workflow");
+  const [demoView, setDemoView] = React.useState<DemoView>(() => {
+    const requested = new URLSearchParams(window.location.search).get("demo");
+    return requested === "performance" || requested === "containers" ? requested : "workflow";
+  });
   const [performanceStats, setPerformanceStats] = React.useState(() => getPerformanceStats(1000));
-  const activeNodeCount = demoView === "performance" ? performanceStats.nodes : demoView === "utilization" ? volumeWorkflowStats.nodeCount : demoView === "layout" ? 10 : demoView === "uml" ? 8 : nodes.length;
-  const activeEdgeCount = demoView === "performance" ? performanceStats.edges : demoView === "utilization" ? volumeWorkflowStats.edgeCount : demoView === "layout" ? 9 : demoView === "uml" ? 8 : edges.length;
+  const activeNodeCount = demoView === "containers" ? 6 : demoView === "performance" ? performanceStats.nodes : demoView === "utilization" ? volumeWorkflowStats.nodeCount : demoView === "layout" ? 10 : demoView === "uml" ? 8 : nodes.length;
+  const activeEdgeCount = demoView === "containers" ? 3 : demoView === "performance" ? performanceStats.edges : demoView === "utilization" ? volumeWorkflowStats.edgeCount : demoView === "layout" ? 9 : demoView === "uml" ? 8 : edges.length;
 
   const selectedNode = React.useMemo(
     () => nodes.find((node) => node.key === selectedKey) ?? nodes.find((node) => node.key === "runtime-multiplier") ?? null,
@@ -361,7 +364,7 @@ export function App() {
         edgePathType={edgePathType}
         animatedEdges={animatedEdges}
         collapsibleEdges={collapsibleEdges}
-        containerCount={demoView === "performance" ? performanceStats.containers : containers.length}
+        containerCount={demoView === "containers" ? 2 : demoView === "performance" ? performanceStats.containers : containers.length}
         lastRunLabel={lastRunLabel}
         nodeCount={activeNodeCount}
         onAnimatedEdgesChange={setAnimatedEdges}
@@ -392,6 +395,8 @@ export function App() {
               onRemove={onRemove}
               onSelectionChange={setSelectedKey}
             />
+          ) : demoView === "containers" ? (
+            <ContainerEdgesDemo animatedEdges={animatedEdges} edgePathType={edgePathType} />
           ) : demoView === "performance" ? (
             <PerformanceDemo animatedEdges={animatedEdges} edgePathType={edgePathType} onStatsChange={setPerformanceStats} />
           ) : demoView === "floating" ? (

@@ -38,6 +38,7 @@ export interface ProximityConnectOptions {
 
 interface IProps {
     edges: IEdge<any>[];
+    originalEdges?: IEdge<any>[];
     edgeStateClassNames?: Map<string, string>;
     edgeTypes?: EdgeTypes;
     nodes: INode<any, any>[];
@@ -125,6 +126,12 @@ function getEdgeNodeKey(
 }
 
 function getEdgePairKey(edge: IEdge<any>, nodeKeyByConnectionId: ReadonlyMap<string, string>): string {
+    if (edge.renderInfo != null) {
+        const keyFor = (anchor: typeof edge.renderInfo.source) => anchor.kind === "container"
+            ? ["container", anchor.key]
+            : ["node", anchor.kind === "node" ? anchor.key : nodeKeyByConnectionId.get(anchor.id) ?? anchor.id];
+        return JSON.stringify([keyFor(edge.renderInfo.source), keyFor(edge.renderInfo.target)].sort());
+    }
     const sourceKey = getEdgeNodeKey(edge, edge.sourceId, nodeKeyByConnectionId);
     const targetKey = getEdgeNodeKey(edge, edge.targetId, nodeKeyByConnectionId);
 
@@ -438,6 +445,7 @@ export const EdgeLayer = React.forwardRef<EdgeLayerHandle, IProps>((props, ref) 
     const renderedEdges = React.useMemo<React.ReactElement[]>(() => {
         const array: React.ReactElement[] = [];
         const nodeKeyByConnectionId = getNodeKeyByConnectionId(props.nodes);
+        const originalByKey = new Map((props.originalEdges ?? props.edges).map((edge) => [edge.key, edge]));
         const parallelOffsets = getParallelEdgeOffsets(
             props.edges,
             nodeKeyByConnectionId,
@@ -456,6 +464,10 @@ export const EdgeLayer = React.forwardRef<EdgeLayerHandle, IProps>((props, ref) 
             : new Map<string, EdgeRoutingObstacle>();
 
         props.edges.forEach((edge: IEdge<any>) => {
+            const selectionEdges = edge.renderInfo?.originalEdgeKeys.flatMap((key) => {
+                const original = originalByKey.get(key);
+                return original == null ? [] : [original];
+            });
             const mergedRouting = mergeEdgeRouting(edgeRouting, edge);
             const sourceNodeKey = getEdgeNodeKey(edge, edge.sourceId, nodeKeyByConnectionId);
             const targetNodeKey = getEdgeNodeKey(edge, edge.targetId, nodeKeyByConnectionId);
@@ -474,6 +486,7 @@ export const EdgeLayer = React.forwardRef<EdgeLayerHandle, IProps>((props, ref) 
                     <Edge
                         key={edge.key}
                         edge={edge as IEdge<any>}
+                        selectionEdges={selectionEdges}
                         markerIdPrefix={markerIdPrefix}
                         routing={routing}
                         stateClassName={props.edgeStateClassNames?.get(edge.key)}
@@ -487,6 +500,7 @@ export const EdgeLayer = React.forwardRef<EdgeLayerHandle, IProps>((props, ref) 
                     <Edge
                         key={edge.key}
                         edge={edge as IEdge<any>}
+                        selectionEdges={selectionEdges}
                         markerIdPrefix={markerIdPrefix}
                         routing={routing}
                         stateClassName={props.edgeStateClassNames?.get(edge.key)}
@@ -498,6 +512,7 @@ export const EdgeLayer = React.forwardRef<EdgeLayerHandle, IProps>((props, ref) 
                     <Edge
                         key={edge.key}
                         edge={edge as IEdge<any>}
+                        selectionEdges={selectionEdges}
                         markerIdPrefix={markerIdPrefix}
                         routing={routing}
                         stateClassName={props.edgeStateClassNames?.get(edge.key)}
@@ -515,6 +530,7 @@ export const EdgeLayer = React.forwardRef<EdgeLayerHandle, IProps>((props, ref) 
         props.edgeStateClassNames,
         props.edgeTypes,
         props.edges,
+        props.originalEdges,
         props.nodes,
         scale,
     ]);

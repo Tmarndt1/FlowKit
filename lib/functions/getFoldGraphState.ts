@@ -1,6 +1,8 @@
 import { EdgeCollapseMode, IEdge } from "../interfaces/IEdge";
 import { INode } from "../interfaces/INode";
 import { INodeContainer } from "../interfaces/INodeContainer";
+import type { ContainerEdgeAggregationOptions } from "../types/ContainerEdgeAggregation";
+import { projectContainerEdges } from "./projectContainerEdges";
 
 /** Collapse-preview input used by getFoldGraphState. */
 export interface IFoldGraphPreview {
@@ -100,13 +102,15 @@ export function getFoldGraphState(
     nodes: INode<any, any>[],
     edges: IEdge<any>[],
     containers: INodeContainer[] | undefined,
-    preview: IFoldGraphPreview | null
+    preview: IFoldGraphPreview | null,
+    options: ContainerEdgeAggregationOptions = {}
 ): IFoldGraphState {
     const nodeKeyByConnectionId = getNodeKeyByConnectionId(nodes);
     const outgoing = new Map<string, string[]>();
     const incoming = new Map<string, string[]>();
     const collapsedAnchorEdges = new Set<string>();
     const hiddenNodeKeys = new Set<string>();
+    const edgeHiddenNodeKeys = new Set<string>();
     const containerHiddenNodeKeys = new Set<string>();
     containers?.forEach((container) => {
         if (container.collapsed) container.nodeKeys.forEach((key) => {
@@ -136,7 +140,7 @@ export function getFoldGraphState(
 
         collapsedAnchorEdges.add(edge.key);
         addAffectedNodeKeys(
-            hiddenNodeKeys,
+            edgeHiddenNodeKeys,
             edge,
             edge.collapseMode ?? "edge",
             nodeKeyByConnectionId,
@@ -144,6 +148,8 @@ export function getFoldGraphState(
             incoming
         );
     });
+
+    edgeHiddenNodeKeys.forEach((key) => hiddenNodeKeys.add(key));
 
     if (preview != null && preview.mode != null) {
         previewEdgeKeys.add(preview.edge.key);
@@ -163,25 +169,38 @@ export function getFoldGraphState(
         if (className.length > 0) nodeStateClassNames.set(node.key, className);
     });
 
-    const visibleEdges = edges.filter((edge) => {
+    const eligibleEdges = edges.filter((edge) => {
         const { sourceNodeKey, targetNodeKey } = getEdgeNodeKeys(edge, nodeKeyByConnectionId);
         // Container collapse also hides folded anchor edges connected to its members.
-        if ((sourceNodeKey != null && containerHiddenNodeKeys.has(sourceNodeKey)) ||
-            (targetNodeKey != null && containerHiddenNodeKeys.has(targetNodeKey))) return false;
+        if (options.collapsedContainerEdges !== "aggregate" &&
+            ((sourceNodeKey != null && containerHiddenNodeKeys.has(sourceNodeKey)) ||
+            (targetNodeKey != null && containerHiddenNodeKeys.has(targetNodeKey)))) return false;
         if (collapsedAnchorEdges.has(edge.key)) return true;
 
         return (
             sourceNodeKey != null &&
             targetNodeKey != null &&
-            !hiddenNodeKeys.has(sourceNodeKey) &&
-            !hiddenNodeKeys.has(targetNodeKey)
+            !edgeHiddenNodeKeys.has(sourceNodeKey) &&
+            !edgeHiddenNodeKeys.has(targetNodeKey)
         );
     });
+    const visibleEdges = options.collapsedContainerEdges === "aggregate"
+        ? projectContainerEdges(eligibleEdges, containers, nodeKeyByConnectionId, options)
+        : eligibleEdges;
     const edgeStateClassNames = new Map<string, string>();
+    const originalByKey = new Map(edges.map((edge) => [edge.key, edge]));
 
     visibleEdges.forEach((edge) => {
         const { sourceNodeKey, targetNodeKey } = getEdgeNodeKeys(edge, nodeKeyByConnectionId);
         const previewed =
+            edge.renderInfo?.originalEdgeKeys.some((key) => {
+                const original = originalByKey.get(key);
+                if (original == null) return false;
+                const keys = getEdgeNodeKeys(original, nodeKeyByConnectionId);
+                return previewEdgeKeys.has(key) ||
+                    (keys.sourceNodeKey != null && previewNodeKeys.has(keys.sourceNodeKey)) ||
+                    (keys.targetNodeKey != null && previewNodeKeys.has(keys.targetNodeKey));
+            }) ||
             previewEdgeKeys.has(edge.key) ||
             (sourceNodeKey != null && previewNodeKeys.has(sourceNodeKey)) ||
             (targetNodeKey != null && previewNodeKeys.has(targetNodeKey));

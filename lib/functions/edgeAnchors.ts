@@ -62,6 +62,33 @@ export function resolveEdgeAnchors(
     edge: IEdge<any>,
     root: HTMLElement | null
 ): IResolvedEdgeAnchors | null {
+    if (edge.renderInfo != null) {
+        const { source, target } = edge.renderInfo;
+        const elementFor = (anchor: typeof source): HTMLElement | null => {
+            if (anchor.kind !== "container") {
+                return findElementById(root, anchor.kind === "endpoint" ? anchor.id : anchor.key);
+            }
+            // Container keys occupy their own namespace, separate from node/endpoint ids.
+            return Array.from(root?.querySelectorAll<HTMLElement>("[data-container-key]") ?? [])
+                .find((element) => element.dataset.containerKey === anchor.key) ?? null;
+        };
+        const sourceElement = elementFor(source);
+        const targetElement = elementFor(target);
+        if (sourceElement == null || targetElement == null) return null;
+        const sourceRect = sourceElement.getBoundingClientRect();
+        const targetRect = targetElement.getBoundingClientRect();
+        const resolve = (anchor: typeof source, element: HTMLElement, rect: DOMRect, other: DOMRect): IConnectionPoint | null => {
+            if (anchor.kind !== "endpoint") return getFloatingAnchor(rect, getRectCenter(other));
+            const position = getEndpointPosition(element);
+            return position == null ? null : {
+                offset: { x: rect.left, y: rect.top }, position, buffer: rect.width,
+            };
+        };
+        const resolvedSource = resolve(source, sourceElement, sourceRect, targetRect);
+        const resolvedTarget = resolve(target, targetElement, targetRect, sourceRect);
+        return resolvedSource != null && resolvedTarget != null
+            ? { source: resolvedSource, target: resolvedTarget } : null;
+    }
     if (edge.anchorMode === "floating") {
         const sourceElement = findElementById(root, edge.sourceId);
         const targetElement = findElementById(root, edge.targetId);

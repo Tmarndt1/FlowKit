@@ -18,6 +18,7 @@ import { useEdgeFoldMetrics } from "./useEdgeFoldMetrics";
 
 interface IProps {
     edge: IEdge<any>;
+    selectionEdges?: IEdge<any>[];
     markerIdPrefix?: string;
     routing?: ComputedEdgeRoutingOptions;
     stateClassName?: string;
@@ -39,7 +40,9 @@ const EdgeComponent: React.FC<IProps> = (props) =>
     
     const containerRect = useFlowKitViewportStore((state) => state.containerRect);
     const scale = useFlowKitViewportStore((state) => state.scale);
-    const selected = useFlowKitSelectionStore((state) => state.selectedEdgeKeys.has(props.edge.key));
+    const selected = useFlowKitSelectionStore((state) =>
+        (props.edge.renderInfo?.originalEdgeKeys ?? [props.edge.key]).some((key) => state.selectedEdgeKeys.has(key))
+    );
     const selectEdge = useFlowKitSelectionStore((state) => state.selectEdge);
     const toggleEdge = useFlowKitSelectionStore((state) => state.toggleEdge);
 
@@ -135,17 +138,32 @@ const EdgeComponent: React.FC<IProps> = (props) =>
         e.stopPropagation();
         e.preventDefault();
 
+        const originals = propsRef.current.selectionEdges;
+        if (originals != null && stores != null) {
+            const selection = stores.selection.getState();
+            if (multiSelect !== false && (e.shiftKey || e.metaKey || e.ctrlKey)) {
+                const keys = new Set(originals.map((edge) => edge.key));
+                const allSelected = originals.every((edge) => selection.selectedEdgeKeys.has(edge.key));
+                selection.setSelection(selection.selectedNodes,
+                    allSelected ? selection.selectedEdges.filter((edge) => !keys.has(edge.key))
+                        : [...selection.selectedEdges.filter((edge) => !keys.has(edge.key)), ...originals],
+                    selection.selectedContainers);
+            } else {
+                selection.setSelection([], originals);
+            }
+            return;
+        }
         if (multiSelect !== false && (e.shiftKey || e.metaKey || e.ctrlKey)) {
             toggleEdge(propsRef.current.edge);
             return;
         }
 
         selectEdge(propsRef.current.edge);
-    }, [multiSelect, selectEdge, toggleEdge]);
+    }, [multiSelect, selectEdge, toggleEdge, stores]);
 
     const clearCollapsePreview = React.useCallback<() => void>((): void => {
         onEdgeCollapsePreviewChange?.({
-            edge: propsRef.current.edge,
+            edge: propsRef.current.selectionEdges?.[0] ?? propsRef.current.edge,
             mode: null
         });
     }, [onEdgeCollapsePreviewChange]);
@@ -154,7 +172,7 @@ const EdgeComponent: React.FC<IProps> = (props) =>
         e.stopPropagation();
         e.preventDefault();
 
-        const edge = propsRef.current.edge;
+        const edge = propsRef.current.selectionEdges?.[0] ?? propsRef.current.edge;
         const collapsed = edge.collapsed ?? false;
 
         if (!collapsed) {
@@ -187,14 +205,14 @@ const EdgeComponent: React.FC<IProps> = (props) =>
 
         onEdgeCollapsedChange?.({
             collapsed: true,
-            edge: propsRef.current.edge,
+            edge: propsRef.current.selectionEdges?.[0] ?? propsRef.current.edge,
             mode
         });
     }, [clearCollapsePreview, onEdgeCollapsedChange]);
 
     const previewCollapseMode = React.useCallback<(mode: EdgeCollapseMode) => void>((mode: EdgeCollapseMode): void => {
         onEdgeCollapsePreviewChange?.({
-            edge: propsRef.current.edge,
+            edge: propsRef.current.selectionEdges?.[0] ?? propsRef.current.edge,
             mode
         });
     }, [onEdgeCollapsePreviewChange]);
@@ -205,7 +223,7 @@ const EdgeComponent: React.FC<IProps> = (props) =>
         e.stopPropagation();
         e.preventDefault();
 
-        const edge = propsRef.current.edge;
+        const edge = propsRef.current.selectionEdges?.[0] ?? propsRef.current.edge;
         const collapsed = edge.collapsed ?? false;
 
         if (!collapsed) {
@@ -290,6 +308,9 @@ const EdgeComponent: React.FC<IProps> = (props) =>
                     : endpointUpdate.endpoints.some(
                         (endpoint) => endpoint.id === edge.sourceId || endpoint.id === edge.targetId
                     );
+                // Container drag notifications include member node keys; the container
+                // boundary also moves when none of its member endpoints are visible.
+                shouldDraw ||= edge.renderInfo != null;
             }
 
             if (edgeRenderRequest != null && edgeRenderRequest.version !== edgeRenderVersion) {
@@ -430,6 +451,7 @@ export const Edge = React.memo(
     EdgeComponent,
     (prevProps, nextProps) =>
         prevProps.edge === nextProps.edge &&
+        prevProps.selectionEdges === nextProps.selectionEdges &&
         prevProps.routing === nextProps.routing &&
         prevProps.stateClassName === nextProps.stateClassName &&
         prevProps.customEdge === nextProps.customEdge

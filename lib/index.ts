@@ -46,6 +46,7 @@ export {
 export type { IConnection } from "./interfaces/IConnection";
 export type { EdgeAnchorMode, EdgeArrow, EdgeCollapseMode, EdgeMarker, EdgePathType, EdgeRoutingOptions, EdgeStrokeStyle } from "./interfaces/IEdge";
 export type { IEdge } from "./interfaces/IEdge";
+export type { ContainerEdgeAggregationOptions, ContainerEdgeAggregateArgs, ContainerEdgeAggregateResult, EdgeRenderInfo, RenderedEdgeAnchor } from "./types/ContainerEdgeAggregation";
 export type { IEndpoint } from "./interfaces/IEndpoint";
 export type { INode } from "./interfaces/INode";
 export type { INodeContainer } from "./interfaces/INodeContainer";

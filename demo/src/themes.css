@@ -1,0 +1,142 @@
+.demo-shell[data-theme] {
+  background: var(--flow-kit-background);
+  color: var(--flow-kit-color);
+  grid-template-rows: auto minmax(0, 1fr);
+  min-height: 650px;
+}
+
+.demo-shell[data-theme] .top-bar {
+  background: var(--flow-kit-surface);
+  border-color: var(--flow-kit-border-color);
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px 20px;
+  padding: 14px 20px;
+}
+
+.demo-shell[data-theme] .workflow-title { flex: 0 1 auto; max-width: 100%; }
+.demo-shell[data-theme] .workflow-title > span,
+.demo-shell[data-theme] .workflow-title > button { display: none; }
+.demo-shell[data-theme] .view-controls { overflow: visible; flex-wrap: wrap; margin-left: auto; }
+.demo-shell[data-theme] .demo-view-toggle { flex: 0 1 auto; flex-wrap: wrap; height: auto; margin-left: 0; }
+.demo-shell[data-theme] .view-controls span,
+.demo-shell[data-theme] .brand-lockup span:last-child { color: var(--flow-kit-muted-color); }
+.demo-shell[data-theme] .demo-view-toggle,
+.demo-shell[data-theme] .edge-path-toggle,
+.demo-shell[data-theme] .button,
+.demo-shell[data-theme] .add-container-button,
+.demo-shell[data-theme] .edge-animation-toggle {
+  background: var(--flow-kit-background);
+  border-color: var(--flow-kit-border-color);
+  color: var(--flow-kit-color);
+}
+.demo-shell[data-theme] .demo-view-toggle button,
+.demo-shell[data-theme] .edge-path-toggle button { color: var(--flow-kit-muted-color); }
+.demo-shell[data-theme] .demo-view-toggle button.active,
+.demo-shell[data-theme] .edge-path-toggle button.active,
+.demo-shell[data-theme] .edge-animation-toggle.active {
+  background: color-mix(in srgb, var(--flow-kit-accent) 18%, transparent);
+  color: var(--flow-kit-color);
+}
+
+.theme-picker { display: flex; align-items: center; gap: 8px; font-size: 12px; color: var(--flow-kit-muted-color); }
+.theme-picker select {
+  background: var(--flow-kit-background);
+  border: 1px solid var(--flow-kit-border-color);
+  border-radius: 6px;
+  color: var(--flow-kit-color);
+  font: inherit;
+  padding: 7px 10px;
+}
+.theme-picker select:focus-visible,
+.theme-card button:focus-visible { outline: 2px solid var(--flow-kit-accent); outline-offset: 3px; }
+
+.demo-grid-themes { grid-template-columns: minmax(0, 1fr); }
+.theme-showcase { overflow: auto; padding: 32px; height: 100%; }
+.theme-showcase-heading { margin-bottom: 24px; max-width: 700px; }
+.theme-eyebrow { color: var(--flow-kit-accent); font-size: 11px; font-weight: 700; letter-spacing: .16em; }
+.theme-showcase h1 { font-size: clamp(24px, 3vw, 36px); letter-spacing: -.04em; margin: 10px 0; }
+.theme-showcase-heading p { color: var(--flow-kit-muted-color); line-height: 1.6; font-size: 14px; margin: 0; }
+.theme-gallery { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 390px), 1fr)); gap: 22px; }
+.theme-card { background: var(--flow-kit-surface); border: 1px solid var(--flow-kit-border-color); border-radius: 14px; overflow: hidden; color: var(--flow-kit-color); }
+.theme-card-active { outline: 2px solid var(--flow-kit-accent); outline-offset: 3px; }
+.theme-card-preview { height: 250px; }
+.theme-card-preview .flow-kit { height: 100%; border: 0; border-radius: 0; }
+.theme-card-preview .flow-kit-mini-map { opacity: .9; }
+.theme-preview-node {
+  width: 120px;
+  height: 64px;
+  padding: 14px;
+  display: grid;
+  gap: 5px;
+  border: 1px solid var(--flow-kit-node-border-color);
+  border-radius: 9px;
+  background: var(--flow-kit-node-background);
+  color: var(--flow-kit-node-color);
+  box-shadow: var(--flow-kit-node-shadow);
+}
+.theme-preview-node strong { font-size: 12px; }
+.theme-preview-node span { font-size: 10px; color: var(--flow-kit-muted-color); }
+.theme-card-details { display: grid; grid-template-columns: 1fr auto; padding: 20px; gap: 16px; border-top: 1px solid var(--flow-kit-border-color); }
+.theme-card-details h2 { font-size: 18px; margin: 0 0 6px; }
+.theme-card-details p { color: var(--flow-kit-muted-color); font-size: 12px; line-height: 1.5; margin: 0; }
+.theme-swatches { display: flex; align-items: center; gap: 5px; }
+.theme-swatches span { width: 16px; height: 16px; border-radius: 50%; border: 1px solid var(--flow-kit-border-color); }
+.theme-card button {
+  justify-self: start;
+  background: var(--flow-kit-background);
+  border: 1px solid var(--flow-kit-border-color);
+  border-radius: 6px;
+  color: var(--flow-kit-color);
+  cursor: pointer;
+  font: inherit;
+  font-size: 12px;
+  padding: 8px 14px;
+}
+.theme-card button[aria-pressed="true"] { border-color: var(--flow-kit-accent); color: var(--flow-kit-accent); }
+.theme-custom-hint { margin-top: 28px; padding: 24px; background: var(--flow-kit-surface); border: 1px solid var(--flow-kit-border-color); border-radius: 12px; }
+.theme-custom-hint p { color: var(--flow-kit-muted-color); font-size: 13px; }
+.theme-custom-hint pre { color: var(--flow-kit-accent); overflow: auto; font-size: 12px; line-height: 1.7; margin-bottom: 0; }
+
+/* Apply inherited tokens after the existing demo-specific canvas styling. */
+.demo-shell[data-theme] .flow-kit,
+.demo-shell[data-theme] .flow-kit-viewport { background: var(--flow-kit-background); color: var(--flow-kit-color); }
+.demo-shell[data-theme] .flow-kit-node-container:not(:where(.flow-kit-node-container-drop-target, .flow-kit-node-container-dragging-out)) { background: var(--flow-kit-container-background); border-color: var(--flow-kit-container-border); color: var(--flow-kit-container-color); }
+.demo-shell[data-theme] .flow-kit-node-container.flow-kit-selected { border-color: var(--flow-kit-container-selected-color); }
+.demo-shell[data-theme] .flow-kit-node-container:not(:where(.flow-kit-node-container-drop-target, .flow-kit-node-container-dragging-out)) .flow-kit-node-container-header { background: var(--flow-kit-container-header-background); color: var(--flow-kit-container-color); border-color: var(--flow-kit-container-border); }
+.demo-shell[data-theme] .flow-kit-edge:not(:where(.network-link-down, .network-link-degraded)) .flow-kit-edge-path { stroke: var(--flow-kit-edge-color); }
+.demo-shell[data-theme] .flow-kit-edge .flow-kit-edge-path.flow-kit-selected { stroke: var(--flow-kit-edge-selected-color); }
+.demo-shell[data-theme] .flow-kit-edge:not(:where(.network-link-down, .network-link-degraded)):hover .flow-kit-edge-path:not(.flow-kit-selected) { stroke: var(--flow-kit-edge-color-hover); }
+.demo-shell[data-theme] .flow-kit-edge-label-background { fill: var(--flow-kit-edge-label-background); stroke: var(--flow-kit-edge-label-border); }
+.demo-shell[data-theme] .flow-kit-edge-label-text { fill: var(--flow-kit-edge-label-color); }
+.demo-shell[data-theme] .flow-kit-controls,
+.demo-shell[data-theme] .flow-kit-controls > button { background: var(--flow-kit-controls-background); color: var(--flow-kit-controls-color); border-color: var(--flow-kit-controls-border); }
+.demo-shell[data-theme] .flow-kit-controls > button:hover { background: var(--flow-kit-controls-hover-background); }
+.demo-shell[data-theme] .flow-kit-mini-map { background: var(--flow-kit-mini-map-background); border-color: var(--flow-kit-mini-map-border); }
+.demo-shell[data-theme] .flow-kit-legend { background: var(--flow-kit-legend-background); border-color: var(--flow-kit-legend-border); color: var(--flow-kit-legend-color); }
+.demo-shell[data-theme] .flow-kit-legend-title { color: var(--flow-kit-legend-title-color); }
+.demo-shell[data-theme] .flow-kit-legend-label { color: var(--flow-kit-legend-label-color); }
+.demo-shell[data-theme] .flow-kit-legend-value { color: var(--flow-kit-legend-value-color); }
+/* The surrounding editor panels retain their own dark appearance. */
+.demo-shell[data-theme] .node-palette,
+.demo-shell[data-theme] .node-inspector,
+.demo-shell[data-theme] .network-sidebar,
+.demo-shell[data-theme] .layout-sidebar,
+.demo-shell[data-theme] .performance-sidebar { color: #edf1f8; }
+.demo-shell[data-theme] .workflow-node,
+.demo-shell[data-theme] .network-node,
+.demo-shell[data-theme] .uml-node,
+.demo-shell[data-theme] .layout-node,
+.demo-shell[data-theme] .performance-node { background: var(--flow-kit-node-background); color: var(--flow-kit-node-color); }
+.demo-shell[data-theme] .workflow-node-label,
+.demo-shell[data-theme] .network-node-label { color: var(--flow-kit-node-color); }
+.demo-shell[data-theme] .workflow-node-ports span,
+.demo-shell[data-theme] .workflow-node-query,
+.demo-shell[data-theme] .network-node-ip { color: var(--flow-kit-muted-color); }
+.demo-shell[data-theme] .workflow-node-condition-label { color: var(--flow-kit-accent); }
+
+@media (max-width: 700px) {
+  .theme-showcase { padding: 20px; }
+  .theme-card-details { grid-template-columns: 1fr; }
+  .theme-swatches { grid-row: 2; }
+}

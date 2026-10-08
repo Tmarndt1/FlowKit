@@ -78,6 +78,62 @@ interface INodeContainer {
             </div>
 
             <div className="section">
+                <h2 className="section-title">Connections on Collapsed Containers</h2>
+                <p>
+                    Set <code>collapsedContainerEdges="aggregate"</code> to keep external connections
+                    visible when containers collapse. A collapsed side attaches to the container boundary;
+                    the expanded side retains its original node endpoint. Connections internal to a collapsed
+                    container disappear. When both sides collapse, FlowKit renders one summary per directed
+                    container pair. Expanding restores the original edges and their data.
+                </p>
+                <CodeBlock code={`import type { ContainerEdgeAggregateArgs } from "@flowkit";
+
+type Status = "green" | "yellow" | "red";
+type EdgeData = { status: Status };
+const severity = { green: 0, yellow: 1, red: 2 };
+const statusColors = { green: "#22c55e", yellow: "#eab308", red: "#ef4444" };
+
+function aggregateStatus({ edges }: ContainerEdgeAggregateArgs<EdgeData>) {
+  const status = edges.reduce<Status>((worst, edge) => {
+    const current = edge.data?.status ?? "green";
+    return severity[current] > severity[worst] ? current : worst;
+  }, "green");
+
+  return {
+    data: { status },
+    style: { stroke: statusColors[status] },
+    label: edges.length + " connections",
+  };
+}
+
+<FlowKit
+  nodes={nodes}
+  edges={edges}
+  containers={containers}
+  collapsedContainerEdges="aggregate"
+  aggregateContainerEdges={aggregateStatus}
+/>`} />
+                <p>
+                    <code>aggregateContainerEdges</code> receives the original edges and both containers.
+                    It runs only for connections between two collapsed containers, including single-edge
+                    summaries, and recomputes when controlled edge data changes. Return presentation or
+                    payload overrides such as <code>data</code>, <code>style</code>, <code>label</code>, or
+                    a custom renderer <code>type</code>. Without a callback, summaries use the default
+                    renderer with a connection-count label. Summary fold controls are disabled.
+                </p>
+                <p>
+                    Custom edge renderers receive <code>renderInfo</code> containing resolved source and
+                    target anchors plus <code>originalEdgeKeys</code>. This metadata is for rendering;
+                    do not persist it into controlled edges. Selecting a summary selects its original
+                    edges, so selection and deletion callbacks use real edge keys. Reverse-direction
+                    connections remain separate summaries. Nodes hidden by edge folding remain hidden.
+                    Keep each node in one container; overlapping memberships resolve to the first
+                    collapsed container in array order. The default <code>"hide"</code> mode preserves
+                    the existing collapse behavior.
+                </p>
+            </div>
+
+            <div className="section">
                 <h2 className="section-title">Basic Usage</h2>
                 <CodeBlock code={`import { useState } from "react";
 import { FlowKit, applyNodeChanges, applyEdgeChanges } from "@flowkit";

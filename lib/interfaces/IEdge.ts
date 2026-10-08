@@ -1,4 +1,5 @@
 import * as React from "react";
+import type { EdgeRenderInfo } from "../types/ContainerEdgeAggregation";
 
 /** Controls which arrow markers FlowKit renders on the edge path. */
 export type EdgeArrow = "both" | "none" | "source" | "target";
@@ -42,6 +43,8 @@ export interface EdgeRoutingOptions {
 
 /** Describes a connection between two endpoint elements or two node bounds. */
 export interface IEdge<T> {
+    /** Supplied by FlowKit on projected edges, including to custom renderers. Do not persist. */
+    renderInfo?: EdgeRenderInfo;
     /** Stable edge identifier. Also used as the rendered SVG group id. */
     key: string;
     /** Target endpoint id, or target node key when anchorMode is "floating". */

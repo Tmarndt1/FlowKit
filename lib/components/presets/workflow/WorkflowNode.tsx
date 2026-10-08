@@ -25,7 +25,7 @@ export function WorkflowNode(props: WorkflowNodeType & { selected?: boolean }) {
 
     if (data?.styleVariant === "annotation") {
         return (
-            <div className="workflow-node workflow-node-annotation">
+            <div className="workflow-node workflow-node-annotation" style={props.style}>
                 <div className="workflow-node-annotation-content">
                     {data.content ?? data.title}
                 </div>
@@ -36,6 +36,7 @@ export function WorkflowNode(props: WorkflowNodeType & { selected?: boolean }) {
     return (
         <div
             className={`workflow-node workflow-node-${data?.category ?? "utility"}${variantClass}`}
+            style={props.style}
             onMouseEnter={onMouseEnter}
             onMouseLeave={onMouseLeave}
         >

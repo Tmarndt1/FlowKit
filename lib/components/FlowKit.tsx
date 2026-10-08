@@ -3,6 +3,7 @@ import { EdgePathType, EdgeRoutingOptions, IEdge } from "../interfaces/IEdge";
 import { INode } from "../interfaces/INode";
 import { INodeContainer } from "../interfaces/INodeContainer";
 import { IOffset } from "../interfaces/IOffset";
+import type { ContainerEdgeAggregationOptions } from "../types/ContainerEdgeAggregation";
 import { NodeComponentProps } from "../types/NodeComponentProps";
 import { ContainerTypes } from "../types/ContainerTypes";
 import { EdgeTypes } from "../types/EdgeTypes";
@@ -104,7 +105,7 @@ function clampScale(scale: number, props: FlowKitProps): number {
 }
 
 /** Props for the main FlowKit canvas component. */
-export interface FlowKitProps {
+export interface FlowKitProps extends ContainerEdgeAggregationOptions {
     /** Nodes to render. FlowKit treats this array as controlled application state. */
     nodes: INode<any, any>[];
     /** Edges to render. FlowKit treats this array as controlled application state. */
@@ -227,8 +228,11 @@ const FlowKitComponent = (props: FlowKitProps, ref: React.ForwardedRef<FlowKitHa
     }, []);
     const getRootElement = React.useCallback(() => rootRef.current, []);
     const foldGraphState = React.useMemo<ReturnType<typeof getFoldGraphState>>(
-        () => getFoldGraphState(props.nodes, props.edges, props.containers, collapsePreview),
-        [collapsePreview, props.containers, props.edges, props.nodes]
+        () => getFoldGraphState(props.nodes, props.edges, props.containers, collapsePreview, {
+            collapsedContainerEdges: props.collapsedContainerEdges,
+            aggregateContainerEdges: props.aggregateContainerEdges,
+        }),
+        [collapsePreview, props.containers, props.edges, props.nodes, props.collapsedContainerEdges, props.aggregateContainerEdges]
     );
 
     const config: FlowKitConfigContextValue = React.useMemo<FlowKitConfigContextValue>(
@@ -259,12 +263,15 @@ const FlowKitComponent = (props: FlowKitProps, ref: React.ForwardedRef<FlowKitHa
     );
 
     React.useEffect(() => {
+        const visibleOriginalKeys = new Set(foldGraphState.visibleEdges.flatMap(
+            (edge) => edge.renderInfo?.originalEdgeKeys ?? [edge.key]
+        ));
         selectionStore.getState().reconcileSelection(
             props.nodes.filter((node) => !foldGraphState.hiddenNodeKeys.has(node.key)),
-            foldGraphState.visibleEdges,
+            props.edges.filter((edge) => visibleOriginalKeys.has(edge.key)),
             foldGraphState.visibleContainers ?? []
         );
-    }, [foldGraphState, props.nodes, selectionStore]);
+    }, [foldGraphState, props.nodes, props.edges, selectionStore]);
 
     // FlowKit owns viewport transforms directly so panning and edge redraws can stay
     // synchronized without requiring consumers to manage viewport state.
@@ -719,6 +726,7 @@ const FlowKitComponent = (props: FlowKitProps, ref: React.ForwardedRef<FlowKitHa
                                     ref={edgeLayerRef}
                                     edgeStateClassNames={foldGraphState.edgeStateClassNames}
                                     edges={foldGraphState.visibleEdges}
+                                    originalEdges={props.edges}
                                     edgeTypes={props.edgeTypes}
                                     nodes={props.nodes}
                                     proximityConnect={props.proximityConnect}

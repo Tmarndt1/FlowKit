@@ -73,11 +73,12 @@ describe("edge redraw scheduling", () => {
     let targetX: number;
     const edge: IEdge<never> = { key: "edge", sourceId: "source", targetId: "target", pathType: "straight" };
 
-    function render(currentEdge = edge) {
+    function render(currentEdge = edge, selectionEdges?: IEdge<any>[]) {
         harness.cursor = 0;
         // React.memo exposes the underlying component for this hook harness.
-        (Edge as any).type({ edge: currentEdge });
+        const rendered = (Edge as any).type({ edge: currentEdge, selectionEdges });
         harness.effects.splice(0).forEach((effect) => effect());
+        return rendered;
     }
 
     function flushFrame() {
@@ -175,5 +176,45 @@ describe("edge redraw scheduling", () => {
         harness.stores.render.getState().requestEdgeRender(edge);
         flushFrame();
         expect(pathUpdates()).toHaveBeenCalledTimes(1);
+    });
+
+    it("redraws projected boundaries when a collapsed container moves its hidden members", () => {
+        const projected: IEdge<never> = {
+            ...edge,
+            key: "summary",
+            renderInfo: {
+                source: { kind: "container", key: "A" },
+                target: { kind: "container", key: "B" },
+                originalEdgeKeys: [edge.key],
+            },
+        };
+        render(projected, [edge]);
+        flushFrame();
+        targetX = 300;
+        harness.stores.render.getState().notifyEndpointsChanged([], ["hidden-member"]);
+        flushFrame();
+        expect(pathUpdates()).toHaveBeenLastCalledWith("M 0,0 L 300,0");
+    });
+
+    it("selects and toggles the original edges rather than persisting a summary key", () => {
+        const originals = [edge, { ...edge, key: "second" }];
+        const projected: IEdge<never> = {
+            ...edge, key: "summary", collapsible: false,
+            renderInfo: {
+                source: { kind: "container", key: "A" },
+                target: { kind: "container", key: "B" },
+                originalEdgeKeys: originals.map((edge) => edge.key),
+            },
+        };
+        const click = { stopPropagation: vi.fn(), preventDefault: vi.fn(), shiftKey: false };
+        render(projected, originals).props.onClick(click);
+        expect(harness.stores.selection.getState().selectedEdges).toEqual(originals);
+        expect(harness.stores.selection.getState().selectedEdgeKeys.has("summary")).toBe(false);
+        const selected = render(projected, originals);
+        expect(selected.props.className).toContain("flow-kit-selected");
+        selected.props.onClick({ ...click, shiftKey: true });
+        expect(harness.stores.selection.getState().selectedEdges).toEqual([]);
+        selected.props.onClick({ ...click, shiftKey: true });
+        expect(harness.stores.selection.getState().selectedEdges).toEqual(originals);
     });
 });
