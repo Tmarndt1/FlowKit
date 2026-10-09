@@ -3,11 +3,11 @@ import type { INodeContainer } from "../interfaces/INodeContainer";
 import type { ContainerEdgeAggregationOptions, RenderedEdgeAnchor } from "../types/ContainerEdgeAggregation";
 
 /** Projects eligible original edges onto visible collapsed container boundaries. */
-export function projectContainerEdges(
-    edges: IEdge<any>[],
+export function projectContainerEdges<T extends IEdge<any>>(
+    edges: T[],
     containers: INodeContainer[] | undefined,
     nodeKeyByConnectionId: ReadonlyMap<string, string>,
-    options: ContainerEdgeAggregationOptions
+    options: ContainerEdgeAggregationOptions<T>
 ): IEdge<any>[] {
     const containerByNode = new Map<string, INodeContainer>();
     containers?.filter((container) => container.collapsed).forEach((container) => {
@@ -17,7 +17,7 @@ export function projectContainerEdges(
         });
     });
     const result: IEdge<any>[] = [];
-    const groups = new Map<string, { source: INodeContainer; target: INodeContainer; edges: IEdge<any>[] }>();
+    const groups = new Map<string, { source: INodeContainer; target: INodeContainer; edges: T[] }>();
     const usedKeys = new Set(edges.map((edge) => edge.key));
 
     for (const edge of edges) {

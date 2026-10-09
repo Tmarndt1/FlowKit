@@ -14,6 +14,8 @@ export {
     useNodeFlowSelectedContainers,
 } from "./contexts/NodeFlowContext";
 export type { FlowKitHandle, FlowKitProps, IEdgeCollapsedChangeArgs, IEdgeCollapsePreviewChangeArgs } from "./components/FlowKit";
+export { flowKitThemes } from "./themes";
+export type { FlowKitTheme, FlowKitThemeName } from "./themes";
 export { FlowKitControls, useFlowKitControls } from "./components/FlowKitControls";
 export type { PanToNodeOptions } from "./components/FlowKitControls";
 export { FlowKitDots } from "./components/FlowKitDots";

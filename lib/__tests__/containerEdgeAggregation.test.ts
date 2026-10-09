@@ -1,11 +1,12 @@
-import { describe, expect, it, vi } from "vitest";
+import { describe, expect, expectTypeOf, it, vi } from "vitest";
+import { FlowKit, type FlowKitProps } from "../components/FlowKit";
 import { getFoldGraphState } from "../functions/getFoldGraphState";
 import { resolveEdgeAnchors } from "../functions/edgeAnchors";
 import { getStraight } from "../functions/getStraight";
 import { Position } from "../enums/Position";
 import type { INode } from "../interfaces/INode";
 import type { IEdge } from "../interfaces/IEdge";
-import type { ContainerEdgeAggregateArgs } from "../types/ContainerEdgeAggregation";
+import type { ContainerEdgeAggregateArgs, ContainerEdgeAggregateResult } from "../types/ContainerEdgeAggregation";
 
 type Status = "green" | "yellow" | "red";
 const nodes: INode<unknown, unknown>[] = ["a1", "a2", "a3", "b1", "b2", "b3"].map((key) => ({
@@ -23,6 +24,24 @@ const containers = (a = true, b = true) => [
 const aggregate = { collapsedContainerEdges: "aggregate" as const };
 
 describe("collapsed container edge aggregation", () => {
+    it("preserves custom edge fields and payload types in aggregate callbacks", () => {
+        interface StatusEdge extends IEdge<{ status: Status }> {
+            bandwidth: number;
+        }
+        const originals: StatusEdge[] = edges.map((edge) => ({ ...edge, bandwidth: 100 }));
+        const props: FlowKitProps<StatusEdge> = {
+            nodes,
+            edges: originals,
+            ...aggregate,
+            aggregateContainerEdges: ({ edges }) => {
+                expectTypeOf(edges).toEqualTypeOf<readonly StatusEdge[]>();
+                expectTypeOf(edges[0].data).toEqualTypeOf<{ status: Status } | undefined>();
+                return { label: `${edges.reduce((total, edge) => total + edge.bandwidth, 0)} Mbps` };
+            },
+        };
+        expectTypeOf<Parameters<typeof FlowKit<StatusEdge>>[0]["edges"]>().toEqualTypeOf<StatusEdge[]>();
+        expect(getFoldGraphState(nodes, originals, containers(), null, props).visibleEdges[0].label).toBe("300 Mbps");
+    });
     it("keeps existing hide behavior by default and restores original edges on expansion", () => {
         expect(getFoldGraphState(nodes, edges, containers(), null).visibleEdges).toEqual([]);
         expect(getFoldGraphState(nodes, edges, containers(false, false), null, aggregate).visibleEdges).toEqual(edges);
@@ -45,7 +64,7 @@ describe("collapsed container edge aggregation", () => {
     });
 
     it("rolls up worst status, updates when data changes, and keeps stable summary identity", () => {
-        const callback = vi.fn(({ edges }: ContainerEdgeAggregateArgs<{ status: Status }>) => {
+        const callback = vi.fn(({ edges }: ContainerEdgeAggregateArgs<IEdge<{ status: Status }>>) => {
             const severity = { green: 0, yellow: 1, red: 2 };
             const status = edges.reduce<Status>((worst, edge) =>
                 severity[edge.data!.status] > severity[worst] ? edge.data!.status : worst, "green");
@@ -57,7 +76,7 @@ describe("collapsed container edge aggregation", () => {
         expect(first[0]).toMatchObject({ data: { status: "red" }, style: { stroke: "red" }, collapsible: false, type: "status" });
         expect(first[0].renderInfo?.originalEdgeKeys).toEqual(["e0", "e1", "e2"]);
         expect(callback.mock.calls[0][0].edges[2]).toBe(edges[2]);
-        const updated = edges.map((edge) => ({ ...edge, data: { status: "green" as const } }));
+        const updated: IEdge<{ status: Status }>[] = edges.map((edge) => ({ ...edge, data: { status: "green" } }));
         const second = getFoldGraphState(nodes, updated, containers(), null, options).visibleEdges[0];
         expect(second.data.status).toBe("green");
         expect(second.key).toBe(first[0].key);
@@ -80,7 +99,7 @@ describe("collapsed container edge aggregation", () => {
 
     it("rolls up both directions with stable container order and summary identity", () => {
         const originals = [edges[0], { ...edges[2], key: "reverse", sourceId: "b1-port", targetId: "a1-port" }];
-        const callback = vi.fn(({ edges }: ContainerEdgeAggregateArgs<{ status: Status }>) => ({
+        const callback = vi.fn(({ edges }: ContainerEdgeAggregateArgs<IEdge<{ status: Status }>>): ContainerEdgeAggregateResult<IEdge<{ status: Status }>> => ({
             data: { status: edges.some((edge) => edge.data?.status === "red") ? "red" : "green" },
         }));
         const options = { ...aggregate, aggregateContainerEdges: callback };

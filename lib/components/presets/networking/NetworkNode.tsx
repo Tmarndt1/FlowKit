@@ -17,7 +17,7 @@ export function NetworkNode(props: NetworkNodeType & { selected?: boolean }) {
     const status = data?.status ?? "unknown";
 
     return (
-        <div className={`network-node network-node-${category}`}>
+        <div className={`network-node network-node-${category}`} style={props.style}>
             <div className="network-node-icon">
                 <NetworkNodeIcon nodeType={props.type ?? ""} />
             </div>

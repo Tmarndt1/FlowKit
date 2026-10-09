@@ -93,14 +93,14 @@ interface INodeContainer {
                     Each side uses an endpoint ID for <code>"endpoint"</code> or a node key for
                     <code>"floating"</code>. Omitted side modes inherit <code>anchorMode</code>.
                 </p>
-                <CodeBlock code={`import type { ContainerEdgeAggregateArgs } from "@flowkit";
+                <CodeBlock code={`import type { ContainerEdgeAggregateArgs, IEdge } from "@flowkit";
 
 type Status = "green" | "yellow" | "red";
 type EdgeData = { status: Status };
 const severity = { green: 0, yellow: 1, red: 2 };
 const statusColors = { green: "#22c55e", yellow: "#eab308", red: "#ef4444" };
 
-function aggregateStatus({ edges }: ContainerEdgeAggregateArgs<EdgeData>) {
+function aggregateStatus({ edges }: ContainerEdgeAggregateArgs<IEdge<EdgeData>>) {
   const status = edges.reduce<Status>((worst, edge) => {
     const current = edge.data?.status ?? "green";
     return severity[current] > severity[worst] ? current : worst;

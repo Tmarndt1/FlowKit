@@ -26,6 +26,7 @@ import {
 } from "../contexts/FlowKitConfigContext";
 import { findElementById } from "../functions/domScope";
 import { getPanToNodeOffset } from "../functions/viewport";
+import { flowKitThemes, type FlowKitTheme, type FlowKitThemeName } from "../themes";
 
 export { useFlowKitSelection, useNodeFlowSelection } from "../contexts/NodeFlowContext";
 export { useFlowKitSelectionChange, useNodeFlowSelectionChange } from "./FlowKitEvents";
@@ -105,11 +106,11 @@ function clampScale(scale: number, props: FlowKitProps): number {
 }
 
 /** Props for the main FlowKit canvas component. */
-export interface FlowKitProps extends ContainerEdgeAggregationOptions {
+export interface FlowKitProps<T extends IEdge<any> = IEdge<any>> extends ContainerEdgeAggregationOptions<T> {
     /** Nodes to render. FlowKit treats this array as controlled application state. */
     nodes: INode<any, any>[];
     /** Edges to render. FlowKit treats this array as controlled application state. */
-    edges: IEdge<any>[];
+    edges: T[];
     /** Optional group containers rendered behind nodes. */
     containers?: INodeContainer[];
     /** Custom node renderer map, keyed by node.type. */
@@ -120,6 +121,8 @@ export interface FlowKitProps extends ContainerEdgeAggregationOptions {
     containerTypes?: ContainerTypes;
     /** Inline style for the root FlowKit element. */
     style?: React.CSSProperties;
+    /** Built-in palette or custom CSS variables scoped to this canvas. Root style overrides theme values. */
+    theme?: FlowKitThemeName | FlowKitTheme;
     /** Maximum zoom scale. */
     zoomMax?: number;
     /** Minimum zoom scale. */
@@ -708,7 +711,7 @@ const FlowKitComponent = (props: FlowKitProps, ref: React.ForwardedRef<FlowKitHa
                             rootRef.current?.focus({ preventScroll: true });
                         }}
                         ref={rootRef}
-                        style={props.style}
+                        style={{ ...(typeof props.theme === "string" ? flowKitThemes[props.theme] : props.theme), ...props.style }}
                         tabIndex={-1}
                     >
                         <div
@@ -760,4 +763,5 @@ const FlowKitComponent = (props: FlowKitProps, ref: React.ForwardedRef<FlowKitHa
     );
 };
 
-export const FlowKit = React.forwardRef<FlowKitHandle, FlowKitProps>(FlowKitComponent);
+export const FlowKit = React.forwardRef<FlowKitHandle, FlowKitProps>(FlowKitComponent) as
+    <T extends IEdge<any> = IEdge<any>>(props: FlowKitProps<T> & React.RefAttributes<FlowKitHandle>) => React.ReactNode;

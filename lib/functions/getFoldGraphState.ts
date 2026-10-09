@@ -98,12 +98,12 @@ function addAffectedNodeKeys(
  * Apps usually let FlowKit call this internally, but advanced renderers can use it
  * to mirror FlowKit's upstream/downstream/both traversal behavior.
  */
-export function getFoldGraphState(
+export function getFoldGraphState<T extends IEdge<any>>(
     nodes: INode<any, any>[],
-    edges: IEdge<any>[],
+    edges: T[],
     containers: INodeContainer[] | undefined,
     preview: IFoldGraphPreview | null,
-    options: ContainerEdgeAggregationOptions = {}
+    options: ContainerEdgeAggregationOptions<T> = {}
 ): IFoldGraphState {
     const nodeKeyByConnectionId = getNodeKeyByConnectionId(nodes);
     const outgoing = new Map<string, string[]>();

@@ -44,7 +44,7 @@ const initialContainers: INodeContainer[] = ["A", "B"].map((key) => ({
   padding: 28, collapsed: false,
 }));
 
-function aggregateStatus({ edges }: ContainerEdgeAggregateArgs<EdgeData>) {
+function aggregateStatus({ edges }: ContainerEdgeAggregateArgs<IEdge<EdgeData>>) {
   const status = edges.reduce<Status>((worst, edge) => {
     const current = edge.data?.status ?? "green";
     return severity[current] > severity[worst] ? current : worst;
